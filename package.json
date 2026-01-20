@@ -23,10 +23,12 @@
     "dependencies": {
         "@deepgram/sdk": "^4.11.3",
         "@inertiajs/react": "^2.3.11",
+        "body-parser": "^2.2.2",
         "buffer": "^6.0.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dotenv": "^17.2.3",
+        "express": "^5.2.1",
         "lucide-react": "^0.562.0",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",

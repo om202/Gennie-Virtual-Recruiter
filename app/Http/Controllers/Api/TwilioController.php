@@ -32,8 +32,9 @@ class TwilioController extends Controller
                 $to,
                 $from,
                 [
-                    // This URL must return the TwiML that connects to the Media Stream
-                    'url' => "{$appUrl}/api/twilio/voice",
+                    // Point to the Relay Server's TwiML endpoint
+                    // Assuming user sets RELAY_SERVER_URL to their ngrok address (tunneling 8080)
+                    'url' => env('RELAY_SERVER_URL') . '/twilio/voice',
                     'method' => 'POST'
                 ]
             );

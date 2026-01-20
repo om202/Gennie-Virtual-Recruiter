@@ -1,14 +1,19 @@
-import { createClient } from "@deepgram/sdk";
-import WebSocket, { WebSocketServer } from "ws";
+import express from "express";
+import { createClient, AgentEvents } from "@deepgram/sdk";
+import { WebSocket, WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
+import http from "http";
 
 dotenv.config();
 
+const app = express();
 const port = 8080;
-const wss = new WebSocketServer({ port });
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
 
-console.log(`Relay server running on port ${port}`);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
 
@@ -17,24 +22,60 @@ if (!DEEPGRAM_API_KEY) {
     process.exit(1);
 }
 
-wss.on("connection", (ws) => {
+// HTTP Endpoint for TwiML
+app.post("/twilio/voice", (req, res) => {
+    const host = req.headers.host;
+    const protocol = req.headers["x-forwarded-proto"] || "http";
+    const wsProtocol = protocol === "https" ? "wss" : "ws";
+
+    // TwiML to connect to the stream
+    const twiml = `
+    <Response>
+        <Connect>
+            <Stream url="${wsProtocol}://${host}/streams" />
+        </Connect>
+    </Response>
+    `;
+
+    console.log("TwiML Generated:", twiml);
+    res.type("text/xml");
+    res.send(twiml);
+});
+
+
+wss.on("connection", (ws, req) => {
+    // Check if the path is /streams
+    if (req.url !== "/streams") {
+        console.log("Rejected connection to:", req.url);
+        ws.close();
+        return;
+    }
+
     console.log("Twilio Media Stream Connected");
 
     let deepgram = null;
     let streamSid = null;
+    let deepgramReady = false;
+    let audioBuffer = []; // Buffer audio until Deepgram is ready
 
     const deepgramClient = createClient(DEEPGRAM_API_KEY);
 
     // Connect to Deepgram
+    console.log("Connecting to Deepgram Agent...");
     deepgram = deepgramClient.agent();
 
-    deepgram.on("open", () => {
-        console.log("Connected to Deepgram");
+    // Log all events for debugging
+    console.log("AgentEvents available:", AgentEvents);
+
+    // Use AgentEvents enum like the browser SDK does
+    deepgram.on(AgentEvents.Open, () => {
+        console.log("Connected to Deepgram (AgentEvents.Open)!");
+        deepgramReady = true;
 
         // Configure Agent similar to Gennie.tsx
         deepgram.configure({
             audio: {
-                input: { encoding: "mulaw", sample_rate: 8000 }, // Twilio standard
+                input: { encoding: "mulaw", sample_rate: 8000 },
                 output: { encoding: "mulaw", sample_rate: 8000, container: "none" },
             },
             agent: {
@@ -64,18 +105,32 @@ wss.on("connection", (ws) => {
                 },
             },
         });
+
+        console.log("Deepgram configured. Sending buffered audio...");
+        // Send any buffered audio
+        for (const audio of audioBuffer) {
+            deepgram.send(audio);
+        }
+        audioBuffer = [];
     });
 
-    deepgram.on("close", () => {
+    // Also try string 'open' as fallback
+    deepgram.on("open", () => {
+        console.log("Connected to Deepgram (string 'open')!");
+    });
+
+    deepgram.on(AgentEvents.Close, () => {
         console.log("Deepgram Connection Closed");
+        deepgramReady = false;
     });
 
-    deepgram.on("error", (error) => {
+    deepgram.on(AgentEvents.Error, (error) => {
         console.error("Deepgram Error:", error);
     });
 
     // Handle Audio from Deepgram -> Twilio
-    deepgram.on("audio", (data) => {
+    deepgram.on(AgentEvents.Audio, (data) => {
+        console.log("Received audio from Deepgram, length:", data.length);
         if (ws.readyState === WebSocket.OPEN && streamSid) {
             const message = {
                 event: "media",
@@ -89,19 +144,14 @@ wss.on("connection", (ws) => {
     });
 
     // Handle Function Calls (Tool Usage)
-    deepgram.on("AgentFunctionCallRequest", async (data) => {
-        // Note: The event name might differ based on SDK usage, but 'FunctionCallRequest' or similar is standard.
-        // The previous Gennie.tsx used `AgentEvents.FunctionCallRequest`.
-        // We'll trust typical SDK event names or logging if it fails.
+    deepgram.on(AgentEvents.FunctionCallRequest, async (data) => {
         console.log("Function Call Request:", data);
 
         const { function_name, function_call_id, input } = data;
 
         if (function_name === "get_context") {
             try {
-                // Call Laravel Backend
-                // We assume Laravel is running on localhost:8000 or specified APP_URL
-                const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
+                const appUrl = "http://127.0.0.1:8000";
                 const response = await fetch(`${appUrl}/api/agent/context`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -126,6 +176,19 @@ wss.on("connection", (ws) => {
         }
     });
 
+    // Log other events
+    deepgram.on(AgentEvents.ConversationText, (data) => {
+        console.log("Conversation text:", data);
+    });
+
+    deepgram.on(AgentEvents.UserStartedSpeaking, () => {
+        console.log("User started speaking");
+    });
+
+    deepgram.on(AgentEvents.AgentStartedSpeaking, () => {
+        console.log("Agent started speaking");
+    });
+
 
     // Handle Twilio -> Deepgram
     ws.on("message", (message) => {
@@ -136,18 +199,25 @@ wss.on("connection", (ws) => {
                 console.log("Twilio: Connected Event");
                 break;
             case "start":
-                console.log("Twilio: Start Event");
+                console.log("Twilio: Start Event, StreamSid:", msg.start.streamSid);
                 streamSid = msg.start.streamSid;
                 break;
             case "media":
-                // Send audio to Deepgram
-                if (deepgram.getReadyState() === 1) { // Open
-                    deepgram.send(Buffer.from(msg.media.payload, "base64"));
+                // Buffer or send audio to Deepgram
+                const audioData = Buffer.from(msg.media.payload, "base64");
+                if (deepgramReady && deepgram.getReadyState() === 1) {
+                    deepgram.send(audioData);
+                } else {
+                    // Buffer audio until Deepgram is ready
+                    audioBuffer.push(audioData);
+                    if (audioBuffer.length % 100 === 0) {
+                        console.log("Buffered audio chunks:", audioBuffer.length);
+                    }
                 }
                 break;
             case "stop":
                 console.log("Twilio: Stop Event");
-                if (deepgram) deepgram.disconnect(); // Close Deepgram connection
+                if (deepgram) deepgram.disconnect();
                 break;
         }
     });
@@ -156,4 +226,8 @@ wss.on("connection", (ws) => {
         console.log("Twilio Connection Closed");
         if (deepgram) deepgram.disconnect();
     });
+});
+
+server.listen(port, () => {
+    console.log(`Relay server running on port ${port}`);
 });
