@@ -10,6 +10,11 @@ use Inertia\Inertia;
 
 class VoiceClientController extends Controller
 {
+    public function landing()
+    {
+        return Inertia::render('Landing');
+    }
+
     public function index()
     {
         return Inertia::render('Gennie');
