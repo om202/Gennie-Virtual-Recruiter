@@ -4,13 +4,13 @@ import { useDeepgramAgent } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
+import { Globe, Phone } from 'lucide-react'
 import type { PageProps } from '@/types'
 
 export default function Gennie({ }: PageProps) {
     const {
         speakingState,
         transcript,
-        statusText,
         startConversation,
         stopConversation,
         isConnected,
@@ -56,52 +56,75 @@ export default function Gennie({ }: PageProps) {
                 />
             </Head>
 
-            <div className="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
-                <div className="max-w-md w-full text-center space-y-8">
-                    <div className="space-y-2">
-                        <h1 className="text-4xl font-bold tracking-tight text-blue-400">
-                            Gennie
-                        </h1>
-                        <p className="text-slate-400">AI Virtual Recruiter</p>
-                    </div>
+            <div className="bg-background text-foreground min-h-screen flex items-center justify-center p-4">
+                {!isConnected ? (
+                    /* Centered Layout - When Idle */
+                    <div className="max-w-md w-full text-center space-y-8">
+                        <div className="">
+                            <h1 className="text-4xl font-bold tracking-tight text-primary">
+                                Gennie
+                            </h1>
+                            <p className="text-muted-foreground">AI Virtual Recruiter</p>
+                        </div>
 
-                    <VoiceVisualizer speakingState={speakingState} />
+                        <VoiceVisualizer speakingState={speakingState} />
 
-                    <div className="h-8 text-blue-300 font-mono text-sm">
-                        {statusText}
-                    </div>
-
-                    <div className="flex gap-3">
-                        {!isConnected ? (
-                            <>
-                                <Button
-                                    onClick={startConversation}
-                                    className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98]"
-                                >
-                                    Start Interview
-                                </Button>
-                                <Button
-                                    onClick={handleCallMe}
-                                    variant="outline"
-                                    disabled={isCalling}
-                                    className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98] border-blue-400 text-blue-400 hover:bg-slate-800"
-                                >
-                                    {isCalling ? 'Calling...' : 'Call Me'}
-                                </Button>
-                            </>
-                        ) : (
+                        <div className="flex gap-3">
                             <Button
-                                onClick={stopConversation}
-                                variant="destructive"
-                                className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98]"
+                                onClick={startConversation}
+                                size="lg"
+                                className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                Stop
+                                <Globe className="h-5 w-5 mr-2" />
+                                Start Interview
                             </Button>
-                        )}
+                            <Button
+                                onClick={handleCallMe}
+                                variant="outline"
+                                size="lg"
+                                disabled={isCalling}
+                                className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                <Phone className="h-5 w-5 mr-2" />
+                                {isCalling ? 'Calling...' : 'Call Me'}
+                            </Button>
+                        </div>
                     </div>
+                ) : (
+                    /* Side-by-Side Layout - When Call in Progress */
+                    <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+                        {/* Main Content - Left Side */}
+                        <div className="w-full lg:w-1/2 text-center space-y-8">
+                            <div className="">
+                                <h1 className="text-4xl font-bold tracking-tight text-primary">
+                                    Gennie
+                                </h1>
+                                <p className="text-muted-foreground">AI Virtual Recruiter</p>
+                            </div>
 
-                    <TranscriptDisplay transcript={transcript} />
-                </div>
+                            <VoiceVisualizer speakingState={speakingState} />
+
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={stopConversation}
+                                    variant="destructive"
+                                    size="lg"
+                                    className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    Stop
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Transcript - Right Side on Desktop */}
+                        <div className="w-full lg:w-1/2">
+                            <TranscriptDisplay
+                                transcript={transcript}
+                                className="lg:h-[500px] h-64"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     )

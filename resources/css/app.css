@@ -3,8 +3,105 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --gennie-blue: #3b82f6;
-    --gennie-cyan: #06b6d4;
-  }
+    :root {
+        /* Light Mode - Professional & Approachable */
+        --background: 216 33% 97%;
+        /* #F7F9FC - Soft off-white */
+        --foreground: 217 33% 17%;
+        /* #1F2937 - Deep gray text */
+        --card: 0 0% 100%;
+        /* Pure white cards */
+        --card-foreground: 217 33% 17%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 217 33% 17%;
+
+        /* Primary: Deep Blue - Trust & Intelligence */
+        --primary: 214 56% 25%;
+        /* #1F3A5F - Deep Blue */
+        --primary-foreground: 0 0% 100%;
+
+        /* Secondary: Teal - Fairness & Growth */
+        --secondary: 182 50% 42%;
+        /* #2FA4A9 - Soft Teal */
+        --secondary-foreground: 0 0% 100%;
+
+        /* Muted: Neutral backgrounds */
+        --muted: 220 14% 96%;
+        /* #F3F4F6 - Light gray */
+        --muted-foreground: 215 16% 47%;
+        /* Muted text */
+
+        /* Accent: Warm Amber - Human Touch */
+        --accent: 27 87% 67%;
+        /* #F4A261 - Soft Amber */
+        --accent-foreground: 217 33% 17%;
+
+        /* Destructive: Soft Red - Non-judgmental */
+        --destructive: 10 71% 61%;
+        /* #E76F51 - Soft Red */
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 214 56% 25%;
+        /* Matches primary */
+        --radius: 0.75rem;
+        /* 12px - Softer corners */
+
+        /* Custom brand colors */
+        --gennie-blue: 214 56% 25%;
+        --gennie-teal: 182 50% 42%;
+    }
+
+    .dark {
+        /* Dark Mode - Professional Dashboard */
+        --background: 222 47% 11%;
+        /* #0F172A - Slate Black */
+        --foreground: 210 40% 98%;
+        /* #F8FAFC - Soft white */
+        --card: 217 33% 17%;
+        /* #1E293B - Slate cards */
+        --card-foreground: 210 40% 98%;
+        --popover: 217 33% 17%;
+        --popover-foreground: 210 40% 98%;
+
+        /* Primary: Bright Blue - Clear in dark */
+        --primary: 217 91% 60%;
+        /* #3B82F6 - Vibrant Blue */
+        --primary-foreground: 0 0% 100%;
+
+        /* Secondary: Bright Teal */
+        --secondary: 172 66% 50%;
+        /* #2DD4BF - Bright Teal */
+        --secondary-foreground: 0 0% 100%;
+
+        /* Muted: Dark backgrounds */
+        --muted: 215 25% 27%;
+        /* Darker slate */
+        --muted-foreground: 217 11% 65%;
+
+        /* Accent: Warm Amber */
+        --accent: 27 87% 67%;
+        /* #F4A261 - Warm Amber */
+        --accent-foreground: 222 47% 11%;
+
+        /* Destructive: Soft Red */
+        --destructive: 10 71% 61%;
+        /* #E76F51 */
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 215 25% 27%;
+        --input: 215 25% 27%;
+        --ring: 217 91% 60%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
 }
