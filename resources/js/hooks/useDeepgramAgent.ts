@@ -89,24 +89,23 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
                 sampleRate: 16000,
             })
 
+            // Load AudioWorklet processor
+            await audioContext.audioWorklet.addModule('/audio-processor.js')
+
             const source = audioContext.createMediaStreamSource(stream)
-            const processor = audioContext.createScriptProcessor(4096, 1, 1)
+            const workletNode = new AudioWorkletNode(audioContext, 'audio-capture-processor')
 
-            audioProcessorRef.current = { audioContext, processor, stream, source }
+            audioProcessorRef.current = { audioContext, workletNode, stream, source }
 
-            processor.onaudioprocess = (e: AudioProcessingEvent) => {
+            // Listen for audio data from the worklet
+            workletNode.port.onmessage = (event: MessageEvent) => {
                 if (connectionRef.current && connectionRef.current.getReadyState && connectionRef.current.getReadyState() === 1) {
-                    const inputData = e.inputBuffer.getChannelData(0)
-                    const int16Data = new Int16Array(inputData.length)
-                    for (let i = 0; i < inputData.length; i++) {
-                        int16Data[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768))
-                    }
-                    connectionRef.current.send(int16Data.buffer)
+                    connectionRef.current.send(event.data)
                 }
             }
 
-            source.connect(processor)
-            processor.connect(audioContext.destination)
+            source.connect(workletNode)
+            workletNode.connect(audioContext.destination)
         } catch (err) {
             console.error('Microphone error:', err)
             addTranscript('system', 'Error: Could not access microphone')
@@ -115,7 +114,7 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
 
     const stopMicrophone = useCallback(() => {
         if (audioProcessorRef.current) {
-            audioProcessorRef.current.processor.disconnect()
+            audioProcessorRef.current.workletNode.disconnect()
             audioProcessorRef.current.audioContext.close()
             audioProcessorRef.current.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
             audioProcessorRef.current = null
@@ -247,11 +246,7 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
             })
 
             connection.on(AgentEvents.Unhandled, (data: any) => {
-                if (data.type === 'History' && data.role && data.content) {
-                    addTranscript(data.role, data.content)
-                } else {
-                    console.log('Unhandled agent event:', data)
-                }
+                console.log('Unhandled agent event:', data)
             })
         } catch (error: any) {
             console.error('Connection error:', error)
@@ -290,7 +285,7 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
             }
             if (audioProcessorRef.current) {
                 try {
-                    audioProcessorRef.current.processor.disconnect()
+                    audioProcessorRef.current.workletNode.disconnect()
                     audioProcessorRef.current.audioContext.close()
                     audioProcessorRef.current.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
                 } catch (error) {
