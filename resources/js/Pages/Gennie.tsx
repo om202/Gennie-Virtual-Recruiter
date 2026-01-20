@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react'
+import { useState } from 'react'
 import { useDeepgramAgent } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
@@ -14,6 +15,30 @@ export default function Gennie({ }: PageProps) {
         stopConversation,
         isConnected,
     } = useDeepgramAgent()
+
+    const [isCalling, setIsCalling] = useState(false)
+
+    const handleCallMe = async () => {
+        setIsCalling(true)
+        try {
+            const res = await fetch('/api/twilio/call', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: '+17204870145' })
+            })
+            const data = await res.json()
+            if (data.success) {
+                alert('Calling your phone...')
+            } else {
+                alert('Failed to initiate call: ' + (data.error || 'Unknown error'))
+            }
+        } catch (error) {
+            console.error(error)
+            alert('Error initiating call')
+        } finally {
+            setIsCalling(false)
+        }
+    }
 
     return (
         <>
@@ -48,12 +73,22 @@ export default function Gennie({ }: PageProps) {
 
                     <div className="flex gap-3">
                         {!isConnected ? (
-                            <Button
-                                onClick={startConversation}
-                                className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                Start Interview
-                            </Button>
+                            <>
+                                <Button
+                                    onClick={startConversation}
+                                    className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    Start Interview
+                                </Button>
+                                <Button
+                                    onClick={handleCallMe}
+                                    variant="outline"
+                                    disabled={isCalling}
+                                    className="flex-1 py-4 px-6 hover:scale-[1.02] active:scale-[0.98] border-blue-400 text-blue-400 hover:bg-slate-800"
+                                >
+                                    {isCalling ? 'Calling...' : 'Call Me'}
+                                </Button>
+                            </>
                         ) : (
                             <Button
                                 onClick={stopConversation}

@@ -10,3 +10,7 @@ Route::get('/user', function (Request $request) {
 
 // Tool Endpoint called by Deepgram
 Route::post('/agent/context', [AgentToolController::class, 'getContext']);
+
+// Twilio Routes
+Route::post('/twilio/call', [\App\Http\Controllers\Api\TwilioController::class, 'startCall']);
+Route::post('/twilio/voice', [\App\Http\Controllers\Api\TwilioController::class, 'voiceHook']);
