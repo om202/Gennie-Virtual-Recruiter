@@ -2,14 +2,19 @@ import { createClient, AgentEvents } from "@deepgram/sdk";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const startBtn = document.getElementById("start-btn");
+    const pauseBtn = document.getElementById("pause-btn");
+    const stopBtn = document.getElementById("stop-btn");
     const statusText = document.getElementById("status-text");
     const transcriptBox = document.getElementById("transcript-box");
     const visualizerRing = document.getElementById("visualizer-ring");
 
     let connection = null;
     let audioProcessor = null;
+    let isPaused = false;
 
     startBtn.addEventListener("click", startConversation);
+    pauseBtn.addEventListener("click", togglePause);
+    stopBtn.addEventListener("click", stopConversation);
 
     async function startConversation() {
         startBtn.disabled = true;
@@ -38,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             connection.on(AgentEvents.Open, () => {
                 console.log("Agent WebSocket Connected");
                 statusText.textContent = "Configuring Gennie...";
+                showActiveButtons();
 
                 // Configure the agent with correct V1 API Schema
                 // See: node_modules/@deepgram/sdk/src/lib/types/AgentLiveSchema.ts
@@ -186,7 +192,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Create a ScriptProcessorNode for audio capture
             const processor = audioContext.createScriptProcessor(4096, 1, 1);
-            audioProcessor = { audioContext, processor, stream };
+            audioProcessor = { audioContext, processor, stream, source };
 
             processor.onaudioprocess = (e) => {
                 if (connection && connection.getReadyState && connection.getReadyState() === 1) {
@@ -218,11 +224,59 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    function togglePause() {
+        isPaused = !isPaused;
+
+        if (isPaused) {
+            // Pause: Stop microphone input
+            if (audioProcessor) {
+                audioProcessor.processor.disconnect();
+            }
+            pauseBtn.textContent = "Resume";
+            pauseBtn.classList.remove("bg-yellow-600", "hover:bg-yellow-700", "border-yellow-700");
+            pauseBtn.classList.add("bg-green-600", "hover:bg-green-700", "border-green-700");
+            statusText.textContent = "Paused";
+        } else {
+            // Resume: Reconnect microphone
+            if (audioProcessor) {
+                audioProcessor.source.connect(audioProcessor.processor);
+                audioProcessor.processor.connect(audioProcessor.audioContext.destination);
+            }
+            pauseBtn.textContent = "Pause";
+            pauseBtn.classList.remove("bg-green-600", "hover:bg-green-700", "border-green-700");
+            pauseBtn.classList.add("bg-yellow-600", "hover:bg-yellow-700", "border-yellow-700");
+            statusText.textContent = "Gennie is listening...";
+        }
+    }
+
+    function stopConversation() {
+        if (connection) {
+            connection.finish();
+        }
+        stopMicrophone();
+        resetUI();
+        addTranscript("System: Interview stopped by user");
+    }
+
     function resetUI() {
         startBtn.disabled = false;
         startBtn.textContent = "Start Interview";
+        startBtn.classList.remove("hidden");
+        pauseBtn.classList.add("hidden");
+        stopBtn.classList.add("hidden");
+        pauseBtn.textContent = "Pause";
+        pauseBtn.classList.remove("bg-green-600", "hover:bg-green-700", "border-green-700");
+        pauseBtn.classList.add("bg-yellow-600", "hover:bg-yellow-700", "border-yellow-700");
+        isPaused = false;
         visualizerRing.classList.remove("animate-pulse");
         visualizerRing.style.borderColor = "";
+        statusText.textContent = "Ready to Connect...";
+    }
+
+    function showActiveButtons() {
+        startBtn.classList.add("hidden");
+        pauseBtn.classList.remove("hidden");
+        stopBtn.classList.remove("hidden");
     }
 
     // Gapless Audio Player with scheduled playback

@@ -55,14 +55,26 @@
             </svg>
         </div>
 
-        <div id="status-text" class="h-8 text-blue-300 font-mono text-sm animate-pulse">
+        <div id="status-text" class="h-8 text-blue-300 font-mono text-sm">
             Ready to Connect...
         </div>
 
-        <button id="start-btn"
-            class="w-full py-4 px-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
-            Start Interview
-        </button>
+        <div class="flex gap-3">
+            <button id="start-btn"
+                class="flex-1 py-4 px-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+                Start Interview
+            </button>
+            
+            <button id="pause-btn"
+                class="hidden flex-1 py-4 px-6 bg-yellow-600 hover:bg-yellow-700 border border-yellow-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+                Pause
+            </button>
+            
+            <button id="stop-btn"
+                class="hidden flex-1 py-4 px-6 bg-red-600 hover:bg-red-700 border border-red-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+                Stop
+            </button>
+        </div>
 
         <div id="transcript-box"
             class="hidden text-left bg-slate-950/50 p-4 rounded-lg border border-slate-800 text-sm h-32 overflow-y-auto font-mono text-slate-400">
