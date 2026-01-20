@@ -6,16 +6,29 @@
         "dev": "vite"
     },
     "devDependencies": {
-        "autoprefixer": "^10.4.20",
+        "@tailwindcss/vite": "^4.0.0",
+        "@types/node": "^25.0.9",
+        "@types/react": "^19.2.9",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^4.7.0",
+        "autoprefixer": "^10.4.23",
         "axios": "^1.7.4",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.2.0",
-        "postcss": "^8.4.47",
-        "tailwindcss": "^3.4.13",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.19",
+        "typescript": "^5.9.3",
         "vite": "^6.0.11"
     },
     "dependencies": {
         "@deepgram/sdk": "^4.11.3",
-        "buffer": "^6.0.3"
+        "@inertiajs/react": "^2.3.11",
+        "buffer": "^6.0.3",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^0.562.0",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
+        "tailwind-merge": "^3.4.0"
     }
 }

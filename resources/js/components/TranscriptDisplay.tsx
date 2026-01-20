@@ -1,0 +1,46 @@
+import { useEffect, useRef } from 'react'
+import { cn } from '@/lib/utils'
+import type { TranscriptMessage } from '@/types'
+
+interface TranscriptDisplayProps {
+    transcript: TranscriptMessage[]
+    className?: string
+}
+
+export function TranscriptDisplay({ transcript, className }: TranscriptDisplayProps) {
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight
+        }
+    }, [transcript])
+
+    if (transcript.length === 0) {
+        return null
+    }
+
+    return (
+        <div
+            ref={containerRef}
+            className={cn(
+                "text-left bg-slate-950/50 p-4 rounded-lg border border-slate-800 text-sm h-32 overflow-y-auto font-mono text-slate-400",
+                className
+            )}
+        >
+            {transcript.map((msg, index) => (
+                <p key={index} className="mb-1">
+                    <span className={cn(
+                        "font-semibold",
+                        msg.role === 'user' && "text-blue-400",
+                        msg.role === 'agent' && "text-emerald-400",
+                        msg.role === 'system' && "text-yellow-400"
+                    )}>
+                        {msg.role}:
+                    </span>{' '}
+                    {msg.content}
+                </p>
+            ))}
+        </div>
+    )
+}

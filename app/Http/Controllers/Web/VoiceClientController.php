@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
+use Inertia\Inertia;
+
 class VoiceClientController extends Controller
 {
     public function index()
     {
-        return view('gennie');
+        return Inertia::render('Gennie');
     }
 
     /**

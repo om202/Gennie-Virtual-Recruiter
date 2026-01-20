@@ -64,12 +64,12 @@
                 class="flex-1 py-4 px-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
                 Start Interview
             </button>
-            
+
             <button id="pause-btn"
                 class="hidden flex-1 py-4 px-6 bg-yellow-600 hover:bg-yellow-700 border border-yellow-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
                 Pause
             </button>
-            
+
             <button id="stop-btn"
                 class="hidden flex-1 py-4 px-6 bg-red-600 hover:bg-red-700 border border-red-700 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
                 Stop
