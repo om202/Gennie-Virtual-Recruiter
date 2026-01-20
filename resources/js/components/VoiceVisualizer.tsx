@@ -9,13 +9,13 @@ export function VoiceVisualizer({ speakingState }: VoiceVisualizerProps) {
     const getRingColor = () => {
         switch (speakingState) {
             case 'user_speaking':
-                return 'border-blue-500/80'
+                return 'border-primary/80'
             case 'agent_speaking':
-                return 'border-emerald-500/80'
+                return 'border-muted-foreground/80'
             case 'listening':
-                return 'border-blue-500/20'
+                return 'border-primary/20'
             default:
-                return 'border-blue-500/20'
+                return 'border-muted/40'
         }
     }
 
@@ -37,7 +37,7 @@ export function VoiceVisualizer({ speakingState }: VoiceVisualizerProps) {
             />
             <div
                 className={cn(
-                    "w-32 h-32 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300",
+                    "w-32 h-32 bg-gradient-to-br from-primary to-primary/70 rounded-full shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-all duration-300",
                     getOrbAnimation()
                 )}
             />

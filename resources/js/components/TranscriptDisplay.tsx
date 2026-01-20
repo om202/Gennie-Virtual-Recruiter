@@ -33,8 +33,8 @@ export function TranscriptDisplay({ transcript, className }: TranscriptDisplayPr
                     <span className={cn(
                         "font-semibold",
                         msg.role === 'user' && "text-primary",
-                        msg.role === 'agent' && "text-emerald-400",
-                        msg.role === 'system' && "text-yellow-400"
+                        msg.role === 'agent' && "text-muted-foreground",
+                        msg.role === 'system' && "text-muted-foreground/70"
                     )}>
                         {msg.role}:
                     </span>{' '}
