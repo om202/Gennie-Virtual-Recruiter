@@ -1,7 +1,8 @@
-import { Head, router } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { InterviewSetup } from '@/components/InterviewSetup'
+import { GennieInterface } from '@/components/GennieInterface'
 import { CircleDot, User, Phone } from 'lucide-react'
 
 interface DashboardProps {
@@ -17,9 +18,14 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ auth }: DashboardProps) {
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+
     const handleInterviewSetupComplete = (sessionId: string) => {
-        // Redirect to the Gennie page with the session ID
-        router.visit(`/gennie?session_id=${sessionId}`)
+        setActiveSessionId(sessionId)
+    }
+
+    const handleCloseInterview = () => {
+        setActiveSessionId(null)
     }
 
     return (
@@ -56,35 +62,44 @@ export default function Dashboard({ auth }: DashboardProps) {
                     </Card>
                 </div>
 
-                {/* Main Action Area */}
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Create New Interview */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <section>
-                            <div className="flex items-center gap-2 mb-4">
-                                <CircleDot className="h-5 w-5 text-primary" />
-                                <h2 className="text-xl font-semibold">Start New Interview</h2>
-                            </div>
-
-                            <InterviewSetup onComplete={handleInterviewSetupComplete} />
-                        </section>
-                    </div>
-
-                    {/* Sidebar / Stats / History (Placeholder for now) */}
-                    <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Recent Interviews</CardTitle>
-                                <CardDescription>Your past interview sessions.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-sm text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg">
-                                    No interviews yet.
+                {/* Main Content Area */}
+                {activeSessionId ? (
+                    /* Gennie Interface - Full Width when active */
+                    <GennieInterface
+                        sessionId={activeSessionId}
+                        onClose={handleCloseInterview}
+                    />
+                ) : (
+                    /* Setup & History Layout */
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Create New Interview */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <CircleDot className="h-5 w-5 text-primary" />
+                                    <h2 className="text-xl font-semibold">Start New Interview</h2>
                                 </div>
-                            </CardContent>
-                        </Card>
+
+                                <InterviewSetup onComplete={handleInterviewSetupComplete} />
+                            </section>
+                        </div>
+
+                        {/* Sidebar / Stats / History */}
+                        <div className="space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Recent Interviews</CardTitle>
+                                    <CardDescription>Your past interview sessions.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-sm text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg">
+                                        No interviews yet.
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     )

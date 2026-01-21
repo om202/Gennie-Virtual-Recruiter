@@ -26,7 +26,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Gennie Route - Now protected
-    Route::get('/gennie', [VoiceClientController::class, 'index'])->name('gennie');
+    // Gennie API endpoint for voice client token
     Route::get('/gennie/token', [VoiceClientController::class, 'getToken']);
 });
