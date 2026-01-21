@@ -103,22 +103,6 @@ export function GennieInterface({ sessionId, onClose }: GennieInterfaceProps) {
 
     return (
         <div className="space-y-6">
-            {/* Header with close button */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-primary">Gennie Interview</h2>
-                    <p className="text-muted-foreground">
-                        {isConnected ? 'Interview in progress' : 'Ready to start your interview'}
-                    </p>
-                </div>
-                {!isConnected && (
-                    <Button variant="ghost" size="sm" onClick={onClose}>
-                        <X className="h-4 w-4 mr-2" />
-                        Back to Setup
-                    </Button>
-                )}
-            </div>
-
             {!isConnected ? (
                 /* Ready to Start */
                 <div className="max-w-md mx-auto text-center space-y-8">

@@ -86,7 +86,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* Features Section */}
                 <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-6xl mx-auto">
+                    <div className="max-w-7xl mx-auto">
                         <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12">
                             Why Choose Gennie?
                         </h2>
@@ -116,7 +116,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* Benefits Section */}
                 <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-6xl mx-auto">
+                    <div className="max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-12">
                             {/* For Recruiters */}
                             <div className="space-y-6">
@@ -153,7 +153,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* CTA Section */}
                 <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-4xl mx-auto text-center space-y-8">
+                    <div className="max-w-7xl mx-auto text-center space-y-8">
                         <h2 className="text-3xl md:text-4xl font-bold text-primary">
                             Ready to Experience AI Recruiting?
                         </h2>

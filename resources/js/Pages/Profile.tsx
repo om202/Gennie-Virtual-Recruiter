@@ -20,20 +20,23 @@ export default function Profile({ auth }: ProfileProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Profile Settings" />
 
-            <div className="container mx-auto py-8 px-4 space-y-8">
-                {/* Header */}
-                <div className="flex items-center gap-4">
+            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
+                {/* Back Button */}
+                <div>
                     <Link href="/dashboard">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
+                        <Button variant="ghost" size="sm" className="pl-0 hover:pl-2 transition-all gap-1 text-muted-foreground hover:text-foreground">
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to Dashboard
                         </Button>
                     </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-                        <p className="text-muted-foreground">
-                            Manage your account and company information
-                        </p>
-                    </div>
+                </div>
+
+                {/* Header */}
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
+                    <p className="text-muted-foreground">
+                        Manage your account and company information
+                    </p>
                 </div>
 
                 {/* Welcome Card */}

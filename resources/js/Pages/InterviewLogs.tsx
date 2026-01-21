@@ -102,7 +102,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
         <div className="min-h-screen bg-muted/50">
             <Head title={isFiltered ? `Logs - ${interview.job_title}` : "Interview Logs"} />
 
-            <div className="container mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Navigation Tabs */}
                 <div className="border-b">
                     <div className="flex gap-6">

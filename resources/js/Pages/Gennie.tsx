@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, Link } from '@inertiajs/react'
 import { GennieInterface } from '@/components/GennieInterface'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Briefcase, Clock, Building2 } from 'lucide-react'
@@ -28,12 +28,9 @@ export default function Gennie({ sessionId, interview }: GennietProps) {
 
             {/* Header */}
             <div className="bg-background border-b">
-                <div className="container mx-auto py-4 px-4">
+                <div className="max-w-7xl mx-auto py-4 px-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <Button variant="ghost" size="icon" onClick={handleClose}>
-                                <ArrowLeft className="h-5 w-5" />
-                            </Button>
                             <div>
                                 <h1 className="text-xl font-bold flex items-center gap-2">
                                     <Briefcase className="h-5 w-5 text-primary" />
@@ -52,12 +49,18 @@ export default function Gennie({ sessionId, interview }: GennietProps) {
                                 </div>
                             </div>
                         </div>
+                        <Link href="/dashboard">
+                            <Button variant="ghost" size="sm">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Back to Dashboard
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="container mx-auto py-8 px-4">
+            <div className="max-w-7xl mx-auto py-8 px-4">
                 <GennieInterface sessionId={sessionId} onClose={handleClose} />
             </div>
         </div>
