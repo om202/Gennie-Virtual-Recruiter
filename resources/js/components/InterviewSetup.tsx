@@ -2,6 +2,8 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
     Dialog,
     DialogContent,
@@ -13,7 +15,7 @@ import {
 import { FileText, Upload, ClipboardPaste, X, CheckCircle, Loader2 } from 'lucide-react'
 
 interface InterviewSetupProps {
-    onComplete: (sessionId: string, context: { jd: string; resume: string }) => void
+    onComplete: (sessionId: string, context: { jd: string; resume: string; jobTitle: string; companyName: string }) => void
 }
 
 interface DocumentState {
@@ -27,6 +29,8 @@ export function InterviewSetup({ onComplete }: InterviewSetupProps) {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [jd, setJd] = useState<DocumentState>({ text: '', isLoading: false })
     const [resume, setResume] = useState<DocumentState>({ text: '', isLoading: false })
+    const [jobTitle, setJobTitle] = useState('')
+    const [companyName, setCompanyName] = useState('')
     const [pasteDialogOpen, setPasteDialogOpen] = useState(false)
     const [pasteTarget, setPasteTarget] = useState<'jd' | 'resume'>('jd')
     const [pasteText, setPasteText] = useState('')
@@ -143,11 +147,16 @@ export function InterviewSetup({ onComplete }: InterviewSetupProps) {
             const sid = await ensureSession()
             const res = await fetch(`/api/sessions/${sid}/start`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    job_title: jobTitle,
+                    company_name: companyName,
+                }),
             })
 
             const data = await res.json()
             if (data.success) {
-                onComplete(sid, { jd: jd.text, resume: resume.text })
+                onComplete(sid, { jd: jd.text, resume: resume.text, jobTitle, companyName })
             }
         } catch (error) {
             console.error('Failed to start interview:', error)
@@ -255,6 +264,30 @@ export function InterviewSetup({ onComplete }: InterviewSetupProps) {
                 </p>
             </div>
 
+            {/* Job Title and Company Name */}
+            <Card className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="jobTitle">Job Title <span className="text-destructive">*</span></Label>
+                        <Input
+                            id="jobTitle"
+                            placeholder="e.g. Senior React Developer"
+                            value={jobTitle}
+                            onChange={(e) => setJobTitle(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="companyName">Company Name <span className="text-destructive">*</span></Label>
+                        <Input
+                            id="companyName"
+                            placeholder="e.g. Acme Corporation"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </Card>
+
             <DocumentCard
                 title="Job Description"
                 description="Upload or paste the job description. Gennie will frame questions based on this."
@@ -274,7 +307,7 @@ export function InterviewSetup({ onComplete }: InterviewSetupProps) {
             <Button
                 size="lg"
                 className="w-full"
-                disabled={!jd.text || isStarting}
+                disabled={!jd.text || !jobTitle.trim() || !companyName.trim() || isStarting}
                 onClick={handleStart}
             >
                 {isStarting ? (

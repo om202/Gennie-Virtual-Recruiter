@@ -23,11 +23,13 @@ export default function Gennie({ }: PageProps) {
 
     const [isCalling, setIsCalling] = useState(false)
 
-    const handleSetupComplete = (sessionId: string, context: { jd: string; resume: string }) => {
+    const handleSetupComplete = (sessionId: string, context: { jd: string; resume: string; jobTitle: string; companyName: string }) => {
         setAgentConfig({
             sessionId,
             jobDescription: context.jd,
             resume: context.resume,
+            jobTitle: context.jobTitle,
+            companyName: context.companyName,
         })
         setSetupComplete(true)
     }

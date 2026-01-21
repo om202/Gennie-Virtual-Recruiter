@@ -165,7 +165,7 @@ class InterviewSessionController extends Controller
     /**
      * Start the interview (change status to active).
      */
-    public function start(string $id)
+    public function start(Request $request, string $id)
     {
         $session = InterviewSession::findOrFail($id);
 
@@ -176,11 +176,23 @@ class InterviewSessionController extends Controller
             ], 422);
         }
 
-        $session->update(['status' => 'active']);
+        // Store job title and company name in metadata
+        $metadata = $session->metadata ?? [];
+        if ($request->has('job_title')) {
+            $metadata['job_title'] = $request->input('job_title');
+        }
+        if ($request->has('company_name')) {
+            $metadata['company_name'] = $request->input('company_name');
+        }
+
+        $session->update([
+            'status' => 'active',
+            'metadata' => $metadata,
+        ]);
 
         return response()->json([
             'success' => true,
-            'session' => $session,
+            'session' => $session->fresh(),
             'context' => $session->getContextForAgent(),
         ]);
     }

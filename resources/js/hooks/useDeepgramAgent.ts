@@ -16,6 +16,8 @@ export interface AgentConfig {
     sessionId?: string
     jobDescription?: string
     resume?: string
+    jobTitle?: string
+    companyName?: string
 }
 
 /**
@@ -82,6 +84,10 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     const audioProcessorRef = useRef<any>(null)
     const playbackAudioCtxRef = useRef<AudioContext | null>(null)
     const nextPlayTimeRef = useRef<number>(0)
+    const configRef = useRef<AgentConfig | undefined>(config)
+
+    // Keep configRef up to date
+    configRef.current = config
 
     const SAMPLE_RATE = 16000
 
@@ -203,8 +209,12 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 setConnectionState('connected')
                 setStatusText('Configuring Gennie...')
 
-                const greeting = config?.jobDescription
-                    ? "Hi there! I'm Gennie, your AI interviewer. I've reviewed the job description and I'm ready to learn more about you. Shall we begin?"
+                // Use ref to get current config
+                const currentConfig = configRef.current
+                console.log('Current config:', currentConfig)
+
+                const greeting = currentConfig?.jobTitle && currentConfig?.companyName
+                    ? `Welcome to the interview for the ${currentConfig.jobTitle} position at ${currentConfig.companyName}. I'm Gennie, and I'll be conducting your screening today. Shall we begin?`
                     : "Hi there! I'm Gennie. I'm excited to learn more about you. Shall we start?"
 
                 connection.configure({
@@ -220,7 +230,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         },
                         think: {
                             provider: { type: 'open_ai', model: 'gpt-4o-mini' },
-                            prompt: generatePrompt(config),
+                            prompt: generatePrompt(currentConfig),
                             functions: [
                                 {
                                     name: 'get_context',
