@@ -202,14 +202,28 @@ class InterviewSessionController extends Controller
      */
     public function getContext(string $id)
     {
-        $session = InterviewSession::findOrFail($id);
+        $session = InterviewSession::with('interview')->findOrFail($id);
+        $interview = $session->interview;
+
+        // Merge interview metadata with session metadata
+        $metadata = array_merge(
+            $interview ? $interview->getAgentConfig() : [],
+            $session->metadata ?? []
+        );
 
         return response()->json([
             'success' => true,
             'context' => $session->getContextForAgent(),
             'hasJd' => $session->hasJobDescription(),
             'hasResume' => $session->hasResume(),
-            'metadata' => $session->metadata,
+            'metadata' => $metadata,
+            'interview' => $interview ? [
+                'id' => $interview->id,
+                'duration_minutes' => $interview->duration_minutes,
+                'interview_type' => $interview->interview_type,
+                'difficulty_level' => $interview->difficulty_level,
+                'custom_instructions' => $interview->custom_instructions,
+            ] : null,
         ]);
     }
 }

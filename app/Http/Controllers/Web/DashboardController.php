@@ -15,10 +15,15 @@ class DashboardController extends Controller
      */
     public function index(): Response
     {
+        $user = Auth::user();
+
         return Inertia::render('Dashboard', [
             'auth' => [
-                'user' => Auth::user(),
+                'user' => $user,
             ],
+            'interviews' => $user->interviews()
+                ->orderBy('updated_at', 'desc')
+                ->get(),
         ]);
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\VoiceClientController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\InterviewController;
 use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
@@ -31,4 +32,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Interview Management
+    Route::get('/interviews', [InterviewController::class, 'index'])->name('interviews.index');
+    Route::post('/interviews', [InterviewController::class, 'store'])->name('interviews.store');
+    Route::get('/interviews/{interview}', [InterviewController::class, 'show'])->name('interviews.show');
+    Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
+    Route::delete('/interviews/{interview}', [InterviewController::class, 'destroy'])->name('interviews.destroy');
+    Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
 });

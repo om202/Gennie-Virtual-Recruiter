@@ -1,9 +1,26 @@
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { InterviewSetup } from '@/components/InterviewSetup'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-import { CircleDot, User, Phone } from 'lucide-react'
+import { CreateInterviewDialog } from '@/components/CreateInterviewDialog'
+import { Plus, User, Phone, Play, Clock, Briefcase, Calendar } from 'lucide-react'
+
+interface Interview {
+    id: string
+    job_title: string
+    company_name: string
+    job_description: string | null
+    duration_minutes: number
+    interview_type: 'screening' | 'technical' | 'behavioral' | 'final'
+    difficulty_level: 'entry' | 'mid' | 'senior' | 'executive'
+    status: 'draft' | 'active' | 'archived'
+    total_sessions: number
+    last_session_at: string | null
+    created_at: string
+    updated_at: string
+}
 
 interface DashboardProps {
     auth: {
@@ -15,17 +32,54 @@ interface DashboardProps {
             phone: string
         }
     }
+    interviews: Interview[]
 }
 
-export default function Dashboard({ auth }: DashboardProps) {
+export default function Dashboard({ auth, interviews: initialInterviews }: DashboardProps) {
+    const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+    const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
-    const handleInterviewSetupComplete = (sessionId: string) => {
-        setActiveSessionId(sessionId)
+    const handleInterviewCreated = (interview: Interview) => {
+        setInterviews([interview, ...interviews])
+    }
+
+    const handleStartInterview = (interview: Interview) => {
+        // Navigate to start interview session
+        router.visit(`/interviews/${interview.id}/start`)
     }
 
     const handleCloseInterview = () => {
         setActiveSessionId(null)
+    }
+
+    const getTypeColor = (type: string) => {
+        const colors: Record<string, string> = {
+            screening: 'bg-blue-100 text-blue-800',
+            technical: 'bg-purple-100 text-purple-800',
+            behavioral: 'bg-green-100 text-green-800',
+            final: 'bg-orange-100 text-orange-800',
+        }
+        return colors[type] || 'bg-gray-100 text-gray-800'
+    }
+
+    const getStatusColor = (status: string) => {
+        const colors: Record<string, string> = {
+            draft: 'bg-yellow-100 text-yellow-800',
+            active: 'bg-green-100 text-green-800',
+            archived: 'bg-gray-100 text-gray-800',
+        }
+        return colors[status] || 'bg-gray-100 text-gray-800'
+    }
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return 'Never'
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        })
     }
 
     return (
@@ -33,74 +87,135 @@ export default function Dashboard({ auth }: DashboardProps) {
             <Head title="Dashboard" />
 
             <div className="container mx-auto py-8 px-4 space-y-8">
-                {/* Welcome Section */}
+                {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                         <p className="text-muted-foreground">
-                            Welcome back, {auth.user.name}. Manage your interviews and settings here.
+                            Welcome back, {auth.user.name}. Manage your interviews here.
                         </p>
                     </div>
-                    {/* User Profile Card (Mini) */}
-                    <Card className="w-full md:w-auto min-w-[300px]">
-                        <CardContent className="pt-6 flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                                {auth.user.avatar ? (
-                                    <img src={auth.user.avatar} alt={auth.user.name} className="h-full w-full rounded-full" />
-                                ) : (
-                                    <User className="h-6 w-6" />
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="font-semibold">{auth.user.company_name}</h3>
-                                <div className="flex items-center text-sm text-muted-foreground gap-2">
-                                    <Phone className="h-3 w-3" />
-                                    {auth.user.phone}
+                    <div className="flex items-center gap-4">
+                        {/* User Profile Card (Mini) */}
+                        <Card className="min-w-[250px]">
+                            <CardContent className="pt-4 flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                    {auth.user.avatar ? (
+                                        <img src={auth.user.avatar} alt={auth.user.name} className="h-full w-full rounded-full" />
+                                    ) : (
+                                        <User className="h-5 w-5" />
+                                    )}
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                <div>
+                                    <h3 className="font-medium text-sm">{auth.user.company_name}</h3>
+                                    <div className="flex items-center text-xs text-muted-foreground gap-1">
+                                        <Phone className="h-3 w-3" />
+                                        {auth.user.phone}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
-                {/* Main Content Area */}
+                {/* Main Content */}
                 {activeSessionId ? (
-                    /* Gennie Interface - Full Width when active */
                     <GennieInterface
                         sessionId={activeSessionId}
                         onClose={handleCloseInterview}
                     />
                 ) : (
-                    /* Setup & History Layout */
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        {/* Create New Interview */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <section>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <CircleDot className="h-5 w-5 text-primary" />
-                                    <h2 className="text-xl font-semibold">Start New Interview</h2>
-                                </div>
-
-                                <InterviewSetup onComplete={handleInterviewSetupComplete} />
-                            </section>
+                    <div className="space-y-6">
+                        {/* Actions Bar */}
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-semibold">Your Interviews</h2>
+                            <Button onClick={() => setCreateDialogOpen(true)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create Interview
+                            </Button>
                         </div>
 
-                        {/* Sidebar / Stats / History */}
-                        <div className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Recent Interviews</CardTitle>
-                                    <CardDescription>Your past interview sessions.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-sm text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg">
-                                        No interviews yet.
-                                    </div>
+                        {/* Interview Grid */}
+                        {interviews.length === 0 ? (
+                            <Card className="border-dashed">
+                                <CardContent className="flex flex-col items-center justify-center py-16">
+                                    <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                    <h3 className="text-lg font-medium mb-2">No interviews yet</h3>
+                                    <p className="text-muted-foreground text-center mb-4">
+                                        Create your first interview to get started with Gennie.
+                                    </p>
+                                    <Button onClick={() => setCreateDialogOpen(true)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Create Your First Interview
+                                    </Button>
                                 </CardContent>
                             </Card>
-                        </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {interviews.map((interview) => (
+                                    <Card key={interview.id} className="hover:shadow-md transition-shadow">
+                                        <CardHeader className="pb-2">
+                                            <div className="flex justify-between items-start">
+                                                <div className="space-y-1">
+                                                    <CardTitle className="text-lg leading-tight">
+                                                        {interview.job_title}
+                                                    </CardTitle>
+                                                    <CardDescription>{interview.company_name}</CardDescription>
+                                                </div>
+                                                <Badge className={getStatusColor(interview.status)}>
+                                                    {interview.status}
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {/* Tags */}
+                                            <div className="flex flex-wrap gap-2">
+                                                <Badge variant="outline" className={getTypeColor(interview.interview_type)}>
+                                                    {interview.interview_type}
+                                                </Badge>
+                                                <Badge variant="outline">
+                                                    <Clock className="h-3 w-3 mr-1" />
+                                                    {interview.duration_minutes}m
+                                                </Badge>
+                                                <Badge variant="outline">
+                                                    {interview.difficulty_level}
+                                                </Badge>
+                                            </div>
+
+                                            {/* Stats */}
+                                            <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{interview.total_sessions} sessions</span>
+                                                </div>
+                                                <span>Last: {formatDate(interview.last_session_at)}</span>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => handleStartInterview(interview)}
+                                                disabled={interview.status === 'archived'}
+                                            >
+                                                <Play className="h-4 w-4 mr-2" />
+                                                Start Interview
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
+
+            {/* Create Interview Dialog */}
+            <CreateInterviewDialog
+                open={createDialogOpen}
+                onOpenChange={setCreateDialogOpen}
+                defaultCompanyName={auth.user.company_name}
+                onSuccess={handleInterviewCreated}
+            />
         </div>
     )
 }

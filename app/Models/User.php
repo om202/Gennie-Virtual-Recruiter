@@ -51,4 +51,12 @@ class User extends Authenticatable
             'is_onboarded' => 'boolean',
         ];
     }
+
+    /**
+     * Get all interviews created by this user.
+     */
+    public function interviews()
+    {
+        return $this->hasMany(\App\Models\Interview::class);
+    }
 }
