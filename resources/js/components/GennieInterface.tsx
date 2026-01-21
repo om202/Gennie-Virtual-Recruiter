@@ -44,6 +44,9 @@ export function GennieInterface({ sessionId, onClose }: GennieInterfaceProps) {
                         difficultyLevel: data.interview?.difficulty_level || 'mid',
                         customInstructions: data.interview?.custom_instructions || '',
                         durationMinutes: data.interview?.duration_minutes || 15,
+                        // AI model configuration
+                        sttModel: data.metadata?.stt_model || 'nova-2',
+                        voiceId: data.metadata?.voice_id || 'aura-asteria-en',
                     })
                 }
             })

@@ -151,11 +151,7 @@ wss.on("connection", async (ws, req) => {
                 greeting: generateGreeting(interviewConfig),
                 listen: {
                     provider: { type: "deepgram", model: interviewConfig.sttModel || "nova-2" },
-                    smart_format: interviewConfig.sttConfig?.smartFormat ?? true,
-                    endpointing: interviewConfig.sttConfig?.endpointing ?? 300,
-                    utterance_end_ms: interviewConfig.sttConfig?.utteranceEndMs ?? 1000,
-                    keywords: interviewConfig.sttConfig?.keywords,
-                } as any,
+                },
                 think: {
                     provider: { type: "open_ai", model: "gpt-4o-mini" },
                     prompt: generatePrompt(interviewConfig),
