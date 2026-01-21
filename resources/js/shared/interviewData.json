@@ -16,5 +16,23 @@
         "technical": "**Technical Interview Focus:**\n\nAssess the candidate's technical abilities through:\n\n1. **Core Technical Knowledge**\n   - Ask questions specific to the technologies in the job description\n   - Probe understanding of fundamental concepts\n   - Request examples from past projects demonstrating these skills\n\n2. **Problem-Solving Approach**\n   - Present a relevant technical scenario or challenge\n   - Ask them to walk through their approach to solving it\n   - Understand their thought process and decision-making\n\n3. **Hands-On Experience**\n   - Discuss specific projects they've worked on\n   - Ask about challenges faced and how they overcame them\n   - Explore their role and contributions to team projects\n\n4. **Best Practices & Tools**\n   - Their familiarity with industry best practices\n   - Tools and frameworks they're comfortable with\n   - How they stay updated with technology trends\n\nAdjust question depth based on the difficulty level. Be technical but conversational.",
         "behavioral": "**Behavioral Interview Focus:**\n\nUse the STAR method (Situation, Task, Action, Result) to assess:\n\n1. **Teamwork & Collaboration**\n   - Describe a time they worked on a challenging team project\n   - How do they handle conflicts with team members?\n   - Example of helping a struggling colleague\n\n2. **Problem-Solving & Initiative**\n   - Tell me about a complex problem they solved\n   - A time they went above and beyond their role\n   - How they handle ambiguity or unclear requirements\n\n3. **Leadership & Influence**\n   - Example of leading a project or initiative (formal or informal)\n   - How they've mentored others or shared knowledge\n   - A time they had to persuade others to their viewpoint\n\n4. **Growth & Learning**\n   - Biggest professional failure and lessons learned\n   - How they handle feedback and criticism\n   - Recent skill or technology they learned and why\n\nFocus on real examples from their experience. Ask follow-up questions to understand context and impact.",
         "final": "**Final Interview Focus:**\n\nThis is the last-stage interview to assess cultural fit and commitment:\n\n1. **Motivation & Career Goals**\n   - What are their long-term career aspirations?\n   - How does this role fit into their career trajectory?\n   - What motivates them professionally?\n\n2. **Company & Culture Fit**\n   - What do they know about our company?\n   - What excites them most about potentially joining?\n   - Questions about our values, mission, or products\n\n3. **Role Clarity & Expectations**\n   - Their understanding of the role and responsibilities\n   - What success looks like to them in the first 90 days\n   - Any concerns or questions about the position?\n\n4. **Logistics & Next Steps**\n   - Confirm compensation expectations\n   - Start date availability\n   - Any pending offers or interviews to be aware of?\n   - Answer any final questions they have\n\nThis interview should feel like a two-way conversation about mutual fit. Be warm and transparent."
+    },
+    "sttModels": {
+        "nova-2": "Nova-2 (Fast & Reliable)",
+        "nova-3": "Nova-3 (Advanced Accuracy)"
+    },
+    "auraVoices": {
+        "aura-asteria-en": "Asteria (Female, US) - Default",
+        "aura-luna-en": "Luna (Female, US) - Soft",
+        "aura-stella-en": "Stella (Female, US) - Professional",
+        "aura-athena-en": "Athena (Female, US) - Authoritative",
+        "aura-hera-en": "Hera (Female, US) - Warm",
+        "aura-orion-en": "Orion (Male, US) - Deep",
+        "aura-arcas-en": "Arcas (Male, US) - Casual",
+        "aura-perseus-en": "Perseus (Male, US) - Energetic",
+        "aura-angus-en": "Angus (Male, Ireland) - Irish Accent",
+        "aura-orpheus-en": "Orpheus (Male, UK) - British Accent",
+        "aura-helios-en": "Helios (Male, UK) - British Professional",
+        "aura-zeus-en": "Zeus (Male, US) - Strong"
     }
 }

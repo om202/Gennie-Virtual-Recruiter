@@ -13,11 +13,15 @@ import interviewData from './interviewData.json';
 export const INTERVIEW_TYPE_GREETINGS = interviewData.typeGreetings;
 export const DIFFICULTY_GUIDANCE = interviewData.difficultyGuidance;
 export const INTERVIEW_TEMPLATES = interviewData.templates;
+export const STT_MODELS = interviewData.sttModels;
+export const AURA_VOICES = interviewData.auraVoices;
 
 // Types
 export type InterviewType = keyof typeof INTERVIEW_TYPE_GREETINGS;
 export type DifficultyLevel = keyof typeof DIFFICULTY_GUIDANCE;
 export type InterviewTemplateType = keyof typeof INTERVIEW_TEMPLATES;
+export type SttModel = keyof typeof STT_MODELS;
+export type AuraVoice = keyof typeof AURA_VOICES;
 
 // Interview configuration interface
 export interface InterviewConfig {
@@ -29,6 +33,8 @@ export interface InterviewConfig {
     customInstructions?: string;
     jobDescription?: string;
     resume?: string;
+    sttModel?: string; // e.g. 'nova-2'
+    voiceId?: string;  // e.g. 'aura-asteria-en'
 }
 
 /**

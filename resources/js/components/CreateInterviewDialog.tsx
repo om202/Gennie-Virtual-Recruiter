@@ -19,7 +19,14 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Sparkles } from 'lucide-react'
-import { getInterviewTemplate, type InterviewTemplateType } from '@/shared/interviewConfig'
+import {
+    getInterviewTemplate,
+    type InterviewTemplateType,
+    STT_MODELS,
+    AURA_VOICES,
+    type SttModel,
+    type AuraVoice
+} from '@/shared/interviewConfig'
 
 interface CreateInterviewDialogProps {
     open: boolean
@@ -43,6 +50,8 @@ export function CreateInterviewDialog({
         interview_type: 'screening' as InterviewTemplateType,
         difficulty_level: 'mid' as 'entry' | 'mid' | 'senior' | 'executive',
         custom_instructions: '',
+        stt_model: 'nova-2' as SttModel,
+        voice_id: 'aura-asteria-en' as AuraVoice,
     })
     const [manuallyEdited, setManuallyEdited] = useState(false)
 
@@ -79,6 +88,8 @@ export function CreateInterviewDialog({
                     interview_type: 'screening',
                     difficulty_level: 'mid',
                     custom_instructions: '',
+                    stt_model: 'nova-2',
+                    voice_id: 'aura-asteria-en',
                 })
                 setManuallyEdited(false)
             }
@@ -190,6 +201,42 @@ export function CreateInterviewDialog({
                                     <SelectItem value="mid">Mid Level</SelectItem>
                                     <SelectItem value="senior">Senior</SelectItem>
                                     <SelectItem value="executive">Executive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* AI Configuration */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>STT Model</Label>
+                            <Select
+                                value={formData.stt_model}
+                                onValueChange={(value: string) => setFormData({ ...formData, stt_model: value as SttModel })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(STT_MODELS).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>AI Voice</Label>
+                            <Select
+                                value={formData.voice_id}
+                                onValueChange={(value: string) => setFormData({ ...formData, voice_id: value as AuraVoice })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[200px]">
+                                    {Object.entries(AURA_VOICES).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

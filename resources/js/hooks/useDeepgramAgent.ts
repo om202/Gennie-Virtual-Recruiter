@@ -172,7 +172,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         language: 'en',
                         greeting,
                         listen: {
-                            provider: { type: 'deepgram', model: 'nova-2' },
+                            provider: { type: 'deepgram', model: currentConfig?.sttModel || 'nova-2' },
                         },
                         think: {
                             provider: { type: 'open_ai', model: 'gpt-4o-mini' },
@@ -202,7 +202,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             ],
                         },
                         speak: {
-                            provider: { type: 'deepgram', model: 'aura-asteria-en' },
+                            provider: { type: 'deepgram', model: currentConfig?.voiceId || 'aura-asteria-en' },
                         },
                     },
                 })

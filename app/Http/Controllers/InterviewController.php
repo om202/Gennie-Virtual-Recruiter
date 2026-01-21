@@ -37,6 +37,8 @@ class InterviewController extends Controller
             'interview_type' => 'nullable|in:screening,technical,behavioral,final',
             'difficulty_level' => 'nullable|in:entry,mid,senior,executive',
             'custom_instructions' => 'nullable|string|max:5000',
+            'voice_id' => 'nullable|string',
+            'stt_model' => 'nullable|string|in:nova-2,nova-3',
         ]);
 
         // Default company name to user's company
@@ -46,6 +48,13 @@ class InterviewController extends Controller
 
         // Set status based on whether JD is provided
         $validated['status'] = !empty($validated['job_description']) ? 'active' : 'draft';
+
+        // Store STT model in metadata
+        $metadata = [
+            'stt_model' => $validated['stt_model'] ?? 'nova-2'
+        ];
+        unset($validated['stt_model']);
+        $validated['metadata'] = $metadata;
 
         $interview = Auth::user()->interviews()->create($validated);
 
@@ -84,8 +93,18 @@ class InterviewController extends Controller
             'interview_type' => 'nullable|in:screening,technical,behavioral,final',
             'difficulty_level' => 'nullable|in:entry,mid,senior,executive',
             'custom_instructions' => 'nullable|string|max:5000',
+            'voice_id' => 'nullable|string',
+            'stt_model' => 'nullable|string|in:nova-2,nova-3',
             'status' => 'nullable|in:draft,active,archived',
         ]);
+
+        // Handle metadata updates
+        if (isset($validated['stt_model'])) {
+            $metadata = $interview->metadata ?? [];
+            $metadata['stt_model'] = $validated['stt_model'];
+            $validated['metadata'] = $metadata;
+            unset($validated['stt_model']);
+        }
 
         $interview->update($validated);
 

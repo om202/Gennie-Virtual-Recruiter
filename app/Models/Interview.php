@@ -105,6 +105,7 @@ class Interview extends Model
             'language' => $this->language,
             'ai_model' => $this->ai_model,
             'voice_id' => $this->voice_id,
+            'stt_model' => $this->metadata['stt_model'] ?? 'nova-2',
         ];
     }
 

@@ -29,6 +29,8 @@ interface SessionContext {
     metadata?: {
         job_title?: string;
         company_name?: string;
+        stt_model?: string;
+        voice_id?: string;
     };
     interview?: {
         interview_type?: string;
@@ -114,6 +116,8 @@ wss.on("connection", async (ws, req) => {
         durationMinutes: sessionContext?.interview?.duration_minutes || 15,
         customInstructions: sessionContext?.interview?.custom_instructions || '',
         jobDescription: sessionContext?.context || '',
+        sttModel: sessionContext?.metadata?.stt_model,
+        voiceId: sessionContext?.metadata?.voice_id,
     });
 
     // Use AgentEvents enum like the browser SDK does
@@ -134,7 +138,7 @@ wss.on("connection", async (ws, req) => {
                 language: "en",
                 greeting: generateGreeting(interviewConfig),
                 listen: {
-                    provider: { type: "deepgram", model: "nova-2" },
+                    provider: { type: "deepgram", model: interviewConfig.sttModel || "nova-2" },
                 },
                 think: {
                     provider: { type: "open_ai", model: "gpt-4o-mini" },
@@ -164,7 +168,7 @@ wss.on("connection", async (ws, req) => {
                     ],
                 },
                 speak: {
-                    provider: { type: "deepgram", model: "aura-asteria-en" },
+                    provider: { type: "deepgram", model: interviewConfig.voiceId || "aura-asteria-en" },
                 },
             },
         });
