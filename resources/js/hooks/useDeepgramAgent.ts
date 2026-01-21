@@ -12,7 +12,58 @@ interface UseDeepgramAgentReturn {
     isConnected: boolean
 }
 
-export function useDeepgramAgent(): UseDeepgramAgentReturn {
+export interface AgentConfig {
+    sessionId?: string
+    jobDescription?: string
+    resume?: string
+}
+
+/**
+ * Generate dynamic prompt based on JD and resume context.
+ */
+function generatePrompt(config?: AgentConfig): string {
+    const basePrompt = `You are Gennie, an intelligent and professional AI recruiter. Your goal is to conduct a thorough but conversational screening interview.`
+
+    let contextPrompt = ''
+
+    if (config?.jobDescription) {
+        contextPrompt += `
+
+**Job Description Context:**
+${config.jobDescription.substring(0, 3000)}
+
+**Your Interview Approach:**
+1. Frame your questions directly based on the job requirements above
+2. After each candidate response, think about the most relevant follow-up question
+3. Assess how the candidate's experience aligns with specific role requirements
+4. Ask about technical skills, experience level, and culture fit based on the JD`
+    }
+
+    if (config?.resume) {
+        contextPrompt += `
+
+**Candidate Resume:**
+${config.resume.substring(0, 2000)}
+
+**Resume-Based Personalization:**
+- Reference specific experiences from the resume when asking follow-up questions
+- Explore gaps or interesting transitions in their career
+- Ask them to elaborate on projects mentioned in their resume`
+    }
+
+    const instructions = `
+
+**General Guidelines:**
+- Keep your questions concise and conversational
+- Listen actively and build on the candidate's responses
+- Use the 'get_context' function for company-specific information
+- Do not make up information about the company or role
+- Be warm and encouraging while maintaining professionalism`
+
+    return basePrompt + contextPrompt + instructions
+}
+
+export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     const [connectionState, setConnectionState] = useState<ConnectionState>('idle')
     const [speakingState, setSpeakingState] = useState<SpeakingState>('idle')
     const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
@@ -143,6 +194,10 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
                 setConnectionState('connected')
                 setStatusText('Configuring Gennie...')
 
+                const greeting = config?.jobDescription
+                    ? "Hi there! I'm Gennie, your AI interviewer. I've reviewed the job description and I'm ready to learn more about you. Shall we begin?"
+                    : "Hi there! I'm Gennie. I'm excited to learn more about you. Shall we start?"
+
                 connection.configure({
                     audio: {
                         input: { encoding: 'linear16', sample_rate: 16000 },
@@ -150,13 +205,13 @@ export function useDeepgramAgent(): UseDeepgramAgentReturn {
                     },
                     agent: {
                         language: 'en',
-                        greeting: "Hi there! I'm Gennie. I'm excited to learn more about you. Shall we start?",
+                        greeting,
                         listen: {
                             provider: { type: 'deepgram', model: 'nova-2' },
                         },
                         think: {
                             provider: { type: 'open_ai', model: 'gpt-4o-mini' },
-                            prompt: "You are Gennie, a professional and friendly recruiter for a Tech Company. You are screening a candidate for a Senior React Developer role. Ask about their experience, management style, and salary expectations. Keep answers concise. Use the 'get_context' function if you need information about the company benefits or role details. Do not make up info.",
+                            prompt: generatePrompt(config),
                             functions: [
                                 {
                                     name: 'get_context',

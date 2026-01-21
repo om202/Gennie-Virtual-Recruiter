@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AgentToolController;
+use App\Http\Controllers\Api\InterviewSessionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -11,6 +12,15 @@ Route::get('/user', function (Request $request) {
 // Tool Endpoint called by Deepgram
 Route::post('/agent/context', [AgentToolController::class, 'getContext']);
 
+// Interview Session Routes
+Route::post('/sessions', [InterviewSessionController::class, 'store']);
+Route::get('/sessions/{id}', [InterviewSessionController::class, 'show']);
+Route::post('/sessions/{id}/jd', [InterviewSessionController::class, 'updateJobDescription']);
+Route::post('/sessions/{id}/resume', [InterviewSessionController::class, 'updateResume']);
+Route::post('/sessions/{id}/start', [InterviewSessionController::class, 'start']);
+Route::get('/sessions/{id}/context', [InterviewSessionController::class, 'getContext']);
+
 // Twilio Routes
 Route::post('/twilio/call', [\App\Http\Controllers\Api\TwilioController::class, 'startCall']);
 Route::post('/twilio/voice', [\App\Http\Controllers\Api\TwilioController::class, 'voiceHook']);
+

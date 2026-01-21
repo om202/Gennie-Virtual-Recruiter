@@ -4,6 +4,7 @@ namespace App\Services;
 
 use OpenAI\Laravel\Facades\OpenAI;
 use App\Models\KnowledgeBase;
+use App\Models\InterviewSession;
 use Illuminate\Support\Facades\Log;
 
 class RAGService
@@ -47,6 +48,58 @@ class RAGService
         $context = "";
         foreach ($scored as $item) {
             $context .= $item['content'] . "\n\n";
+        }
+
+        return $context;
+    }
+
+    /**
+     * Search with session context - prioritizes JD and Resume before knowledge base.
+     */
+    public function searchWithSession(string $query, ?string $sessionId, int $limit = 3): string
+    {
+        $context = "";
+
+        // 1. First, check if we have session-specific context
+        if ($sessionId) {
+            $session = InterviewSession::find($sessionId);
+            if ($session) {
+                // Check if the query relates to job description
+                $jdKeywords = ['job', 'role', 'position', 'requirement', 'responsibility', 'qualification', 'skill', 'experience'];
+                $resumeKeywords = ['background', 'candidate', 'resume', 'work history', 'education', 'project'];
+
+                $queryLower = strtolower($query);
+
+                // Add JD context if relevant
+                if ($session->hasJobDescription()) {
+                    foreach ($jdKeywords as $keyword) {
+                        if (str_contains($queryLower, $keyword)) {
+                            $context .= "From Job Description:\n" . substr($session->job_description, 0, 2000) . "\n\n";
+                            break;
+                        }
+                    }
+                }
+
+                // Add Resume context if relevant
+                if ($session->hasResume()) {
+                    foreach ($resumeKeywords as $keyword) {
+                        if (str_contains($queryLower, $keyword)) {
+                            $context .= "From Candidate Resume:\n" . substr($session->resume, 0, 2000) . "\n\n";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Then search the general knowledge base
+        $kbContext = $this->search($query, $limit);
+        if ($kbContext !== "No relevant information found in the knowledge base.") {
+            $context .= $kbContext;
+        }
+
+        if (empty($context)) {
+            return "No relevant information found.";
         }
 
         return $context;

@@ -1,0 +1,203 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\InterviewSession;
+use App\Services\DocumentParserService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class InterviewSessionController extends Controller
+{
+    protected DocumentParserService $parser;
+
+    public function __construct(DocumentParserService $parser)
+    {
+        $this->parser = $parser;
+    }
+
+    /**
+     * Create a new interview session.
+     */
+    public function store(Request $request)
+    {
+        $session = InterviewSession::create([
+            'metadata' => $request->input('metadata', []),
+            'status' => 'setup',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ]);
+    }
+
+    /**
+     * Get session details.
+     */
+    public function show(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ]);
+    }
+
+    /**
+     * Upload or paste Job Description.
+     */
+    public function updateJobDescription(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        // Handle file upload
+        if ($request->hasFile('file')) {
+            $request->validate([
+                'file' => 'required|file|mimes:pdf,doc,docx,txt|max:5120',
+            ]);
+
+            try {
+                $rawText = $this->parser->parseFile($request->file('file'));
+                $session->update([
+                    'job_description' => $rawText,
+                    'job_description_raw' => $rawText,
+                    'metadata' => array_merge($session->metadata ?? [], [
+                        'jd_filename' => $request->file('file')->getClientOriginalName(),
+                        'jd_uploaded_at' => now()->toIso8601String(),
+                    ]),
+                ]);
+            } catch (\Exception $e) {
+                Log::error("JD file parsing failed: " . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to parse file: ' . $e->getMessage(),
+                ], 422);
+            }
+        }
+        // Handle pasted text
+        elseif ($request->has('text')) {
+            $request->validate([
+                'text' => 'required|string|min:50|max:50000',
+            ]);
+
+            $session->update([
+                'job_description' => $request->input('text'),
+                'job_description_raw' => $request->input('text'),
+                'metadata' => array_merge($session->metadata ?? [], [
+                    'jd_pasted_at' => now()->toIso8601String(),
+                ]),
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => 'Either file or text is required',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'session' => $session->fresh(),
+            'preview' => substr($session->job_description, 0, 500) . '...',
+        ]);
+    }
+
+    /**
+     * Upload or paste Resume.
+     */
+    public function updateResume(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        // Handle file upload
+        if ($request->hasFile('file')) {
+            $request->validate([
+                'file' => 'required|file|mimes:pdf,doc,docx,txt|max:5120',
+            ]);
+
+            try {
+                $rawText = $this->parser->parseFile($request->file('file'));
+                $session->update([
+                    'resume' => $rawText,
+                    'resume_raw' => $rawText,
+                    'metadata' => array_merge($session->metadata ?? [], [
+                        'resume_filename' => $request->file('file')->getClientOriginalName(),
+                        'resume_uploaded_at' => now()->toIso8601String(),
+                    ]),
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Resume file parsing failed: " . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to parse file: ' . $e->getMessage(),
+                ], 422);
+            }
+        }
+        // Handle pasted text
+        elseif ($request->has('text')) {
+            $request->validate([
+                'text' => 'required|string|min:50|max:50000',
+            ]);
+
+            $session->update([
+                'resume' => $request->input('text'),
+                'resume_raw' => $request->input('text'),
+                'metadata' => array_merge($session->metadata ?? [], [
+                    'resume_pasted_at' => now()->toIso8601String(),
+                ]),
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => 'Either file or text is required',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'session' => $session->fresh(),
+            'preview' => substr($session->resume, 0, 500) . '...',
+        ]);
+    }
+
+    /**
+     * Start the interview (change status to active).
+     */
+    public function start(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        if (!$session->hasJobDescription()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Job description is required to start interview',
+            ], 422);
+        }
+
+        $session->update(['status' => 'active']);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+            'context' => $session->getContextForAgent(),
+        ]);
+    }
+
+    /**
+     * Get context for AI agent (called by useDeepgramAgent hook).
+     */
+    public function getContext(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'context' => $session->getContextForAgent(),
+            'hasJd' => $session->hasJobDescription(),
+            'hasResume' => $session->hasResume(),
+            'metadata' => $session->metadata,
+        ]);
+    }
+}

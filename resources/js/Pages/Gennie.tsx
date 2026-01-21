@@ -1,22 +1,41 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { useDeepgramAgent } from '@/hooks/useDeepgramAgent'
+import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
+import { InterviewSetup } from '@/components/InterviewSetup'
 import { Button } from '@/components/ui/button'
-import { Globe, Phone, ArrowLeft } from 'lucide-react'
+import { Globe, Phone, ArrowLeft, Settings } from 'lucide-react'
 import type { PageProps } from '@/types'
 
 export default function Gennie({ }: PageProps) {
+    // Setup state
+    const [setupComplete, setSetupComplete] = useState(false)
+    const [agentConfig, setAgentConfig] = useState<AgentConfig>({})
+
     const {
         speakingState,
         transcript,
         startConversation,
         stopConversation,
         isConnected,
-    } = useDeepgramAgent()
+    } = useDeepgramAgent(setupComplete ? agentConfig : undefined)
 
     const [isCalling, setIsCalling] = useState(false)
+
+    const handleSetupComplete = (sessionId: string, context: { jd: string; resume: string }) => {
+        setAgentConfig({
+            sessionId,
+            jobDescription: context.jd,
+            resume: context.resume,
+        })
+        setSetupComplete(true)
+    }
+
+    const handleResetSetup = () => {
+        setSetupComplete(false)
+        setAgentConfig({})
+    }
 
     const handleCallMe = async () => {
         setIsCalling(true)
@@ -59,32 +78,67 @@ export default function Gennie({ }: PageProps) {
             <div className="bg-muted/50 text-foreground min-h-screen flex flex-col p-4">
                 {/* Header Section - Always Visible */}
                 <div className="w-full max-w-6xl mx-auto mb-2">
-                    <Link href="/">
-                        <Button variant="ghost" size="sm" className="mb-4">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Home
-                        </Button>
-                    </Link>
+                    <div className="flex items-center justify-between mb-4">
+                        <Link href="/">
+                            <Button variant="ghost" size="sm">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Back to Home
+                            </Button>
+                        </Link>
+                        {setupComplete && !isConnected && (
+                            <Button variant="outline" size="sm" onClick={handleResetSetup}>
+                                <Settings className="h-4 w-4 mr-2" />
+                                Change Setup
+                            </Button>
+                        )}
+                    </div>
 
                     <div className="text-center space-y-2">
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
                             Gennie - AI Virtual Recruiter
                         </h1>
                         <p className="text-lg md:text-xl text-muted-foreground">
-                            Chat with Gennie via browser or phone call
+                            {setupComplete
+                                ? 'Ready to start your customized interview'
+                                : 'Set up your interview with a job description'}
                         </p>
-                        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                            Gennie will guide you through a natural conversation to understand your background, skills, and experience.
-                        </p>
+                        {!setupComplete && (
+                            <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                                Upload or paste a job description to customize Gennie's questions.
+                                Add a candidate resume for personalized interviews.
+                            </p>
+                        )}
                     </div>
                 </div>
 
-                {/* Main Content - Centered */}
+                {/* Main Content */}
                 <div className="flex-1 flex items-start justify-center pt-8">
-                    {!isConnected ? (
-                        /* Centered Layout - When Idle */
+                    {!setupComplete ? (
+                        /* Setup Step */
+                        <InterviewSetup onComplete={handleSetupComplete} />
+                    ) : !isConnected ? (
+                        /* Ready to Start - After Setup */
                         <div className="max-w-md w-full text-center space-y-8">
                             <VoiceVisualizer speakingState={speakingState} />
+
+                            {/* Setup Summary */}
+                            <div className="bg-card border rounded-lg p-4 text-left space-y-2">
+                                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                                    Interview Configuration
+                                </h3>
+                                <div className="space-y-1 text-sm">
+                                    <p className="flex items-center gap-2">
+                                        <span className="text-green-500">✓</span>
+                                        Job Description loaded
+                                    </p>
+                                    {agentConfig.resume && (
+                                        <p className="flex items-center gap-2">
+                                            <span className="text-green-500">✓</span>
+                                            Candidate Resume loaded
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
 
                             <div className="flex gap-3">
                                 <Button
