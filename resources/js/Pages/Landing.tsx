@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
+import { CircleDot, Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
 
@@ -73,8 +73,8 @@ export default function Landing({ }: PageProps) {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                             <Link href="/gennie">
-                                <Button size="lg" className="text-lg px-8 bg-white text-[#1e1b4b] hover:bg-white/90">
-                                    <Sparkles className="h-5 w-5 mr-2" />
+                                <Button size="lg" className="text-xl px-10 py-6 bg-white text-[#1e1b4b] hover:bg-white/90">
+                                    <CircleDot className="h-6 w-6 mr-2" />
                                     Try Gennie Now
                                 </Button>
                             </Link>
@@ -84,7 +84,7 @@ export default function Landing({ }: PageProps) {
                 </section>
 
                 {/* Features Section */}
-                <section className="bg-muted/50 py-20 px-4 border-t-4 border-primary/20">
+                <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
                     <div className="max-w-6xl mx-auto">
                         <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12">
                             Why Choose Gennie?
@@ -114,7 +114,7 @@ export default function Landing({ }: PageProps) {
                 </section>
 
                 {/* Benefits Section */}
-                <section className="bg-muted/50 py-20 px-4 border-t-4 border-primary/20">
+                <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
                     <div className="max-w-6xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-12">
                             {/* For Recruiters */}
@@ -151,7 +151,7 @@ export default function Landing({ }: PageProps) {
                 </section>
 
                 {/* CTA Section */}
-                <section className="bg-muted/50 py-20 px-4 border-t-4 border-primary/20">
+                <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
                     <div className="max-w-4xl mx-auto text-center space-y-8">
                         <h2 className="text-3xl md:text-4xl font-bold text-primary">
                             Ready to Experience AI Recruiting?
@@ -162,7 +162,7 @@ export default function Landing({ }: PageProps) {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link href="/gennie">
                                 <Button size="lg" className="text-lg px-8">
-                                    <Sparkles className="h-5 w-5 mr-2" />
+                                    <CircleDot className="h-5 w-5 mr-2" />
                                     Start Interview
                                 </Button>
                             </Link>

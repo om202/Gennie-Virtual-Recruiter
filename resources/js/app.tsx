@@ -13,11 +13,15 @@ const appName = import.meta.env.VITE_APP_NAME || 'Virtual Recruiter';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) =>
-        resolvePageComponent(
+    resolve: async (name) => {
+        const page: any = await resolvePageComponent(
             `./Pages/${name}.tsx`,
             import.meta.glob('./Pages/**/*.tsx')
-        ),
+        );
+        const Layout = (await import('./Layouts/Layout')).default;
+        page.default.layout = page.default.layout || ((pageContent: any) => <Layout>{pageContent}</Layout>);
+        return page;
+    },
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(<App {...props} />);
