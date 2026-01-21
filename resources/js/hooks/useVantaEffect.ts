@@ -21,8 +21,8 @@ export const useVantaEffect = () => {
                     minWidth: 200.00,
                     scale: 1.00,
                     scaleMobile: 1.00,
-                    color: 0x5b21b6,        // Indigo-700 to match primary
-                    backgroundColor: 0x1e1b4b,  // Indigo-950 background
+                    color: 0x4338ca,        // Indigo-700 for trunks
+                    backgroundColor: 0x312e81,  // Indigo-900 - balanced darkness
                     spacing: 5.00,
                     chaos: 3.00
                 })

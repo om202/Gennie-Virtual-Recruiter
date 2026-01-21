@@ -1,9 +1,9 @@
 import { Head } from '@inertiajs/react'
-import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CircleDot, Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
+import { Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
+import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import Footer from '@/components/Footer'
 
 export default function Landing({ }: PageProps) {
@@ -58,7 +58,7 @@ export default function Landing({ }: PageProps) {
 
             <div className="bg-background text-foreground min-h-screen">
                 {/* Hero Section */}
-                <section ref={vantaRef} className="relative flex items-center justify-center h-[500px] px-4 py-20 overflow-hidden">
+                <section ref={vantaRef} className="relative flex items-center justify-center h-[640px] px-4 py-20 overflow-hidden">
                     <div className="max-w-4xl text-center space-y-8 relative z-10">
                         <div className="space-y-4">
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
@@ -72,14 +72,14 @@ export default function Landing({ }: PageProps) {
                             </p>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-                            <a href="/try-gennie">
-                                <Button size="lg" className="text-xl px-10 py-6 bg-white text-[#1e1b4b] hover:bg-white/90">
-                                    <CircleDot className="h-6 w-6 mr-2" />
+                        <a href="/try-gennie" className="inline-block group cursor-pointer mt-12">
+                            <div className="flex flex-col items-center gap-0 transition-transform hover:scale-105">
+                                <VoiceVisualizer speakingState="listening" type='hero' />
+                                <p className="text-2xl font-semibold text-white group-hover:text-white/90 transition-colors">
                                     Try Gennie Now
-                                </Button>
-                            </a>
-                        </div>
+                                </p>
+                            </div>
+                        </a>
                     </div>
 
                 </section>
@@ -160,14 +160,14 @@ export default function Landing({ }: PageProps) {
                         <p className="text-lg text-muted-foreground">
                             Start your conversation with Gennie now. It's fast, fair, and available 24/7.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="/try-gennie">
-                                <Button size="lg" className="text-lg px-8">
-                                    <CircleDot className="h-5 w-5 mr-2" />
+                        <a href="/try-gennie" className="inline-block group cursor-pointer">
+                            <div className="flex flex-col items-center gap-2 transition-transform hover:scale-105">
+                                <VoiceVisualizer speakingState="idle" />
+                                <p className="text-xl font-semibold text-primary group-hover:text-primary/80 transition-colors">
                                     Start Interview
-                                </Button>
-                            </a>
-                        </div>
+                                </p>
+                            </div>
+                        </a>
                     </div>
                 </section>
             </div>
