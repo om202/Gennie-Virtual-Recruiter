@@ -41,4 +41,5 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
     Route::delete('/interviews/{interview}', [InterviewController::class, 'destroy'])->name('interviews.destroy');
     Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
+    Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
 });

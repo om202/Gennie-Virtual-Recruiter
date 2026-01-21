@@ -226,4 +226,79 @@ class InterviewSessionController extends Controller
             ] : null,
         ]);
     }
+    /**
+     * Update interview progress via Agent Tool.
+     */
+    public function updateProgress(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        $request->validate([
+            'action' => 'required|string',
+            'payload' => 'nullable|array',
+        ]);
+
+        $currentProgress = $session->progress_state ?? [];
+        $action = $request->input('action');
+        $payload = $request->input('payload', []);
+
+        // Logic for specific actions
+        if ($action === 'mark_question_complete') {
+            $completed = $currentProgress['completed_questions'] ?? [];
+            if (!empty($payload['question_text'])) {
+                $completed[] = $payload['question_text'];
+            }
+            $currentProgress['completed_questions'] = array_unique($completed);
+        }
+
+        if ($action === 'update_stage') {
+            $currentProgress['current_stage'] = $payload['stage'] ?? 'unknown';
+        }
+
+        $session->update(['progress_state' => $currentProgress]);
+
+        return response()->json([
+            'success' => true,
+            'progress' => $currentProgress
+        ]);
+    }
+
+    /**
+     * Log interaction from Agent to DB.
+     * This allows full transcript persistence.
+     */
+    public function logInteraction(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        $request->validate([
+            'speaker' => 'required|in:agent,candidate,system',
+            'message' => 'required|string',
+            'metadata' => 'nullable|array',
+        ]);
+
+        $session->logs()->create([
+            'speaker' => $request->input('speaker'),
+            'message' => $request->input('message'),
+            'metadata' => $request->input('metadata'),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+    /**
+     * Get logs for this session.
+     */
+    public function getLogs(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        $logs = $session->logs()
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'logs' => $logs,
+        ]);
+    }
 }

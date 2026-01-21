@@ -20,7 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, Trash2, Plus } from 'lucide-react'
 import {
     getInterviewTemplate,
     type InterviewTemplateType,
@@ -61,6 +61,7 @@ export function CreateInterviewDialog({
         utterance_end_ms: 1000,
         smart_format: true,
         keywords: '', // Comma separated string for input
+        required_questions: [''] as string[],
     })
     const [manuallyEdited, setManuallyEdited] = useState(false)
 
@@ -86,6 +87,9 @@ export function CreateInterviewDialog({
                     utterance_end_ms: sttConfig.utterance_end_ms || 1000,
                     smart_format: sttConfig.smart_format ?? true,
                     keywords: Array.isArray(sttConfig.keywords) ? sttConfig.keywords.join(', ') : '',
+                    required_questions: Array.isArray(initialData.required_questions) && initialData.required_questions.length > 0
+                        ? initialData.required_questions
+                        : [''],
                 })
                 setManuallyEdited(true) // Don't auto-overwrite custom instructions in edit mode
             } else {
@@ -104,6 +108,7 @@ export function CreateInterviewDialog({
                     utterance_end_ms: 1000,
                     smart_format: true,
                     keywords: '',
+                    required_questions: [''],
                 })
                 setManuallyEdited(false)
             }
@@ -121,6 +126,23 @@ export function CreateInterviewDialog({
         }
     }, [formData.interview_type, formData.difficulty_level, manuallyEdited])
 
+    const handleAddQuestion = () => {
+        setFormData(prev => ({ ...prev, required_questions: [...prev.required_questions, ''] }))
+    }
+
+    const handleRemoveQuestion = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            required_questions: prev.required_questions.filter((_, i) => i !== index)
+        }))
+    }
+
+    const handleQuestionChange = (index: number, value: string) => {
+        const newQuestions = [...formData.required_questions]
+        newQuestions[index] = value
+        setFormData(prev => ({ ...prev, required_questions: newQuestions }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
@@ -130,6 +152,7 @@ export function CreateInterviewDialog({
                 ...formData,
                 duration_minutes: parseInt(formData.duration_minutes),
                 keywords: formData.keywords.split(',').map(k => k.trim()).filter(k => k),
+                required_questions: formData.required_questions.filter(q => q.trim() !== ''),
             }
 
             let response
@@ -157,6 +180,7 @@ export function CreateInterviewDialog({
                     utterance_end_ms: 1000,
                     smart_format: true,
                     keywords: '',
+                    required_questions: [''],
                 })
                 setManuallyEdited(false)
             }
@@ -308,6 +332,38 @@ export function CreateInterviewDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                    </div>
+
+                    {/* Required Questions */}
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                            Required Questions
+                            <span className="text-xs text-muted-foreground font-normal">(Questions Gennie MUST ask)</span>
+                        </Label>
+                        <div className="space-y-2">
+                            {formData.required_questions.map((question, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input
+                                        value={question}
+                                        onChange={(e) => handleQuestionChange(index, e.target.value)}
+                                        placeholder={`Question ${index + 1}`}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleRemoveQuestion(index)}
+                                        disabled={formData.required_questions.length === 1}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="outline" size="sm" onClick={handleAddQuestion}>
+                                <Plus className="h-3 w-3 mr-2" />
+                                Add Question
+                            </Button>
                         </div>
                     </div>
 

@@ -28,10 +28,12 @@ class Interview extends Model
         'total_sessions',
         'last_session_at',
         'metadata',
+        'required_questions',
     ];
 
     protected $casts = [
         'metadata' => 'array',
+        'required_questions' => 'array',
         'last_session_at' => 'datetime',
         'duration_minutes' => 'integer',
         'total_sessions' => 'integer',
@@ -107,6 +109,7 @@ class Interview extends Model
             'voice_id' => $this->voice_id,
             'stt_model' => $this->metadata['stt_model'] ?? 'nova-2',
             'stt_config' => $this->metadata['stt_config'] ?? [],
+            'required_questions' => $this->required_questions ?? [],
         ];
     }
 

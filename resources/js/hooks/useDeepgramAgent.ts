@@ -174,9 +174,6 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         // Flux requires version: v2, and cannot use smart_format
                         ...(isFlux ? { version: 'v2' } : { smart_format: sttConfig?.smartFormat ?? false }),
                     },
-                    // Apply Pacing Configurations
-                    endpointing: sttConfig?.endpointing || 300,
-                    utterance_end_ms: sttConfig?.utteranceEndMs || 1000,
                 }
 
                 // Add keyterms if provided (note: "keyterms" not "keywords" per API spec)
@@ -215,6 +212,18 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                                     parameters: {
                                         type: 'object',
                                         properties: {},
+                                    },
+                                },
+                                {
+                                    name: 'update_interview_progress',
+                                    description: 'Mark a required question as COMPLETED. Call this immediately after the candidate provides a satisfactory answer to one of the mandatory questions in your instructions. Do not call this if the answer was vague or incomplete.',
+                                    parameters: {
+                                        type: 'object',
+                                        properties: {
+                                            question_text: { type: 'string', description: 'The exact text of the required question that was answered.' },
+                                            status: { type: 'string', enum: ['completed', 'skipped'], description: "Status of the question." },
+                                        },
+                                        required: ['question_text', 'status'],
                                     },
                                 },
                                 {
@@ -267,9 +276,26 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 setSpeakingState('agent_speaking')
             })
 
-            connection.on(AgentEvents.ConversationText, (data: any) => {
+            connection.on(AgentEvents.ConversationText, async (data: any) => {
                 if (data.role && data.content) {
                     addTranscript(data.role, data.content)
+
+                    // Log to Backend for Persistence
+                    if (configRef.current?.sessionId) {
+                        try {
+                            await fetch(`/api/sessions/${configRef.current.sessionId}/log`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    speaker: data.role === 'user' ? 'candidate' : 'agent', // Normalize roles
+                                    message: data.content,
+                                    metadata: { timestamp: Date.now() }
+                                })
+                            });
+                        } catch (e) {
+                            console.error('Failed to log conversation:', e);
+                        }
+                    }
                 }
             })
 
@@ -363,6 +389,27 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             id: functionCallId,
                             name: functionName,
                             content: `The current time is ${now}.`,
+                        });
+
+                    } else if (functionName === 'update_interview_progress') {
+                        console.log('Updating interview progress:', input);
+                        addTranscript('system', `Marked question as done: "${input?.question_text}"`);
+
+                        if (configRef.current?.sessionId) {
+                            fetch(`/api/sessions/${configRef.current.sessionId}/progress`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'mark_question_complete',
+                                    payload: input
+                                })
+                            }).catch(err => console.error('Failed to save progress:', err));
+                        }
+
+                        connection.functionCallResponse({
+                            id: functionCallId,
+                            name: functionName,
+                            content: `Progress saved. Question "${input?.question_text}" marked as ${input?.status}. Proceed to the next question.`,
                         });
 
                     } else {

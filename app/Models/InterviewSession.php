@@ -17,12 +17,22 @@ class InterviewSession extends Model
         'resume',
         'resume_raw',
         'metadata',
+        'progress_state',
         'status',
     ];
 
     protected $casts = [
         'metadata' => 'array',
+        'progress_state' => 'array',
     ];
+
+    /**
+     * Get logs for this session.
+     */
+    public function logs()
+    {
+        return $this->hasMany(InterviewLog::class);
+    }
 
     /**
      * Get the parent interview.

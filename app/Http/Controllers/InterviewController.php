@@ -43,6 +43,7 @@ class InterviewController extends Controller
             'utterance_end_ms' => 'nullable|integer|min:500|max:5000',
             'smart_format' => 'nullable|boolean',
             'keywords' => 'nullable|array',
+            'required_questions' => 'nullable|array',
         ]);
 
         // Default company name to user's company
@@ -113,6 +114,7 @@ class InterviewController extends Controller
             'utterance_end_ms' => 'nullable|integer|min:500|max:5000',
             'smart_format' => 'nullable|boolean',
             'keywords' => 'nullable|array',
+            'required_questions' => 'nullable|array',
         ]);
 
         // Handle metadata updates
@@ -182,6 +184,24 @@ class InterviewController extends Controller
         return Inertia::render('Gennie', [
             'sessionId' => $session->id,
             'interview' => $interview,
+        ]);
+    }
+
+    /**
+     * Get sessions for this interview.
+     */
+    public function getSessions(Interview $interview)
+    {
+        $this->authorize('view', $interview);
+
+        $sessions = $interview->sessions()
+            ->orderBy('created_at', 'desc')
+            ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'sessions' => $sessions,
         ]);
     }
 }

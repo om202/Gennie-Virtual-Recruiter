@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import { CreateInterviewDialog } from '@/components/CreateInterviewDialog'
-import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { SessionHistoryDialog } from '@/components/SessionHistoryDialog'
+import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -58,6 +59,8 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
     const [editingInterview, setEditingInterview] = useState<Interview | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
+    const [historyOpen, setHistoryOpen] = useState(false)
+    const [historyInterview, setHistoryInterview] = useState<Interview | null>(null)
 
     const handleInterviewCreated = (interview: Interview) => {
         if (editingInterview) {
@@ -218,6 +221,13 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => {
+                                                                setHistoryInterview(interview)
+                                                                setHistoryOpen(true)
+                                                            }}>
+                                                                <History className="h-4 w-4 mr-2" />
+                                                                View Logs
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => handleEditInterview(interview)}>
                                                                 <Pencil className="h-4 w-4 mr-2" />
                                                                 Edit
@@ -286,6 +296,12 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                 defaultCompanyName={auth.user.company_name}
                 onSuccess={handleInterviewCreated}
                 initialData={editingInterview}
+            />
+
+            <SessionHistoryDialog
+                open={historyOpen}
+                onOpenChange={setHistoryOpen}
+                interview={historyInterview}
             />
 
             {/* Delete Confirmation Alert */}

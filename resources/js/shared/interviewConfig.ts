@@ -41,6 +41,7 @@ export interface InterviewConfig {
         smartFormat?: boolean;
         keywords?: string[];
     };
+    requiredQuestions?: string[];
 }
 
 /**
@@ -67,12 +68,25 @@ export function generatePrompt(config?: InterviewConfig): string {
     const difficultyLevel = config?.difficultyLevel || 'mid';
     const durationMinutes = config?.durationMinutes || 15;
     const customInstructions = config?.customInstructions || '';
+    const requiredQuestions = config?.requiredQuestions || [];
+
+    // Calculate approximate end time
+    const endTime = new Date(Date.now() + durationMinutes * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     let basePrompt = `You are Gennie, an intelligent and professional AI recruiter conducting a ${interviewType} interview.`;
-    basePrompt += ` This interview should last approximately ${durationMinutes} minutes, so pace your questions accordingly.`;
+    basePrompt += ` The interview is scheduled for ${durationMinutes} minutes. It should conclude around ${endTime}.`;
     basePrompt += ` ${DIFFICULTY_GUIDANCE[difficultyLevel] || DIFFICULTY_GUIDANCE.mid}`;
 
     let contextPrompt = '';
+
+    // Required Questions Section (Prioritized)
+    if (requiredQuestions.length > 0) {
+        contextPrompt += `\n\n**MANDATORY REQUIRED QUESTIONS:**\nYou MUST ask the following questions during the interview. Mark them as complete using the 'update_interview_progress' tool when you get a satisfactory answer:\n`;
+        requiredQuestions.forEach((q, index) => {
+            contextPrompt += `${index + 1}. ${q}\n`;
+        });
+        contextPrompt += `\nDo not skip these. Integrate them naturally into the conversation flow.\n`;
+    }
 
     if (config?.jobDescription) {
         contextPrompt += `\n\n**Job Description Context:**\n${config.jobDescription.substring(0, 3000)}`;
@@ -94,6 +108,11 @@ export function generatePrompt(config?: InterviewConfig): string {
 - Use the 'get_context' function for company-specific information
 - Do not make up information about the company or role
 - Be warm and encouraging while maintaining professionalism
+
+**Progress & Time Management:**
+- Continuously check the time. If the time is approaching ${endTime}, start wrapping up.
+- Use 'update_interview_progress' to tick off mandatory questions.
+- If the candidate goes off-topic, bring them back to the required questions.
 
 **CRITICAL - Stay Focused on the Interview:**
 - You are ONLY here to conduct a job interview. Do not engage in off-topic conversations.
