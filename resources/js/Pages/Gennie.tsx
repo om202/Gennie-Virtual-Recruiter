@@ -6,6 +6,16 @@ import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { InterviewSetup } from '@/components/InterviewSetup'
 import { Button } from '@/components/ui/button'
 import { Globe, Phone, ArrowLeft, Settings } from 'lucide-react'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { PageProps } from '@/types'
 
 export default function Gennie({ }: PageProps) {
@@ -22,6 +32,8 @@ export default function Gennie({ }: PageProps) {
     } = useDeepgramAgent(setupComplete ? agentConfig : undefined)
 
     const [isCalling, setIsCalling] = useState(false)
+    const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
+    const [phoneNumber, setPhoneNumber] = useState('')
 
     const handleSetupComplete = (sessionId: string, context: { jd: string; resume: string; jobTitle: string; companyName: string }) => {
         setAgentConfig({
@@ -39,14 +51,21 @@ export default function Gennie({ }: PageProps) {
         setAgentConfig({})
     }
 
-    const handleCallMe = async () => {
+
+    const handleCallSubmit = async () => {
+        if (!phoneNumber) {
+            alert('Please enter a phone number')
+            return
+        }
+
+        setIsPhoneDialogOpen(false)
         setIsCalling(true)
         try {
             const res = await fetch('/api/twilio/call', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    phone: '+17204870145',
+                    phone: phoneNumber,
                     session_id: agentConfig.sessionId
                 })
             })
@@ -155,7 +174,7 @@ export default function Gennie({ }: PageProps) {
                                     Start Interview
                                 </Button>
                                 <Button
-                                    onClick={handleCallMe}
+                                    onClick={() => setIsPhoneDialogOpen(true)}
                                     variant="outline"
                                     size="lg"
                                     disabled={isCalling}
@@ -196,6 +215,34 @@ export default function Gennie({ }: PageProps) {
                     )}
                 </div>
             </div>
+
+            <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Enter your phone number</DialogTitle>
+                        <DialogDescription>
+                            Gennie will call you at this number to start the interview.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="phone" className="text-right">
+                                Phone
+                            </Label>
+                            <Input
+                                id="phone"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder="+1234567890"
+                                className="col-span-3"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit" onClick={handleCallSubmit}>Call Me</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     )
 }

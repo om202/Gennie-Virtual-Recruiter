@@ -54,10 +54,17 @@ export default function Landing({ }: PageProps) {
 
             <div className="bg-background text-foreground min-h-screen">
                 {/* Hero Section */}
-                <section className="flex items-center justify-center h-[600px] px-4 py-20 bg-gradient-to-br from-[#1e1b4b] via-[#1e1b4b] to-[#312e81]">
+                <section className="flex items-center justify-center h-[500px] px-4 py-20 bg-gradient-to-br from-[#1e1b4b] via-[#1e1b4b] to-[#312e81]">
                     <div className="max-w-4xl text-center space-y-8">
                         <div className="space-y-4">
-                            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
+                            <div className="flex justify-center mb-6">
+                                <img
+                                    src="/wave.png"
+                                    alt="Gennie Wave"
+                                    className="h-16 w-auto"
+                                />
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                                 Meet Gennie
                             </h1>
                             <p className="text-2xl md:text-3xl text-white/90">
