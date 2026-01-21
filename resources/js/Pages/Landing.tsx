@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { CircleDot, Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
+import Footer from '@/components/Footer'
 
 export default function Landing({ }: PageProps) {
     const vantaRef = useVantaEffect()
@@ -170,6 +171,8 @@ export default function Landing({ }: PageProps) {
                     </div>
                 </section>
             </div>
+
+            <Footer />
         </>
     )
 }
