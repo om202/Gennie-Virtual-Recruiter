@@ -106,6 +106,7 @@ class Interview extends Model
             'ai_model' => $this->ai_model,
             'voice_id' => $this->voice_id,
             'stt_model' => $this->metadata['stt_model'] ?? 'nova-2',
+            'stt_config' => $this->metadata['stt_config'] ?? [],
         ];
     }
 

@@ -31,6 +31,12 @@ interface SessionContext {
         company_name?: string;
         stt_model?: string;
         voice_id?: string;
+        stt_config?: {
+            endpointing?: number;
+            utterance_end_ms?: number;
+            smart_format?: boolean;
+            keywords?: string[];
+        };
     };
     interview?: {
         interview_type?: string;
@@ -118,6 +124,12 @@ wss.on("connection", async (ws, req) => {
         jobDescription: sessionContext?.context || '',
         sttModel: sessionContext?.metadata?.stt_model,
         voiceId: sessionContext?.metadata?.voice_id,
+        sttConfig: {
+            endpointing: sessionContext?.metadata?.stt_config?.endpointing,
+            utteranceEndMs: sessionContext?.metadata?.stt_config?.utterance_end_ms,
+            smartFormat: sessionContext?.metadata?.stt_config?.smart_format,
+            keywords: sessionContext?.metadata?.stt_config?.keywords,
+        }
     });
 
     // Use AgentEvents enum like the browser SDK does
@@ -139,7 +151,11 @@ wss.on("connection", async (ws, req) => {
                 greeting: generateGreeting(interviewConfig),
                 listen: {
                     provider: { type: "deepgram", model: interviewConfig.sttModel || "nova-2" },
-                },
+                    smart_format: interviewConfig.sttConfig?.smartFormat ?? true,
+                    endpointing: interviewConfig.sttConfig?.endpointing ?? 300,
+                    utterance_end_ms: interviewConfig.sttConfig?.utteranceEndMs ?? 1000,
+                    keywords: interviewConfig.sttConfig?.keywords,
+                } as any,
                 think: {
                     provider: { type: "open_ai", model: "gpt-4o-mini" },
                     prompt: generatePrompt(interviewConfig),

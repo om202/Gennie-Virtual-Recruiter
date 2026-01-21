@@ -35,6 +35,12 @@ export interface InterviewConfig {
     resume?: string;
     sttModel?: string; // e.g. 'nova-2'
     voiceId?: string;  // e.g. 'aura-asteria-en'
+    sttConfig?: {
+        endpointing?: number;
+        utteranceEndMs?: number;
+        smartFormat?: boolean;
+        keywords?: string[];
+    };
 }
 
 /**

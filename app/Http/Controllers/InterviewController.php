@@ -39,6 +39,10 @@ class InterviewController extends Controller
             'custom_instructions' => 'nullable|string|max:5000',
             'voice_id' => 'nullable|string',
             'stt_model' => 'nullable|string|in:nova-2,nova-3',
+            'endpointing' => 'nullable|integer|min:10|max:5000',
+            'utterance_end_ms' => 'nullable|integer|min:500|max:5000',
+            'smart_format' => 'nullable|boolean',
+            'keywords' => 'nullable|array',
         ]);
 
         // Default company name to user's company
@@ -49,9 +53,18 @@ class InterviewController extends Controller
         // Set status based on whether JD is provided
         $validated['status'] = !empty($validated['job_description']) ? 'active' : 'draft';
 
-        // Store STT model in metadata
+        // Prepare STT Config
+        $sttConfig = [
+            'endpointing' => $request->input('endpointing', 300),
+            'utterance_end_ms' => $request->input('utterance_end_ms', 1000),
+            'smart_format' => $request->boolean('smart_format', true),
+            'keywords' => $request->input('keywords', []),
+        ];
+
+        // Store STT model and config in metadata
         $metadata = [
-            'stt_model' => $validated['stt_model'] ?? 'nova-2'
+            'stt_model' => $validated['stt_model'] ?? 'nova-2',
+            'stt_config' => $sttConfig,
         ];
         unset($validated['stt_model']);
         $validated['metadata'] = $metadata;
@@ -96,15 +109,33 @@ class InterviewController extends Controller
             'voice_id' => 'nullable|string',
             'stt_model' => 'nullable|string|in:nova-2,nova-3',
             'status' => 'nullable|in:draft,active,archived',
+            'endpointing' => 'nullable|integer|min:10|max:5000',
+            'utterance_end_ms' => 'nullable|integer|min:500|max:5000',
+            'smart_format' => 'nullable|boolean',
+            'keywords' => 'nullable|array',
         ]);
 
         // Handle metadata updates
+        $metadata = $interview->metadata ?? [];
+
         if (isset($validated['stt_model'])) {
-            $metadata = $interview->metadata ?? [];
             $metadata['stt_model'] = $validated['stt_model'];
-            $validated['metadata'] = $metadata;
             unset($validated['stt_model']);
         }
+
+        // Update STT Config if any field is present
+        if ($request->hasAny(['endpointing', 'utterance_end_ms', 'smart_format', 'keywords'])) {
+            $currentConfig = $metadata['stt_config'] ?? [];
+            $newConfig = array_merge($currentConfig, [
+                'endpointing' => $request->input('endpointing', $currentConfig['endpointing'] ?? 300),
+                'utterance_end_ms' => $request->input('utterance_end_ms', $currentConfig['utterance_end_ms'] ?? 1000),
+                'smart_format' => $request->boolean('smart_format', $currentConfig['smart_format'] ?? true),
+                'keywords' => $request->input('keywords', $currentConfig['keywords'] ?? []),
+            ]);
+            $metadata['stt_config'] = $newConfig;
+        }
+
+        $validated['metadata'] = $metadata;
 
         $interview->update($validated);
 

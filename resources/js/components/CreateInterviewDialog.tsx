@@ -11,6 +11,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import {
     Select,
     SelectContent,
@@ -52,6 +54,10 @@ export function CreateInterviewDialog({
         custom_instructions: '',
         stt_model: 'nova-2' as SttModel,
         voice_id: 'aura-asteria-en' as AuraVoice,
+        endpointing: 300,
+        utterance_end_ms: 1000,
+        smart_format: true,
+        keywords: '', // Comma separated string for input
     })
     const [manuallyEdited, setManuallyEdited] = useState(false)
 
@@ -74,6 +80,7 @@ export function CreateInterviewDialog({
             const response = await window.axios.post('/interviews', {
                 ...formData,
                 duration_minutes: parseInt(formData.duration_minutes),
+                keywords: formData.keywords.split(',').map(k => k.trim()).filter(k => k),
             })
 
             if (response.data.success) {
@@ -90,6 +97,10 @@ export function CreateInterviewDialog({
                     custom_instructions: '',
                     stt_model: 'nova-2',
                     voice_id: 'aura-asteria-en',
+                    endpointing: 300,
+                    utterance_end_ms: 1000,
+                    smart_format: true,
+                    keywords: '',
                 })
                 setManuallyEdited(false)
             }
@@ -264,6 +275,70 @@ export function CreateInterviewDialog({
                         </p>
                     </div>
 
+                    {/* Advanced STT Configuration */}
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="advanced-stt">
+                            <AccordionTrigger className="text-sm font-medium">
+                                Advanced STT Settings
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="endpointing">
+                                            Pause Detection (ms)
+                                        </Label>
+                                        <Input
+                                            id="endpointing"
+                                            type="number"
+                                            min="10"
+                                            max="5000"
+                                            value={formData.endpointing}
+                                            onChange={(e) => setFormData({ ...formData, endpointing: parseInt(e.target.value) || 300 })}
+                                        />
+                                        <p className="text-[10px] text-muted-foreground">
+                                            How long to wait after silence to process speech. (Default: 300ms)
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="utterance_end_ms">
+                                            Utterance End (ms)
+                                        </Label>
+                                        <Input
+                                            id="utterance_end_ms"
+                                            type="number"
+                                            min="500"
+                                            max="5000"
+                                            value={formData.utterance_end_ms}
+                                            onChange={(e) => setFormData({ ...formData, utterance_end_ms: parseInt(e.target.value) || 1000 })}
+                                        />
+                                        <p className="text-[10px] text-muted-foreground">
+                                            Gap duration to detect end of turn. (Default: 1000ms)
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="keywords">Keywords to Boost</Label>
+                                    <Input
+                                        id="keywords"
+                                        placeholder="e.g. React, Laravel, Kubernetes (comma separated)"
+                                        value={formData.keywords}
+                                        onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="smart_format"
+                                        checked={formData.smart_format}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, smart_format: checked })}
+                                    />
+                                    <Label htmlFor="smart_format">Enable Smart Formatting (Dates, Times, Currency)</Label>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel
@@ -279,8 +354,8 @@ export function CreateInterviewDialog({
                             )}
                         </Button>
                     </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                </form >
+            </DialogContent >
+        </Dialog >
     )
 }

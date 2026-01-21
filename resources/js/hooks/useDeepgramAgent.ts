@@ -156,12 +156,24 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 setConnectionState('connected')
                 setStatusText('Configuring Gennie...')
 
-                // Use ref to get current config
                 const currentConfig = configRef.current
                 console.log('Current config:', currentConfig)
+                const sttConfig = currentConfig?.sttConfig
 
                 // Use shared greeting generator
                 const greeting = generateGreeting(currentConfig)
+
+                // Configure STT options
+                const listenConfig: any = {
+                    provider: { type: 'deepgram', model: currentConfig?.sttModel || 'nova-2' },
+                    smart_format: sttConfig?.smartFormat ?? true,
+                    endpointing: sttConfig?.endpointing ?? 300,
+                    utterance_end_ms: sttConfig?.utteranceEndMs ?? 1000,
+                }
+
+                if (sttConfig?.keywords && sttConfig.keywords.length > 0) {
+                    listenConfig.keywords = sttConfig.keywords
+                }
 
                 connection.configure({
                     audio: {
@@ -171,9 +183,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                     agent: {
                         language: 'en',
                         greeting,
-                        listen: {
-                            provider: { type: 'deepgram', model: currentConfig?.sttModel || 'nova-2' },
-                        },
+                        listen: listenConfig,
                         think: {
                             provider: { type: 'open_ai', model: 'gpt-4o-mini' },
                             prompt: generatePrompt(currentConfig),
