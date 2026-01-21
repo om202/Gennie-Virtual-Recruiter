@@ -25,10 +25,10 @@ export default function EditInterview({ auth, interview }: EditInterviewProps) {
     }
 
     return (
-        <div className="min-h-screen bg-muted/50 p-4 md:p-8">
+        <div className="min-h-screen bg-muted/50">
             <Head title={`Edit - ${interview.job_title}`} />
 
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="container mx-auto py-8 px-4 space-y-6">
                 {/* Header with Back Button */}
                 {/* Back Button */}
                 <div>

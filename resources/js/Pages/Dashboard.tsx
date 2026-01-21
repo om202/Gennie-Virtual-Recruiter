@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-
-import { SessionHistoryDialog } from '@/components/SessionHistoryDialog'
 import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History } from 'lucide-react'
 import {
     DropdownMenu,
@@ -55,16 +53,8 @@ interface DashboardProps {
 export default function Dashboard({ auth, interviews: initialInterviews }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-
-
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
-    const [historyOpen, setHistoryOpen] = useState(false)
-    const [historyInterview, setHistoryInterview] = useState<Interview | null>(null)
-
-
-
-
 
     const confirmDelete = (interview: Interview) => {
         setInterviewToDelete(interview)
@@ -127,6 +117,18 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
             <Head title="Dashboard" />
 
             <div className="container mx-auto py-8 px-4 space-y-8">
+                {/* Navigation Tabs */}
+                <div className="border-b">
+                    <div className="flex gap-6">
+                        <div className="pb-3 text-sm font-medium text-primary border-b-2 border-primary">
+                            Your Interviews
+                        </div>
+                        <Link href="/interviews/logs" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
+                            Interview Logs
+                        </Link>
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -211,13 +213,12 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => {
-                                                                setHistoryInterview(interview)
-                                                                setHistoryOpen(true)
-                                                            }}>
-                                                                <History className="h-4 w-4 mr-2" />
-                                                                View Logs
-                                                            </DropdownMenuItem>
+                                                            <Link href={`/interviews/${interview.id}/logs`}>
+                                                                <DropdownMenuItem>
+                                                                    <History className="h-4 w-4 mr-2" />
+                                                                    View Logs
+                                                                </DropdownMenuItem>
+                                                            </Link>
                                                             <Link href={`/interviews/${interview.id}/edit`}>
                                                                 <DropdownMenuItem>
                                                                     <Pencil className="h-4 w-4 mr-2" />
@@ -277,14 +278,6 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                     </div>
                 )}
             </div>
-
-
-
-            <SessionHistoryDialog
-                open={historyOpen}
-                onOpenChange={setHistoryOpen}
-                interview={historyInterview}
-            />
 
             {/* Delete Confirmation Alert */}
             <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>

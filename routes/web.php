@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Interview Management
     Route::get('/interviews', [InterviewController::class, 'index'])->name('interviews.index');
+    Route::get('/interviews/logs', [InterviewController::class, 'allLogs'])->name('interviews.all-logs');
     Route::get('/interviews/create', [InterviewController::class, 'create'])->name('interviews.create');
     Route::post('/interviews', [InterviewController::class, 'store'])->name('interviews.store');
     Route::get('/interviews/{interview}', [InterviewController::class, 'show'])->name('interviews.show');
@@ -43,5 +44,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
     Route::delete('/interviews/{interview}', [InterviewController::class, 'destroy'])->name('interviews.destroy');
     Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
+    Route::get('/interviews/{interview}/logs', [InterviewController::class, 'logs'])->name('interviews.logs');
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
 });

@@ -208,6 +208,50 @@ class InterviewController extends Controller
     }
 
     /**
+     * Display all logs across all interviews for the user
+     */
+    public function allLogs()
+    {
+        $interviews = Auth::user()->interviews()
+            ->with([
+                'sessions' => function ($query) {
+                    $query->has('logs')
+                        ->orderBy('created_at', 'desc')
+                        ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state');
+                }
+            ])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return Inertia::render('InterviewLogs', [
+            'interviews' => $interviews,
+            'interview' => null, // No specific interview filter
+        ]);
+    }
+
+    /**
+     * Display logs for the interview
+     */
+    public function logs(Interview $interview)
+    {
+        $this->authorize('view', $interview);
+
+        $sessions = $interview->sessions()
+            ->has('logs')
+            ->orderBy('created_at', 'desc')
+            ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state')
+            ->get();
+
+        // Load sessions relationship for consistency
+        $interview->setRelation('sessions', $sessions);
+
+        return Inertia::render('InterviewLogs', [
+            'interviews' => collect([$interview]),
+            'interview' => $interview, // Specific interview filter
+        ]);
+    }
+
+    /**
      * Get sessions for this interview.
      */
     public function getSessions(Interview $interview)
