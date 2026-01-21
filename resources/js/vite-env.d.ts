@@ -13,4 +13,6 @@ interface ImportMeta {
 // Buffer polyfill for browser
 interface Window {
     Buffer: typeof import('buffer').Buffer
+    axios: import('axios').AxiosStatic
 }
+

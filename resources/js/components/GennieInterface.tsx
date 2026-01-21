@@ -35,10 +35,15 @@ export function GennieInterface({ sessionId, onClose }: GennieInterfaceProps) {
                 if (data.success) {
                     setAgentConfig({
                         sessionId,
-                        jobDescription: data.context.jd || '',
-                        resume: data.context.resume || '',
-                        jobTitle: data.metadata.job_title || 'Candidate',
-                        companyName: data.metadata.company_name || 'Generic Company',
+                        jobDescription: data.context || '',
+                        resume: '',
+                        jobTitle: data.metadata?.job_title || 'Candidate',
+                        companyName: data.metadata?.company_name || 'Generic Company',
+                        // Interview-specific configuration
+                        interviewType: data.interview?.interview_type || 'screening',
+                        difficultyLevel: data.interview?.difficulty_level || 'mid',
+                        customInstructions: data.interview?.custom_instructions || '',
+                        durationMinutes: data.interview?.duration_minutes || 15,
                     })
                 }
             })

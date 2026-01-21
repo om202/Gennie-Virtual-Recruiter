@@ -62,21 +62,13 @@ export function CreateInterviewDialog({
         setIsSubmitting(true)
 
         try {
-            const response = await fetch('/interviews', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    duration_minutes: parseInt(formData.duration_minutes),
-                }),
+            const response = await window.axios.post('/interviews', {
+                ...formData,
+                duration_minutes: parseInt(formData.duration_minutes),
             })
 
-            const data = await response.json()
-            if (data.success) {
-                onSuccess(data.interview)
+            if (response.data.success) {
+                onSuccess(response.data.interview)
                 onOpenChange(false)
                 // Reset form
                 setFormData({

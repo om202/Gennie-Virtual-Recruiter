@@ -89,20 +89,56 @@ wss.on("connection", async (ws, req) => {
     // Log all events for debugging
     console.log("AgentEvents available:", AgentEvents);
 
-    // Generate dynamic greeting
+    // Generate dynamic greeting based on interview type
     const generateGreeting = () => {
-        if (sessionContext?.metadata?.job_title && sessionContext?.metadata?.company_name) {
-            return `Welcome to the interview for the ${sessionContext.metadata.job_title} position at ${sessionContext.metadata.company_name}. I'm Gennie, and I'll be conducting your screening today. Shall we begin?`;
+        const jobTitle = sessionContext?.metadata?.job_title;
+        const companyName = sessionContext?.metadata?.company_name;
+        const interviewType = sessionContext?.interview?.interview_type || 'screening';
+
+        const typeGreetings = {
+            screening: "I'll be conducting your initial screening today.",
+            technical: "I'll be conducting your technical assessment today.",
+            behavioral: "I'll be conducting your behavioral interview today.",
+            final: "I'll be conducting your final interview today."
+        };
+
+        const greeting = typeGreetings[interviewType] || typeGreetings.screening;
+
+        if (jobTitle && companyName) {
+            return `Welcome to the interview for the ${jobTitle} position at ${companyName}. I'm Gennie, and ${greeting} Shall we begin?`;
         }
-        return "Hi there! I'm Gennie. I'm excited to learn more about you. Shall we start?";
+        return `Hi there! I'm Gennie. ${greeting} Shall we start?`;
     };
 
-    // Generate dynamic prompt
+    // Generate dynamic prompt based on interview configuration
     const generatePrompt = () => {
-        let basePrompt = "You are Gennie, an intelligent and professional AI recruiter. Your goal is to conduct a thorough but conversational screening interview.";
+        const interviewType = sessionContext?.interview?.interview_type || 'screening';
+        const difficultyLevel = sessionContext?.interview?.difficulty_level || 'mid';
+        const customInstructions = sessionContext?.interview?.custom_instructions || '';
+        const durationMinutes = sessionContext?.interview?.duration_minutes || 15;
 
+        let basePrompt = `You are Gennie, an intelligent and professional AI recruiter conducting a ${interviewType} interview.`;
+
+        // Add duration guidance
+        basePrompt += ` This interview should last approximately ${durationMinutes} minutes, so pace your questions accordingly.`;
+
+        // Add difficulty guidance
+        const difficultyGuidance = {
+            entry: "Focus on foundational concepts and basic understanding.",
+            mid: "Ask moderately challenging questions appropriate for someone with a few years of experience.",
+            senior: "Ask in-depth questions that probe advanced expertise and leadership experience.",
+            executive: "Focus on strategic thinking, vision, leadership philosophy, and business impact."
+        };
+        basePrompt += ` ${difficultyGuidance[difficultyLevel] || difficultyGuidance.mid}`;
+
+        // Add session context (JD, resume)
         if (sessionContext?.context) {
             basePrompt += `\n\n${sessionContext.context}`;
+        }
+
+        // Add custom instructions (the interview type template)
+        if (customInstructions) {
+            basePrompt += `\n\n**Your Interview Instructions:**\n${customInstructions}`;
         }
 
         basePrompt += `
