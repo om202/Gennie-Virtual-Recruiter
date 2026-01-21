@@ -116,4 +116,73 @@ class DocumentParserService
     {
         return 5 * 1024 * 1024;
     }
+
+    /**
+     * Parse and Chunk file.
+     * Returns an array of chunks (strings).
+     */
+    public function parseAndChunk(UploadedFile $file, int $tokensPerChunk = 500): array
+    {
+        $text = $this->parseFile($file);
+        return $this->chunkText($text, $tokensPerChunk);
+    }
+
+    /**
+     * Chunk text into semantic segments (~500 tokens).
+     * Uses recursive splitting strategy: Paragraphs -> Sentences -> Words.
+     */
+    public function chunkText(string $text, int $targetTokens = 500): array
+    {
+        // Approximation: 1 token ~= 4 chars
+        $targetChars = $targetTokens * 4;
+        $chunks = [];
+
+        // Split by double newline (paragraphs) first
+        $paragraphs = explode("\n\n", $text);
+
+        $currentChunk = "";
+
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if (empty($paragraph))
+                continue;
+
+            // If adding this paragraph exceeds limit, push current chunk and start new
+            if (strlen($currentChunk) + strlen($paragraph) > $targetChars) {
+                if (!empty($currentChunk)) {
+                    $chunks[] = trim($currentChunk);
+                    $currentChunk = "";
+                }
+
+                // If paragraph itself is too large, split by sentence
+                if (strlen($paragraph) > $targetChars) {
+                    $sentences = preg_split('/(?<=[.?!])\s+/', $paragraph);
+                    foreach ($sentences as $sentence) {
+                        if (strlen($currentChunk) + strlen($sentence) > $targetChars) {
+                            if (!empty($currentChunk)) {
+                                $chunks[] = trim($currentChunk);
+                                $currentChunk = "";
+                            }
+                            // If sentence is ridiculously long, just hard cut it (unlikely but safe)
+                            if (strlen($sentence) > $targetChars) {
+                                $chunks[] = substr($sentence, 0, $targetChars);
+                                continue;
+                            }
+                        }
+                        $currentChunk .= $sentence . " ";
+                    }
+                } else {
+                    $currentChunk = $paragraph . "\n\n";
+                }
+            } else {
+                $currentChunk .= $paragraph . "\n\n";
+            }
+        }
+
+        if (!empty($currentChunk)) {
+            $chunks[] = trim($currentChunk);
+        }
+
+        return $chunks;
+    }
 }
