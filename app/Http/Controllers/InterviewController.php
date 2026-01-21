@@ -24,6 +24,14 @@ class InterviewController extends Controller
     }
 
     /**
+     * Show the form for creating a new interview.
+     */
+    public function create()
+    {
+        return Inertia::render('CreateInterview');
+    }
+
+    /**
      * Store a newly created interview.
      */
     public function store(Request $request)
@@ -88,6 +96,18 @@ class InterviewController extends Controller
         return response()->json([
             'success' => true,
             'interview' => $interview->load('sessions'),
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified interview.
+     */
+    public function edit(Interview $interview)
+    {
+        $this->authorize('update', $interview);
+
+        return Inertia::render('EditInterview', [
+            'interview' => $interview,
         ]);
     }
 

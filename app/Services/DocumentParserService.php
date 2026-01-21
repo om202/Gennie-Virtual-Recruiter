@@ -93,10 +93,15 @@ class DocumentParserService
      */
     private function cleanText(string $text): string
     {
-        // Remove excessive whitespace
-        $text = preg_replace('/\s+/', ' ', $text);
-        // Preserve paragraph breaks
-        $text = preg_replace('/\n\s*\n/', "\n\n", $text);
+        // specific cleanup for known issues
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+
+        // Replace multiple horizontal spaces with a single space
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+
+        // Replace 3+ newlines with 2
+        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+
         // Trim
         return trim($text);
     }

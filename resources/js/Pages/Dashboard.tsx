@@ -1,10 +1,10 @@
 import { Head, router, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-import { CreateInterviewDialog } from '@/components/CreateInterviewDialog'
+
 import { SessionHistoryDialog } from '@/components/SessionHistoryDialog'
 import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History } from 'lucide-react'
 import {
@@ -55,26 +55,16 @@ interface DashboardProps {
 export default function Dashboard({ auth, interviews: initialInterviews }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-    const [createDialogOpen, setCreateDialogOpen] = useState(false)
-    const [editingInterview, setEditingInterview] = useState<Interview | null>(null)
+
+
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
     const [historyOpen, setHistoryOpen] = useState(false)
     const [historyInterview, setHistoryInterview] = useState<Interview | null>(null)
 
-    const handleInterviewCreated = (interview: Interview) => {
-        if (editingInterview) {
-            setInterviews(interviews.map(i => i.id === interview.id ? interview : i))
-            setEditingInterview(null)
-        } else {
-            setInterviews([interview, ...interviews])
-        }
-    }
 
-    const handleEditInterview = (interview: Interview) => {
-        setEditingInterview(interview)
-        setCreateDialogOpen(true)
-    }
+
+
 
     const confirmDelete = (interview: Interview) => {
         setInterviewToDelete(interview)
@@ -176,10 +166,10 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                         {interviews.length > 0 && (
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-semibold">Your Interviews</h2>
-                                <Button onClick={() => setCreateDialogOpen(true)}>
+                                <Link href="/interviews/create" className={buttonVariants()}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     Create Interview
-                                </Button>
+                                </Link>
                             </div>
                         )}
 
@@ -192,10 +182,10 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                     <p className="text-muted-foreground text-center mb-4">
                                         Create your first interview to get started with Gennie.
                                     </p>
-                                    <Button onClick={() => setCreateDialogOpen(true)}>
+                                    <Link href="/interviews/create" className={buttonVariants()}>
                                         <Plus className="h-4 w-4 mr-2" />
                                         Create Your First Interview
-                                    </Button>
+                                    </Link>
                                 </CardContent>
                             </Card>
                         ) : (
@@ -228,10 +218,12 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                                 <History className="h-4 w-4 mr-2" />
                                                                 View Logs
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleEditInterview(interview)}>
-                                                                <Pencil className="h-4 w-4 mr-2" />
-                                                                Edit
-                                                            </DropdownMenuItem>
+                                                            <Link href={`/interviews/${interview.id}/edit`}>
+                                                                <DropdownMenuItem>
+                                                                    <Pencil className="h-4 w-4 mr-2" />
+                                                                    Edit
+                                                                </DropdownMenuItem>
+                                                            </Link>
                                                             <DropdownMenuItem
                                                                 className="text-destructive focus:text-destructive"
                                                                 onClick={() => confirmDelete(interview)}
@@ -286,17 +278,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                 )}
             </div>
 
-            {/* Create Interview Dialog */}
-            <CreateInterviewDialog
-                open={createDialogOpen}
-                onOpenChange={(open) => {
-                    setCreateDialogOpen(open)
-                    if (!open) setEditingInterview(null)
-                }}
-                defaultCompanyName={auth.user.company_name}
-                onSuccess={handleInterviewCreated}
-                initialData={editingInterview}
-            />
+
 
             <SessionHistoryDialog
                 open={historyOpen}

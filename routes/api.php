@@ -12,6 +12,9 @@ Route::get('/user', function (Request $request) {
 // Tool Endpoint called by Deepgram
 Route::post('/agent/context', [AgentToolController::class, 'getContext']);
 
+// Document Parsing
+Route::post('/documents/parse', [\App\Http\Controllers\Api\DocumentController::class, 'parse']);
+
 // Interview Session Routes
 Route::post('/sessions', [InterviewSessionController::class, 'store']);
 Route::get('/sessions/{id}', [InterviewSessionController::class, 'show']);
