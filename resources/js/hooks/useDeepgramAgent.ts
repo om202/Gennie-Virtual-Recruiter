@@ -162,9 +162,24 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 // Use shared greeting generator
                 const greeting = generateGreeting(currentConfig)
 
-                // Configure STT options - Agent API only supports provider in listen block
+                // Configure STT options - Per Deepgram docs: smart_format and keyterms go inside provider
+                const sttConfig = currentConfig?.sttConfig
+                const selectedModel = currentConfig?.sttModel || 'flux-general-en'
+                const isFlux = selectedModel.startsWith('flux')
+
                 const listenConfig: any = {
-                    provider: { type: 'deepgram', model: currentConfig?.sttModel || 'nova-2' },
+                    provider: {
+                        type: 'deepgram',
+                        model: selectedModel,
+                        // Flux requires version: v2, and cannot use smart_format
+                        ...(isFlux ? { version: 'v2' } : { smart_format: sttConfig?.smartFormat ?? false }),
+                    },
+                }
+
+                // Add keyterms if provided (note: "keyterms" not "keywords" per API spec)
+                // keyterms only works with nova-3 'en'
+                if (sttConfig?.keywords && sttConfig.keywords.length > 0 && !isFlux) {
+                    listenConfig.provider.keyterms = sttConfig.keywords
                 }
 
                 connection.configure({

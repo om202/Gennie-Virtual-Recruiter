@@ -45,7 +45,7 @@ export function GennieInterface({ sessionId, onClose }: GennieInterfaceProps) {
                         customInstructions: data.interview?.custom_instructions || '',
                         durationMinutes: data.interview?.duration_minutes || 15,
                         // AI model configuration
-                        sttModel: data.metadata?.stt_model || 'nova-2',
+                        sttModel: data.metadata?.stt_model || 'flux-general-en',
                         voiceId: data.metadata?.voice_id || 'aura-asteria-en',
                     })
                 }

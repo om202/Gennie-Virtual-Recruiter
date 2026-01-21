@@ -149,9 +149,23 @@ wss.on("connection", async (ws, req) => {
             agent: {
                 language: "en",
                 greeting: generateGreeting(interviewConfig),
-                listen: {
-                    provider: { type: "deepgram", model: interviewConfig.sttModel || "nova-2" },
-                },
+                listen: (() => {
+                    const selectedModel = interviewConfig.sttModel || "flux-general-en";
+                    const isFlux = selectedModel.startsWith("flux");
+                    return {
+                        provider: {
+                            type: "deepgram",
+                            model: selectedModel,
+                            // Flux requires version: v2, and cannot use smart_format
+                            ...(isFlux
+                                ? { version: "v2" }
+                                : {
+                                    smart_format: interviewConfig.sttConfig?.smartFormat ?? false,
+                                    keyterms: interviewConfig.sttConfig?.keywords,
+                                }),
+                        },
+                    };
+                })(),
                 think: {
                     provider: { type: "open_ai", model: "gpt-4o-mini" },
                     prompt: generatePrompt(interviewConfig),

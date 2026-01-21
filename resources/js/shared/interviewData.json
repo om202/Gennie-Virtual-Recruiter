@@ -18,8 +18,9 @@
         "final": "**Final Interview Focus:**\n\nThis is the last-stage interview to assess cultural fit and commitment:\n\n1. **Motivation & Career Goals**\n   - What are their long-term career aspirations?\n   - How does this role fit into their career trajectory?\n   - What motivates them professionally?\n\n2. **Company & Culture Fit**\n   - What do they know about our company?\n   - What excites them most about potentially joining?\n   - Questions about our values, mission, or products\n\n3. **Role Clarity & Expectations**\n   - Their understanding of the role and responsibilities\n   - What success looks like to them in the first 90 days\n   - Any concerns or questions about the position?\n\n4. **Logistics & Next Steps**\n   - Confirm compensation expectations\n   - Start date availability\n   - Any pending offers or interviews to be aware of?\n   - Answer any final questions they have\n\nThis interview should feel like a two-way conversation about mutual fit. Be warm and transparent."
     },
     "sttModels": {
-        "nova-2": "Nova-2 (Fast & Reliable)",
-        "nova-3": "Nova-3 (Advanced Accuracy)"
+        "flux-general-en": "⭐ Flux (Recommended - Best for Voice Agents)",
+        "nova-3": "Nova-3 (Advanced Accuracy, Multilingual)",
+        "nova-2": "Nova-2 (Fast & Reliable)"
     },
     "auraVoices": {
         "aura-asteria-en": "Asteria (Female, US) - Default",
@@ -33,6 +34,10 @@
         "aura-angus-en": "Angus (Male, Ireland) - Irish Accent",
         "aura-orpheus-en": "Orpheus (Male, UK) - British Accent",
         "aura-helios-en": "Helios (Male, UK) - British Professional",
-        "aura-zeus-en": "Zeus (Male, US) - Strong"
+        "aura-zeus-en": "Zeus (Male, US) - Strong",
+        "aura-2-thalia-en": "Aura 2: Thalia (Female) - Enterprise",
+        "aura-2-andromeda-en": "Aura 2: Andromeda (Female) - Warm",
+        "aura-2-odysseus-en": "Aura 2: Odysseus (Male) - Professional",
+        "aura-2-asteria-en": "Aura 2: Asteria (Female) - Modern"
     }
 }
