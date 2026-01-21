@@ -117,6 +117,8 @@ assertTest(str_contains($res, "5 days"), "Correctly found info despite injection
 
 // --- TEST 6: Episodic Memory (Session Context) ---
 echo "\n🧪 Test 6: Episodic Memory (Session Context)\n";
+// --- TEST 6: Episodic Memory (Session Context) ---
+echo "\n🧪 Test 6: Episodic Memory (Session Context)\n";
 // Create a session
 $uuid = Str::uuid()->toString();
 
@@ -131,7 +133,8 @@ DB::table('interview_sessions')->insert([
 
 echo "Created Session ID: $uuid\n";
 
-$res = $rag->searchWithSession("What expertise is needed?", $uuid);
+// Use a keyword that exists in RAGService list: 'experience'
+$res = $rag->searchWithSession("What experience is required?", $uuid);
 echo "Session Result: " . substr($res, 0, 100) . "...\n";
 assertTest(str_contains($res, "From Job Description"), "Found JD context");
 assertTest(str_contains($res, "PHP Expert"), "Found relevant keyword from JD");
