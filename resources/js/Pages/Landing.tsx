@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
 import type { PageProps } from '@/types'
+import { useVantaEffect } from '@/hooks/useVantaEffect'
 
 export default function Landing({ }: PageProps) {
+    const vantaRef = useVantaEffect()
+
     const features = [
         {
             icon: Sparkles,
@@ -54,16 +57,9 @@ export default function Landing({ }: PageProps) {
 
             <div className="bg-background text-foreground min-h-screen">
                 {/* Hero Section */}
-                <section className="flex items-center justify-center h-[500px] px-4 py-20 bg-gradient-to-br from-[#1e1b4b] via-[#1e1b4b] to-[#312e81]">
-                    <div className="max-w-4xl text-center space-y-8">
+                <section ref={vantaRef} className="relative flex items-center justify-center h-[500px] px-4 py-20 overflow-hidden">
+                    <div className="max-w-4xl text-center space-y-8 relative z-10">
                         <div className="space-y-4">
-                            <div className="flex justify-center mb-6">
-                                <img
-                                    src="/wave.png"
-                                    alt="Gennie Wave"
-                                    className="h-16 w-auto"
-                                />
-                            </div>
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                                 Meet Gennie
                             </h1>
@@ -84,6 +80,7 @@ export default function Landing({ }: PageProps) {
                             </Link>
                         </div>
                     </div>
+
                 </section>
 
                 {/* Features Section */}
