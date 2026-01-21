@@ -15,6 +15,7 @@ class TwilioController extends Controller
         // User requested: "will call to '+17204870145' hardcoded for now"
         // But we should allow flexibility if provided
         $to = $request->input('phone') ?? '+17204870145';
+        $sessionId = $request->input('session_id');
 
         $sid = env('TWILIO_ACCOUNT_SID');
         $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
@@ -28,13 +29,18 @@ class TwilioController extends Controller
         try {
             $client = new Client($sid, $token);
 
+            // Build TwiML URL with session ID
+            $twimlUrl = env('RELAY_SERVER_URL') . '/twilio/voice';
+            if ($sessionId) {
+                $twimlUrl .= '?session=' . urlencode($sessionId);
+            }
+
             $call = $client->calls->create(
                 $to,
                 $from,
                 [
-                    // Point to the Relay Server's TwiML endpoint
-                    // Assuming user sets RELAY_SERVER_URL to their ngrok address (tunneling 8080)
-                    'url' => env('RELAY_SERVER_URL') . '/twilio/voice',
+                    // Point to the Relay Server's TwiML endpoint with session ID
+                    'url' => $twimlUrl,
                     'method' => 'POST'
                 ]
             );

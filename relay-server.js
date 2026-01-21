@@ -202,30 +202,59 @@ wss.on("connection", async (ws, req) => {
     deepgram.on(AgentEvents.FunctionCallRequest, async (data) => {
         console.log("Function Call Request:", data);
 
-        const { function_name, function_call_id, input } = data;
+        // The event data has a `functions` array with each function call
+        const functions = data.functions || [];
 
-        if (function_name === "get_context") {
+        for (const func of functions) {
+            const { id: functionCallId, name: functionName, arguments: argsString } = func;
+
+            // Parse the arguments JSON string
+            let input = {};
             try {
-                const appUrl = "http://127.0.0.1:8000";
-                const response = await fetch(`${appUrl}/api/agent/context`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query: input?.query }),
-                });
-                const apiData = await response.json();
+                input = JSON.parse(argsString || '{}');
+            } catch (parseErr) {
+                console.error("Failed to parse function arguments:", parseErr);
+            }
 
-                deepgram.functionCallResponse({
-                    id: function_call_id,
-                    name: function_name,
-                    content: apiData.context || "No context found.",
-                });
+            console.log(`Processing function: ${functionName}, id: ${functionCallId}, input:`, input);
 
-            } catch (err) {
-                console.error("Error calling backend tool:", err);
+            if (functionName === "get_context") {
+                try {
+                    const appUrl = "http://127.0.0.1:8000";
+                    const response = await fetch(`${appUrl}/api/agent/context`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query: input?.query }),
+                    });
+                    const apiData = await response.json();
+
+                    console.log("Sending function call response:", {
+                        id: functionCallId,
+                        name: functionName,
+                        content: apiData.context || "No context found.",
+                    });
+
+                    deepgram.functionCallResponse({
+                        id: functionCallId,
+                        name: functionName,
+                        content: apiData.context || "No context found.",
+                    });
+
+                } catch (err) {
+                    console.error("Error calling backend tool:", err);
+                    deepgram.functionCallResponse({
+                        id: functionCallId,
+                        name: functionName,
+                        content: "Error retrieving context.",
+                    });
+                }
+            } else {
+                // Unknown function - respond with error to not leave it hanging
+                console.warn(`Unknown function called: ${functionName}`);
                 deepgram.functionCallResponse({
-                    id: function_call_id,
-                    name: function_name,
-                    content: "Error retrieving context.",
+                    id: functionCallId,
+                    name: functionName,
+                    content: "Function not implemented.",
                 });
             }
         }

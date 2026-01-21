@@ -121,28 +121,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Event: Function Call Request
             connection.on(AgentEvents.FunctionCallRequest, async (data) => {
-                const { function_name, function_call_id, input } = data;
                 console.log("Function call request:", data);
 
-                if (function_name === "get_context") {
-                    addTranscript(`System: Searching knowledge base for "${input?.query}"...`);
-                    try {
-                        const apiRes = await fetch("/api/agent/context", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ query: input?.query })
-                        });
-                        const apiData = await apiRes.json();
+                // The event data has a `functions` array with each function call
+                const functions = data.functions || [];
 
-                        // Send Response back to Agent
+                for (const func of functions) {
+                    const { id: functionCallId, name: functionName, arguments: argsString } = func;
+
+                    // Parse the arguments JSON string
+                    let input = {};
+                    try {
+                        input = JSON.parse(argsString || '{}');
+                    } catch (parseErr) {
+                        console.error("Failed to parse function arguments:", parseErr);
+                    }
+
+                    console.log(`Processing function: ${functionName}, id: ${functionCallId}, input:`, input);
+
+                    if (functionName === "get_context") {
+                        addTranscript(`System: Searching knowledge base for "${input?.query}"...`);
+                        try {
+                            const apiRes = await fetch("/api/agent/context", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ query: input?.query })
+                            });
+                            const apiData = await apiRes.json();
+
+                            console.log("Sending function call response:", {
+                                id: functionCallId,
+                                name: functionName,
+                                content: apiData.context || "No context found."
+                            });
+
+                            // Send Response back to Agent (correct field names: id, name, content)
+                            connection.functionCallResponse({
+                                id: functionCallId,
+                                name: functionName,
+                                content: apiData.context || "No context found."
+                            });
+                        } catch (err) {
+                            console.error("Error calling backend tool:", err);
+                            connection.functionCallResponse({
+                                id: functionCallId,
+                                name: functionName,
+                                content: "Error retrieving context."
+                            });
+                        }
+                    } else {
+                        // Unknown function - respond with error to not leave it hanging
+                        console.warn(`Unknown function called: ${functionName}`);
                         connection.functionCallResponse({
-                            function_call_id: function_call_id,
-                            output: apiData.context || "No context found."
-                        });
-                    } catch (err) {
-                        connection.functionCallResponse({
-                            function_call_id: function_call_id,
-                            output: "Error retrieving context."
+                            id: functionCallId,
+                            name: functionName,
+                            content: "Function not implemented."
                         });
                     }
                 }

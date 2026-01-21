@@ -45,7 +45,10 @@ export default function Gennie({ }: PageProps) {
             const res = await fetch('/api/twilio/call', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: '+17204870145' })
+                body: JSON.stringify({
+                    phone: '+17204870145',
+                    session_id: agentConfig.sessionId
+                })
             })
             const data = await res.json()
             if (data.success) {
