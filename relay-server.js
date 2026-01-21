@@ -153,6 +153,17 @@ wss.on("connection", async (ws, req) => {
                                 },
                             },
                         },
+                        {
+                            name: "end_interview",
+                            description: "End the interview call gracefully. Use this when: 1) You have completed all screening questions, 2) The candidate explicitly asks to end the call, 3) The candidate says goodbye or thanks you for your time. Always thank the candidate before ending.",
+                            parameters: {
+                                type: "object",
+                                properties: {
+                                    reason: { type: "string", description: "Brief reason for ending (e.g., 'screening_complete', 'candidate_request', 'goodbye')" },
+                                    summary: { type: "string", description: "Brief summary of the interview outcome" },
+                                },
+                            },
+                        },
                     ],
                 },
                 speak: {
@@ -248,6 +259,31 @@ wss.on("connection", async (ws, req) => {
                         content: "Error retrieving context.",
                     });
                 }
+            } else if (functionName === "end_interview") {
+                // Handle interview termination
+                console.log("🔴 AI requested to end interview:", {
+                    reason: input?.reason,
+                    summary: input?.summary,
+                });
+
+                // Acknowledge the function call
+                deepgram.functionCallResponse({
+                    id: functionCallId,
+                    name: functionName,
+                    content: "Interview ended successfully. Goodbye!",
+                });
+
+                // Give the AI time to say goodbye, then disconnect
+                setTimeout(() => {
+                    console.log("Disconnecting call after AI goodbye...");
+                    if (deepgram) {
+                        deepgram.disconnect();
+                    }
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.close();
+                    }
+                }, 5000); // 5 seconds for goodbye message to play
+
             } else {
                 // Unknown function - respond with error to not leave it hanging
                 console.warn(`Unknown function called: ${functionName}`);

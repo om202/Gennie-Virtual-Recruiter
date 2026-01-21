@@ -242,6 +242,17 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                                         },
                                     },
                                 },
+                                {
+                                    name: 'end_interview',
+                                    description: 'End the interview call gracefully. Use this when: 1) You have completed all screening questions, 2) The candidate explicitly asks to end the call, 3) The candidate says goodbye or thanks you for your time. Always thank the candidate before ending.',
+                                    parameters: {
+                                        type: 'object',
+                                        properties: {
+                                            reason: { type: 'string', description: "Brief reason for ending (e.g., 'screening_complete', 'candidate_request', 'goodbye')" },
+                                            summary: { type: 'string', description: 'Brief summary of the interview outcome' },
+                                        },
+                                    },
+                                },
                             ],
                         },
                         speak: {
@@ -334,6 +345,39 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                                 content: 'Error retrieving context.',
                             })
                         }
+                    } else if (functionName === 'end_interview') {
+                        // Handle interview termination
+                        console.log('🔴 AI requested to end interview:', {
+                            reason: input?.reason,
+                            summary: input?.summary,
+                        })
+
+                        addTranscript('system', `Interview ending: ${input?.reason || 'complete'}`)
+
+                        // Acknowledge the function call
+                        connection.functionCallResponse({
+                            id: functionCallId,
+                            name: functionName,
+                            content: 'Interview ended successfully. Goodbye!',
+                        })
+
+                        // Give the AI time to say goodbye, then disconnect
+                        setTimeout(() => {
+                            console.log('Disconnecting after AI goodbye...')
+                            if (connectionRef.current) {
+                                try {
+                                    connectionRef.current.disconnect()
+                                    connectionRef.current = null
+                                } catch (error) {
+                                    console.error('Error disconnecting:', error)
+                                }
+                            }
+                            stopMicrophone()
+                            setConnectionState('idle')
+                            setSpeakingState('idle')
+                            setStatusText('Interview Complete')
+                            addTranscript('system', input?.summary || 'Interview concluded')
+                        }, 5000)
                     } else {
                         // Unknown function - respond with error to not leave it hanging
                         console.warn(`Unknown function called: ${functionName}`)
