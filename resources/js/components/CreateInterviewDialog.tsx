@@ -35,6 +35,7 @@ interface CreateInterviewDialogProps {
     onOpenChange: (open: boolean) => void
     defaultCompanyName?: string
     onSuccess: (interview: any) => void
+    initialData?: any // For edit mode
 }
 
 export function CreateInterviewDialog({
@@ -42,7 +43,9 @@ export function CreateInterviewDialog({
     onOpenChange,
     defaultCompanyName = '',
     onSuccess,
+    initialData, // Optional: if provided, we are in "Edit Mode"
 }: CreateInterviewDialogProps) {
+    const isEditMode = !!initialData
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         job_title: '',
@@ -61,6 +64,52 @@ export function CreateInterviewDialog({
     })
     const [manuallyEdited, setManuallyEdited] = useState(false)
 
+    // Reset or populate form when dialog opens
+    useEffect(() => {
+        if (open) {
+            if (isEditMode && initialData) {
+                // Parse metadata for STT config
+                const sttConfig = initialData.metadata?.stt_config || {}
+                const sttModel = initialData.metadata?.stt_model || 'nova-2'
+
+                setFormData({
+                    job_title: initialData.job_title || '',
+                    company_name: initialData.company_name || defaultCompanyName,
+                    job_description: initialData.job_description || '',
+                    duration_minutes: String(initialData.duration_minutes || '15'),
+                    interview_type: initialData.interview_type || 'screening',
+                    difficulty_level: initialData.difficulty_level || 'mid',
+                    custom_instructions: initialData.custom_instructions || '',
+                    stt_model: sttModel,
+                    voice_id: initialData.voice_id || 'aura-asteria-en',
+                    endpointing: sttConfig.endpointing || 300,
+                    utterance_end_ms: sttConfig.utterance_end_ms || 1000,
+                    smart_format: sttConfig.smart_format ?? true,
+                    keywords: Array.isArray(sttConfig.keywords) ? sttConfig.keywords.join(', ') : '',
+                })
+                setManuallyEdited(true) // Don't auto-overwrite custom instructions in edit mode
+            } else {
+                // Reset to defaults for create mode
+                setFormData({
+                    job_title: '',
+                    company_name: defaultCompanyName,
+                    job_description: '',
+                    duration_minutes: '15',
+                    interview_type: 'screening',
+                    difficulty_level: 'mid',
+                    custom_instructions: '',
+                    stt_model: 'nova-2',
+                    voice_id: 'aura-asteria-en',
+                    endpointing: 300,
+                    utterance_end_ms: 1000,
+                    smart_format: true,
+                    keywords: '',
+                })
+                setManuallyEdited(false)
+            }
+        }
+    }, [open, initialData, isEditMode, defaultCompanyName])
+
     // Auto-populate custom instructions when interview type or difficulty changes
     useEffect(() => {
         if (!manuallyEdited) {
@@ -77,11 +126,18 @@ export function CreateInterviewDialog({
         setIsSubmitting(true)
 
         try {
-            const response = await window.axios.post('/interviews', {
+            const payload = {
                 ...formData,
                 duration_minutes: parseInt(formData.duration_minutes),
                 keywords: formData.keywords.split(',').map(k => k.trim()).filter(k => k),
-            })
+            }
+
+            let response
+            if (isEditMode) {
+                response = await window.axios.put(`/interviews/${initialData.id}`, payload)
+            } else {
+                response = await window.axios.post('/interviews', payload)
+            }
 
             if (response.data.success) {
                 onSuccess(response.data.interview)
@@ -115,9 +171,11 @@ export function CreateInterviewDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Create New Interview</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Edit Interview' : 'Create New Interview'}</DialogTitle>
                     <DialogDescription>
-                        Set up an interview configuration. You can use this for multiple candidates.
+                        {isEditMode
+                            ? 'Update the configuration for this interview template.'
+                            : 'Set up an interview configuration. You can use this for multiple candidates.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -347,10 +405,10 @@ export function CreateInterviewDialog({
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Creating...
+                                    {isEditMode ? 'Saving...' : 'Creating...'}
                                 </>
                             ) : (
-                                'Create Interview'
+                                isEditMode ? 'Save Changes' : 'Create Interview'
                             )}
                         </Button>
                     </DialogFooter>

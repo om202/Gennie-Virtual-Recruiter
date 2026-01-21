@@ -5,7 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import { CreateInterviewDialog } from '@/components/CreateInterviewDialog'
-import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings } from 'lucide-react'
+import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Interview {
     id: string
@@ -39,9 +55,40 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [createDialogOpen, setCreateDialogOpen] = useState(false)
+    const [editingInterview, setEditingInterview] = useState<Interview | null>(null)
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+    const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
 
     const handleInterviewCreated = (interview: Interview) => {
-        setInterviews([interview, ...interviews])
+        if (editingInterview) {
+            setInterviews(interviews.map(i => i.id === interview.id ? interview : i))
+            setEditingInterview(null)
+        } else {
+            setInterviews([interview, ...interviews])
+        }
+    }
+
+    const handleEditInterview = (interview: Interview) => {
+        setEditingInterview(interview)
+        setCreateDialogOpen(true)
+    }
+
+    const confirmDelete = (interview: Interview) => {
+        setInterviewToDelete(interview)
+        setDeleteConfirmationOpen(true)
+    }
+
+    const handleDeleteInterview = async () => {
+        if (!interviewToDelete) return
+
+        try {
+            await window.axios.delete(`/interviews/${interviewToDelete.id}`)
+            setInterviews(interviews.filter(i => i.id !== interviewToDelete.id))
+            setDeleteConfirmationOpen(false)
+            setInterviewToDelete(null)
+        } catch (error) {
+            console.error("Failed to delete interview:", error)
+        }
     }
 
     const handleStartInterview = (interview: Interview) => {
@@ -155,14 +202,36 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-start">
                                                 <div className="space-y-1">
-                                                    <CardTitle className="text-lg leading-tight">
-                                                        {interview.job_title}
+                                                    <CardTitle className="text-lg leading-tight flex items-center justify-between gap-2">
+                                                        <span>{interview.job_title}</span>
                                                     </CardTitle>
                                                     <CardDescription>{interview.company_name}</CardDescription>
                                                 </div>
-                                                <Badge className={getStatusColor(interview.status)}>
-                                                    {interview.status}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge className={getStatusColor(interview.status)}>
+                                                        {interview.status}
+                                                    </Badge>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <MoreVertical className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleEditInterview(interview)}>
+                                                                <Pencil className="h-4 w-4 mr-2" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className="text-destructive focus:text-destructive"
+                                                                onClick={() => confirmDelete(interview)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
                                             </div>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
@@ -210,10 +279,36 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
             {/* Create Interview Dialog */}
             <CreateInterviewDialog
                 open={createDialogOpen}
-                onOpenChange={setCreateDialogOpen}
+                onOpenChange={(open) => {
+                    setCreateDialogOpen(open)
+                    if (!open) setEditingInterview(null)
+                }}
                 defaultCompanyName={auth.user.company_name}
                 onSuccess={handleInterviewCreated}
+                initialData={editingInterview}
             />
+
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the interview "{interviewToDelete?.job_title}" and all its session history.
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteInterview}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
