@@ -6,7 +6,8 @@ import {
     NavigationMenuList,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-import { CircleDot } from 'lucide-react'
+import { CircleDot, LogIn } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function Header() {
     return (
@@ -19,24 +20,34 @@ export default function Header() {
                 </Link>
 
                 {/* Navigation Menu */}
-                <NavigationMenu>
-                    <NavigationMenuList>
-                        <NavigationMenuItem>
-                            <Link href="/">
-                                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                    Home
-                                </NavigationMenuLink>
-                            </Link>
-                        </NavigationMenuItem>
-                        <NavigationMenuItem>
-                            <Link href="/gennie">
-                                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                    Try Gennie
-                                </NavigationMenuLink>
-                            </Link>
-                        </NavigationMenuItem>
-                    </NavigationMenuList>
-                </NavigationMenu>
+                <div className="flex items-center gap-4">
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <Link href="/">
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        Home
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <Link href="/gennie">
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        Try Gennie
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
+
+                    {/* Google Sign In */}
+                    <a href="/auth/google">
+                        <Button variant="outline" size="sm">
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Sign In
+                        </Button>
+                    </a>
+                </div>
             </div>
         </header>
     )
