@@ -1,11 +1,11 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import { CreateInterviewDialog } from '@/components/CreateInterviewDialog'
-import { Plus, User, Phone, Play, Clock, Briefcase, Calendar } from 'lucide-react'
+import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings } from 'lucide-react'
 
 interface Interview {
     id: string
@@ -96,25 +96,21 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
-                        {/* User Profile Card (Mini) */}
-                        <Card className="min-w-[250px]">
-                            <CardContent className="pt-4 flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                    {auth.user.avatar ? (
-                                        <img src={auth.user.avatar} alt={auth.user.name} className="h-full w-full rounded-full" />
-                                    ) : (
-                                        <User className="h-5 w-5" />
-                                    )}
+                        {/* User Info */}
+                        <div className="flex items-center gap-3">
+                            <div className="text-right">
+                                <div className="font-medium text-sm">{auth.user.company_name}</div>
+                                <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                                    <Phone className="h-3 w-3" />
+                                    {auth.user.phone}
                                 </div>
-                                <div>
-                                    <h3 className="font-medium text-sm">{auth.user.company_name}</h3>
-                                    <div className="flex items-center text-xs text-muted-foreground gap-1">
-                                        <Phone className="h-3 w-3" />
-                                        {auth.user.phone}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                            <Link href="/profile">
+                                <Button variant="ghost" size="icon" className="h-9 w-9">
+                                    <Settings className="h-5 w-5" />
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
@@ -126,14 +122,16 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                     />
                 ) : (
                     <div className="space-y-6">
-                        {/* Actions Bar */}
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold">Your Interviews</h2>
-                            <Button onClick={() => setCreateDialogOpen(true)}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Interview
-                            </Button>
-                        </div>
+                        {/* Actions Bar - Only show when there are interviews */}
+                        {interviews.length > 0 && (
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-semibold">Your Interviews</h2>
+                                <Button onClick={() => setCreateDialogOpen(true)}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Create Interview
+                                </Button>
+                            </div>
+                        )}
 
                         {/* Interview Grid */}
                         {interviews.length === 0 ? (

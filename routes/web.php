@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', fn() => Inertia::render('Profile', ['auth' => ['user' => Auth::user()]]))->name('profile');
 
     // Interview Management
     Route::get('/interviews', [InterviewController::class, 'index'])->name('interviews.index');

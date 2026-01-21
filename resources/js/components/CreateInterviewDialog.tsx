@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Sparkles } from 'lucide-react'
+import { getInterviewTemplate, type InterviewTemplate } from '@/lib/interviewTemplates'
 
 interface CreateInterviewDialogProps {
     open: boolean
@@ -39,10 +40,22 @@ export function CreateInterviewDialog({
         company_name: defaultCompanyName,
         job_description: '',
         duration_minutes: '15',
-        interview_type: 'screening',
-        difficulty_level: 'mid',
+        interview_type: 'screening' as keyof InterviewTemplate,
+        difficulty_level: 'mid' as 'entry' | 'mid' | 'senior' | 'executive',
         custom_instructions: '',
     })
+    const [manuallyEdited, setManuallyEdited] = useState(false)
+
+    // Auto-populate custom instructions when interview type or difficulty changes
+    useEffect(() => {
+        if (!manuallyEdited) {
+            const template = getInterviewTemplate(
+                formData.interview_type,
+                formData.difficulty_level
+            )
+            setFormData(prev => ({ ...prev, custom_instructions: template }))
+        }
+    }, [formData.interview_type, formData.difficulty_level, manuallyEdited])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -75,6 +88,7 @@ export function CreateInterviewDialog({
                     difficulty_level: 'mid',
                     custom_instructions: '',
                 })
+                setManuallyEdited(false)
             }
         } catch (error) {
             console.error('Failed to create interview:', error)
@@ -85,7 +99,7 @@ export function CreateInterviewDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create New Interview</DialogTitle>
                     <DialogDescription>
@@ -157,7 +171,7 @@ export function CreateInterviewDialog({
                             <Label>Interview Type</Label>
                             <Select
                                 value={formData.interview_type}
-                                onValueChange={(value: string) => setFormData({ ...formData, interview_type: value })}
+                                onValueChange={(value: string) => setFormData({ ...formData, interview_type: value as keyof InterviewTemplate })}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
@@ -174,7 +188,7 @@ export function CreateInterviewDialog({
                             <Label>Difficulty</Label>
                             <Select
                                 value={formData.difficulty_level}
-                                onValueChange={(value: string) => setFormData({ ...formData, difficulty_level: value })}
+                                onValueChange={(value: string) => setFormData({ ...formData, difficulty_level: value as 'entry' | 'mid' | 'senior' | 'executive' })}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
@@ -191,14 +205,24 @@ export function CreateInterviewDialog({
 
                     {/* Custom Instructions */}
                     <div className="space-y-2">
-                        <Label htmlFor="custom_instructions">Custom Instructions (Optional)</Label>
+                        <Label htmlFor="custom_instructions" className="flex items-center gap-2">
+                            Custom Instructions
+                            <Sparkles className="h-3 w-3 text-primary" />
+                            <span className="text-xs text-muted-foreground font-normal">(Auto-filled based on type)</span>
+                        </Label>
                         <Textarea
                             id="custom_instructions"
-                            placeholder="e.g., Focus on React and AWS experience, ask about system design..."
-                            className="min-h-[80px]"
+                            placeholder="Custom instructions will auto-populate when you select interview type and difficulty..."
+                            className="min-h-[200px] font-mono text-sm"
                             value={formData.custom_instructions}
-                            onChange={(e) => setFormData({ ...formData, custom_instructions: e.target.value })}
+                            onChange={(e) => {
+                                setFormData({ ...formData, custom_instructions: e.target.value })
+                                setManuallyEdited(true)
+                            }}
                         />
+                        <p className="text-xs text-muted-foreground">
+                            These instructions guide Gennie's interview approach. Feel free to customize them.
+                        </p>
                     </div>
 
                     <DialogFooter>
