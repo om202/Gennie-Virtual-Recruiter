@@ -174,6 +174,9 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         // Flux requires version: v2, and cannot use smart_format
                         ...(isFlux ? { version: 'v2' } : { smart_format: sttConfig?.smartFormat ?? false }),
                     },
+                    // Apply Pacing Configurations
+                    endpointing: sttConfig?.endpointing || 300,
+                    utterance_end_ms: sttConfig?.utteranceEndMs || 1000,
                 }
 
                 // Add keyterms if provided (note: "keyterms" not "keywords" per API spec)
@@ -197,23 +200,33 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             functions: [
                                 {
                                     name: 'get_context',
-                                    description: 'Retrieve information about the company, benefits, or job description.',
+                                    description: 'Retrieves specific information from the company knowledge base associated with this interview. Use this tool immediately when the candidate asks questions about the company, culture, benefits, or specific role details that are not in your system prompt.',
                                     parameters: {
                                         type: 'object',
                                         properties: {
-                                            query: { type: 'string', description: 'The question or topic to search for.' },
+                                            query: { type: 'string', description: 'The specific question or topic to search for in the knowledge base.' },
                                         },
+                                        required: ['query'],
+                                    },
+                                },
+                                {
+                                    name: 'get_current_time',
+                                    description: 'Get the current local time of the interview. Use this if the candidate asks about the time or if you need to timestamp a specific event.',
+                                    parameters: {
+                                        type: 'object',
+                                        properties: {},
                                     },
                                 },
                                 {
                                     name: 'end_interview',
-                                    description: 'End the interview call gracefully. Use this when: 1) You have completed all screening questions, 2) The candidate explicitly asks to end the call, 3) The candidate says goodbye or thanks you for your time. Always thank the candidate before ending.',
+                                    description: 'Ends the interview session. Call this tool ONLY in these cases: 1) You have asked all your planned questions and the candidate has no further questions. 2) The candidate explicitly asks to stop or end the interview. 3) The candidate says a definitive goodbye. IMPORTANT: Always be polite and thank the candidate before calling this tool.',
                                     parameters: {
                                         type: 'object',
                                         properties: {
-                                            reason: { type: 'string', description: "Brief reason for ending (e.g., 'screening_complete', 'candidate_request', 'goodbye')" },
-                                            summary: { type: 'string', description: 'Brief summary of the interview outcome' },
+                                            reason: { type: 'string', description: "The reason for ending the interview. Allowed values: 'screening_complete', 'candidate_request', 'goodbye', 'time_limit_reached'." },
+                                            summary: { type: 'string', description: 'A concise summary (1-2 sentences) of how the interview went.' },
                                         },
+                                        required: ['reason'],
                                     },
                                 },
                             ],
@@ -341,6 +354,17 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             setStatusText('Interview Complete')
                             addTranscript('system', input?.summary || 'Interview concluded')
                         }, 5000)
+                    } else if (functionName === 'get_current_time') {
+                        const now = new Date().toLocaleTimeString();
+                        console.log('Sending time:', now);
+                        addTranscript('system', `Provided time to agent: ${now}`);
+
+                        connection.functionCallResponse({
+                            id: functionCallId,
+                            name: functionName,
+                            content: `The current time is ${now}.`,
+                        });
+
                     } else {
                         // Unknown function - respond with error to not leave it hanging
                         console.warn(`Unknown function called: ${functionName}`)
