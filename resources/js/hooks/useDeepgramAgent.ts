@@ -5,7 +5,7 @@ import {
     generateGreeting,
     generatePrompt,
     type InterviewConfig
-} from '@shared/interviewConfig'
+} from '@/shared/interviewConfig'
 
 interface UseDeepgramAgentReturn {
     connectionState: ConnectionState

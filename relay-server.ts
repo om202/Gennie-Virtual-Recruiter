@@ -3,7 +3,7 @@ import { createClient, AgentEvents } from "@deepgram/sdk";
 import { WebSocket, WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import http from "http";
-import { generateGreeting, generatePrompt, type InterviewConfig } from "./shared/interviewConfig";
+import { generateGreeting, generatePrompt, type InterviewConfig } from "./resources/js/shared/interviewConfig";
 
 dotenv.config();
 

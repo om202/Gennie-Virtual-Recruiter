@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Sparkles } from 'lucide-react'
-import { getInterviewTemplate, type InterviewTemplate } from '@/lib/interviewTemplates'
+import { getInterviewTemplate, type InterviewTemplateType } from '@/shared/interviewConfig'
 
 interface CreateInterviewDialogProps {
     open: boolean
@@ -40,7 +40,7 @@ export function CreateInterviewDialog({
         company_name: defaultCompanyName,
         job_description: '',
         duration_minutes: '15',
-        interview_type: 'screening' as keyof InterviewTemplate,
+        interview_type: 'screening' as InterviewTemplateType,
         difficulty_level: 'mid' as 'entry' | 'mid' | 'senior' | 'executive',
         custom_instructions: '',
     })
@@ -163,7 +163,7 @@ export function CreateInterviewDialog({
                             <Label>Interview Type</Label>
                             <Select
                                 value={formData.interview_type}
-                                onValueChange={(value: string) => setFormData({ ...formData, interview_type: value as keyof InterviewTemplate })}
+                                onValueChange={(value: string) => setFormData({ ...formData, interview_type: value as InterviewTemplateType })}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
