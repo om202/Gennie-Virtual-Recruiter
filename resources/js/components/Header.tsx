@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react'
+import { Link, usePage, router } from '@inertiajs/react'
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -6,15 +6,43 @@ import {
     NavigationMenuList,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-import { CircleDot, LogIn } from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { CircleDot, LogIn, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+interface PageProps {
+    auth: {
+        user: {
+            name: string
+            avatar?: string
+        } | null
+    }
+    [key: string]: unknown
+}
+
 export default function Header() {
+    const { auth, url } = usePage<PageProps>().props
+    const user = auth?.user
+    const currentPath = typeof url === 'string' ? url : window.location.pathname
+
+    const handleLogout = () => {
+        router.post('/logout')
+    }
+
+    const isOnDashboard = currentPath.startsWith('/dashboard')
+    const isOnHome = currentPath === '/'
+
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center justify-between px-4">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo/Brand */}
-                <Link href="/" className="flex items-center space-x-2">
+                <Link href={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
                     <CircleDot className="h-6 w-6 text-primary" />
                     <span className="font-bold text-xl">Gennie</span>
                 </Link>
@@ -23,32 +51,61 @@ export default function Header() {
                 <div className="flex items-center gap-4">
                     <NavigationMenu>
                         <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <Link href="/">
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        Home
+                            {!isOnHome && !user && (
+                                <NavigationMenuItem>
+                                    <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                        <Link href="/">Home</Link>
                                     </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <Link href="/gennie">
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        Try Gennie
+                                </NavigationMenuItem>
+                            )}
+                            {user && !isOnDashboard && (
+                                <NavigationMenuItem>
+                                    <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                        <Link href="/dashboard">Dashboard</Link>
                                     </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
+                                </NavigationMenuItem>
+                            )}
                         </NavigationMenuList>
                     </NavigationMenu>
 
-                    {/* Google Sign In */}
-                    <a href="/auth/google">
-                        <Button variant="outline" size="sm">
-                            <LogIn className="h-4 w-4 mr-2" />
-                            Sign In
-                        </Button>
-                    </a>
+                    {/* Auth Section */}
+                    {user ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="rounded-full">
+                                    {user.avatar ? (
+                                        <img src={user.avatar} alt={user.name} className="h-8 w-8 rounded-full" />
+                                    ) : (
+                                        <User className="h-5 w-5" />
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <div className="px-2 py-1.5 text-sm font-medium">{user.name}</div>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/dashboard" className="cursor-pointer">
+                                        Dashboard
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                                    <LogOut className="h-4 w-4 mr-2" />
+                                    Sign Out
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : (
+                        <a href="/auth/google">
+                            <Button variant="outline" size="sm">
+                                <LogIn className="h-4 w-4 mr-2" />
+                                Sign In
+                            </Button>
+                        </a>
+                    )}
                 </div>
             </div>
         </header>
     )
 }
+
