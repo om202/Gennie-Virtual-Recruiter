@@ -40,8 +40,12 @@ class GoogleAuthController extends Controller
             // Log the user in
             Auth::login($user, true);
 
-            // Redirect to the intended page or home
-            return redirect()->intended('/gennie');
+            // Redirect based on onboarding status
+            if ($user->is_onboarded) {
+                return redirect()->intended('/dashboard');
+            }
+
+            return redirect('/onboarding');
 
         } catch (\Exception $e) {
             return redirect('/')->with('error', 'Failed to authenticate with Google');

@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
@@ -23,6 +23,31 @@ export default function Gennie({ }: PageProps) {
     const [setupComplete, setSetupComplete] = useState(false)
     const [agentConfig, setAgentConfig] = useState<AgentConfig>({})
 
+    // Get URL search params to check for session_id
+    const params = new URLSearchParams(window.location.search)
+    const urlSessionId = params.get('session_id')
+
+    // Fetch session data if sessionId exists in URL
+    useEffect(() => {
+        if (urlSessionId && !setupComplete) {
+            fetch(`/api/sessions/${urlSessionId}/context`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setAgentConfig({
+                            sessionId: urlSessionId,
+                            jobDescription: data.context.jd || '', // Just in case, though usually processed in backend
+                            resume: data.context.resume || '',
+                            jobTitle: data.metadata.job_title || 'Candidate',
+                            companyName: data.metadata.company_name || 'Generic Company',
+                        })
+                        setSetupComplete(true)
+                    }
+                })
+                .catch(err => console.error("Failed to load session", err))
+        }
+    }, [urlSessionId, setupComplete])
+
     const {
         speakingState,
         transcript,
@@ -35,6 +60,7 @@ export default function Gennie({ }: PageProps) {
     const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
     const [phoneNumber, setPhoneNumber] = useState('')
 
+    // Fallback for manual setup if no session ID provided (though we are moving away from this)
     const handleSetupComplete = (sessionId: string, context: { jd: string; resume: string; jobTitle: string; companyName: string }) => {
         setAgentConfig({
             sessionId,
@@ -47,10 +73,14 @@ export default function Gennie({ }: PageProps) {
     }
 
     const handleResetSetup = () => {
+        // If we have a session ID, we probably want to redirect back to dashboard
+        if (urlSessionId) {
+            window.location.href = '/dashboard'
+            return
+        }
         setSetupComplete(false)
         setAgentConfig({})
     }
-
 
     const handleCallSubmit = async () => {
         if (!phoneNumber) {
