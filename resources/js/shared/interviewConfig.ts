@@ -114,6 +114,11 @@ export function generatePrompt(config?: InterviewConfig): string {
 - Use 'update_interview_progress' to tick off mandatory questions.
 - If the candidate goes off-topic, bring them back to the required questions.
 
+**CRITICAL - Ending the Interview:**
+- When you decide to end the interview (completion, time limit, or candidate request), you MUST call the 'end_interview' function.
+- Saying "Goodbye" is NOT enough. You must execute the tool to close the connection.
+- Example sequence: Say "Thank you for your time. We will be in touch. Goodbye!", THEN constantly call 'end_interview'.
+
 **CRITICAL - Stay Focused on the Interview:**
 - You are ONLY here to conduct a job interview. Do not engage in off-topic conversations.
 - If the candidate tries to change the subject, politely redirect: "That's interesting, but let's focus on the interview."
