@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { CircleDot, Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
@@ -73,12 +73,12 @@ export default function Landing({ }: PageProps) {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-                            <Link href="/gennie">
+                            <a href="/gennie">
                                 <Button size="lg" className="text-xl px-10 py-6 bg-white text-[#1e1b4b] hover:bg-white/90">
                                     <CircleDot className="h-6 w-6 mr-2" />
                                     Try Gennie Now
                                 </Button>
-                            </Link>
+                            </a>
                         </div>
                     </div>
 
@@ -161,12 +161,12 @@ export default function Landing({ }: PageProps) {
                             Start your conversation with Gennie now. It's fast, fair, and available 24/7.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link href="/gennie">
+                            <a href="/gennie">
                                 <Button size="lg" className="text-lg px-8">
                                     <CircleDot className="h-5 w-5 mr-2" />
                                     Start Interview
                                 </Button>
-                            </Link>
+                            </a>
                         </div>
                     </div>
                 </section>
