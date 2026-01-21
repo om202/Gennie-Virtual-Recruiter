@@ -9,6 +9,9 @@ use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
 
+// Public Try Gennie Demo (no login required)
+Route::get('/try-gennie', fn() => Inertia::render('TryGennie'))->name('try-gennie');
+
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', fn() => redirect()->route('auth.google'))->name('login');
@@ -19,13 +22,13 @@ Route::middleware(['guest'])->group(function () {
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout');
 
+// Gennie API endpoint for voice client (needs to be accessible for demo too)
+Route::get('/gennie/token', [VoiceClientController::class, 'getToken']);
+
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Gennie API endpoint for voice client token
-    Route::get('/gennie/token', [VoiceClientController::class, 'getToken']);
 });
