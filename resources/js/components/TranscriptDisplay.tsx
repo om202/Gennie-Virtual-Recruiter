@@ -21,26 +21,29 @@ export function TranscriptDisplay({ transcript, className }: TranscriptDisplayPr
     }
 
     return (
-        <div
-            ref={containerRef}
-            className={cn(
-                "text-left bg-card/50 p-4 rounded-lg border border-border text-sm h-32 overflow-y-auto font-mono text-muted-foreground",
-                className
-            )}
-        >
-            {transcript.map((msg, index) => (
-                <p key={index} className="mb-1">
-                    <span className={cn(
-                        "font-semibold",
-                        msg.role === 'user' && "text-primary",
-                        msg.role === 'agent' && "text-muted-foreground",
-                        msg.role === 'system' && "text-muted-foreground/70"
-                    )}>
-                        {msg.role}:
-                    </span>{' '}
-                    {msg.content}
-                </p>
-            ))}
+        <div className="lg:border-l lg:border-primary/20 lg:pl-4 space-y-2">
+            <h3 className="text-lg font-semibold text-primary">Transcript</h3>
+            <div
+                ref={containerRef}
+                className={cn(
+                    "text-left text-sm h-32 overflow-y-auto font-mono text-muted-foreground",
+                    className
+                )}
+            >
+                {transcript.map((msg, index) => (
+                    <p key={index} className="mb-1">
+                        <span className={cn(
+                            "font-semibold",
+                            msg.role === 'user' && "text-primary",
+                            msg.role === 'agent' && "text-muted-foreground",
+                            msg.role === 'system' && "text-muted-foreground/70"
+                        )}>
+                            {msg.role}:
+                        </span>{' '}
+                        {msg.content}
+                    </p>
+                ))}
+            </div>
         </div>
     )
 }

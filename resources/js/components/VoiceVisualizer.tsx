@@ -6,39 +6,12 @@ interface VoiceVisualizerProps {
 }
 
 export function VoiceVisualizer({ speakingState }: VoiceVisualizerProps) {
-    const getRingColor = () => {
-        switch (speakingState) {
-            case 'user_speaking':
-                return 'border-primary/80'
-            case 'agent_speaking':
-                return 'border-muted-foreground/80'
-            case 'listening':
-                return 'border-primary/20'
-            default:
-                return 'border-muted/40'
-        }
-    }
-
-    const getOrbAnimation = () => {
-        if (speakingState === 'agent_speaking') {
-            return 'speaking'
-        }
-        return ''
-    }
-
     return (
         <div className="relative h-48 w-48 mx-auto flex items-center justify-center">
             <div
                 className={cn(
-                    "absolute inset-0 rounded-full border-4 transition-colors duration-300",
-                    getRingColor(),
-                    speakingState === 'listening' && 'animate-pulse'
-                )}
-            />
-            <div
-                className={cn(
-                    "w-32 h-32 bg-gradient-to-br from-primary to-primary/70 rounded-full shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-all duration-300",
-                    getOrbAnimation()
+                    "w-32 h-32 bg-gradient-to-br from-primary to-primary/70 rounded-full shadow-[0_0_40px_hsl(var(--primary)/0.5)]",
+                    speakingState !== 'idle' && 'animate-pulse-gentle'
                 )}
             />
 
@@ -60,23 +33,19 @@ export function VoiceVisualizer({ speakingState }: VoiceVisualizerProps) {
             </svg>
 
             <style>{`
-        .speaking {
-          animation: pulse 1.5s infinite;
+        @keyframes pulse-gentle {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.9;
+          }
         }
 
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-          }
-          70% {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
-          }
-          100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-          }
+        .animate-pulse-gentle {
+          animation: pulse-gentle 2s ease-in-out infinite;
         }
       `}</style>
         </div>
