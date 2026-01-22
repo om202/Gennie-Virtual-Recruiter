@@ -77,6 +77,44 @@ app.post("/twilio/voice", (req: Request, res: Response) => {
     res.send(twiml);
 });
 
+// Proxy Twilio callbacks to Laravel API
+// Twilio sends callbacks to ngrok (this relay server on port 8080)
+// but the actual API routes are in Laravel (port 8000)
+app.post("/api/twilio/call-status", async (req: Request, res: Response) => {
+    console.log("📞 Received Twilio call status callback, forwarding to Laravel...");
+    try {
+        const response = await fetch(`${LARAVEL_API_URL}/api/twilio/call-status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(req.body).toString(),
+        });
+        const data = await response.text();
+        res.status(response.status).send(data);
+        console.log("✅ Call status forwarded successfully");
+    } catch (err) {
+        console.error("❌ Failed to forward call status:", err);
+        res.status(500).send("Error forwarding request");
+    }
+});
+
+app.post("/api/twilio/recording-status", async (req: Request, res: Response) => {
+    console.log("🎤 Received Twilio recording status callback, forwarding to Laravel...");
+    console.log("Recording data:", req.body);
+    try {
+        const response = await fetch(`${LARAVEL_API_URL}/api/twilio/recording-status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(req.body).toString(),
+        });
+        const data = await response.text();
+        res.status(response.status).send(data);
+        console.log("✅ Recording status forwarded successfully");
+    } catch (err) {
+        console.error("❌ Failed to forward recording status:", err);
+        res.status(500).send("Error forwarding request");
+    }
+});
+
 
 wss.on("connection", async (ws, req) => {
     // Check if the path is /streams

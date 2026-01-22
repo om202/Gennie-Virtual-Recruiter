@@ -21,8 +21,7 @@ class TwilioController extends Controller
         $sid = env('TWILIO_ACCOUNT_SID');
         $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
         $from = env('TWILIO_FROM_NUMBER');
-        $appUrl = env('APP_URL');
-        $relayUrl = env('RELAY_SERVER_URL');
+        $relayUrl = env('RELAY_SERVER_URL'); // Ngrok public URL
 
         if (!$sid || !$token || !$from) {
             return response()->json(['error' => 'Twilio credentials or From number not configured'], 500);
@@ -46,12 +45,12 @@ class TwilioController extends Controller
                     'method' => 'POST',
                     // Enable automatic call recording
                     'record' => true,
-                    // Callback when call completes
-                    'statusCallback' => $appUrl . '/api/twilio/call-status',
+                    // Callback when call completes - use RELAY_SERVER_URL (ngrok) so Twilio can reach it
+                    'statusCallback' => $relayUrl . '/api/twilio/call-status',
                     'statusCallbackEvent' => ['completed'],
                     'statusCallbackMethod' => 'POST',
-                    // Callback when recording is ready
-                    'recordingStatusCallback' => $appUrl . '/api/twilio/recording-status',
+                    // Callback when recording is ready - use RELAY_SERVER_URL (ngrok) so Twilio can reach it
+                    'recordingStatusCallback' => $relayUrl . '/api/twilio/recording-status',
                     'recordingStatusCallbackEvent' => ['completed'],
                     'recordingStatusCallbackMethod' => 'POST',
                 ]
@@ -179,5 +178,43 @@ class TwilioController extends Controller
         $stream->setUrl($relayUrl);
 
         return response($response->asXML())->header('Content-Type', 'text/xml');
+    }
+
+    /**
+     * Proxy endpoint to stream Twilio recordings with authentication.
+     * Twilio recordings require HTTP Basic Auth, so we fetch server-side and stream to browser.
+     */
+    public function streamRecording(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        if (!$session->twilio_data || empty($session->twilio_data['recording_url'])) {
+            abort(404, 'No recording available for this session');
+        }
+
+        $recordingUrl = $session->twilio_data['recording_url'] . '.mp3';
+
+        $sid = env('TWILIO_ACCOUNT_SID');
+        $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
+
+        // Fetch recording with Twilio credentials
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $recordingUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $audioData = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            abort($httpCode, 'Failed to fetch recording from Twilio');
+        }
+
+        return response($audioData)
+            ->header('Content-Type', $contentType ?: 'audio/mpeg')
+            ->header('Content-Disposition', 'inline');
     }
 }

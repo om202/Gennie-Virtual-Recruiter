@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe } from 'lucide-react'
+import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 import { cn } from '@/lib/utils'
@@ -32,6 +32,7 @@ interface Session {
     analysis_result: any
     channel?: 'web' | 'phone'
     twilio_data?: TwilioData
+    interview_id?: string
 }
 
 
@@ -68,6 +69,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
     const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false)
     const [logs, setLogs] = useState<Record<string, Log[]>>({})
+    // Store fresh session details fetched from API
+    const [sessionDetails, setSessionDetails] = useState<Record<string, Session>>({})
     const [loadingLogs, setLoadingLogs] = useState<string | null>(null)
     const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
     const [sessionAnalysis, setSessionAnalysis] = useState<Record<string, { status: 'pending' | 'processing' | 'completed' | 'failed'; result: any }>>({})
@@ -80,8 +83,10 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
     }, [])
 
     useEffect(() => {
-        if (selectedSessionId && !logs[selectedSessionId]) {
-            fetchLogs(selectedSessionId)
+        if (selectedSessionId) {
+            // Always fetch fresh data when selecting a session to ensure recording URL is present
+            // preventing the need to refresh the page after a call
+            fetchSessionData(selectedSessionId)
         }
     }, [selectedSessionId])
 
@@ -102,6 +107,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                             [analyzingSession]: { status: analysis_status, result: analysis_result }
                         }));
                         setAnalyzingSession(null);
+                        // Also update session details
+                        setSessionDetails(prev => ({ ...prev, [analyzingSession]: data.session }))
                     }
                 }
             } catch (e) {
@@ -112,16 +119,26 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
         return () => clearInterval(pollInterval);
     }, [analyzingSession]);
 
-    const fetchLogs = async (sessionId: string) => {
+    const fetchSessionData = async (sessionId: string) => {
         setLoadingLogs(sessionId)
         try {
-            const res = await fetch(`/api/sessions/${sessionId}/logs`)
-            const data = await res.json()
-            if (data.success) {
-                setLogs(prev => ({ ...prev, [sessionId]: data.logs }))
+            // Parallel fetch for logs and session details
+            const [logsRes, sessionRes] = await Promise.all([
+                fetch(`/api/sessions/${sessionId}/logs`),
+                fetch(`/api/sessions/${sessionId}`)
+            ]);
+
+            const logsData = await logsRes.json();
+            const sessionData = await sessionRes.json();
+
+            if (logsData.success) {
+                setLogs(prev => ({ ...prev, [sessionId]: logsData.logs }))
+            }
+            if (sessionData.success) {
+                setSessionDetails(prev => ({ ...prev, [sessionId]: sessionData.session }))
             }
         } catch (err) {
-            console.error("Failed to load logs", err)
+            console.error("Failed to load session data", err)
         } finally {
             setLoadingLogs(null)
         }
@@ -148,6 +165,13 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
             interview_id: int.id
         }))
     )
+
+    // Helper to get the most up-to-date session object
+    const getActiveSession = () => {
+        if (!selectedSessionId) return null;
+        // Prefer fresh API data >> Prop data
+        return sessionDetails[selectedSessionId] || allSessions.find(s => s.id === selectedSessionId);
+    }
 
     return (
         <div className="min-h-screen bg-muted/50">
@@ -287,7 +311,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                         <div className="col-span-3 flex flex-col space-y-6">
                             {/* Scorecard or Generate Analysis Button */}
                             {selectedSessionId && (() => {
-                                const session = interviews.flatMap(i => i.sessions || []).find(s => s.id === selectedSessionId);
+                                const session = getActiveSession();
                                 const hasLogs = logs[selectedSessionId] && logs[selectedSessionId].length > 0;
                                 const localAnalysis = sessionAnalysis[selectedSessionId];
                                 const isAnalyzing = analyzingSession === selectedSessionId;
@@ -500,7 +524,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
                             {/* Twilio Call Details Card (for phone interviews) */}
                             {selectedSessionId && (() => {
-                                const session = interviews.flatMap(i => i.sessions || []).find(s => s.id === selectedSessionId);
+                                // USE THE HELPER HERE TO GET FRESH DATA
+                                const session = getActiveSession();
                                 if (!session || session.channel !== 'phone' || !session.twilio_data) return null;
 
                                 const formatDuration = (seconds?: number) => {
@@ -555,7 +580,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                         )}
                                                     </div>
                                                     <audio controls className="w-full h-10">
-                                                        <source src={`${session.twilio_data.recording_url}.mp3`} type="audio/mpeg" />
+                                                        <source src={`/api/sessions/${session.id}/recording`} type="audio/mpeg" />
                                                         Your browser does not support the audio element.
                                                     </audio>
                                                 </div>
@@ -581,7 +606,10 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                         </CardDescription>
                                     </div>
                                     {selectedSessionId && (
-                                        <Button size="sm" variant="outline" onClick={() => fetchLogs(selectedSessionId)}>Re-sync Logs</Button>
+                                        <Button size="sm" variant="outline" onClick={() => fetchSessionData(selectedSessionId)}>
+                                            <RefreshCw className="h-3 w-3 mr-2" />
+                                            Re-sync Logs
+                                        </Button>
                                     )}
                                 </CardHeader>
                                 <div className="p-6 bg-slate-50/50 min-h-[400px]">

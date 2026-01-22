@@ -36,4 +36,5 @@ Route::post('/twilio/voice', [\App\Http\Controllers\Api\TwilioController::class,
 // Twilio Callbacks (called by Twilio - no auth)
 Route::post('/twilio/call-status', [\App\Http\Controllers\Api\TwilioController::class, 'callStatus']);
 Route::post('/twilio/recording-status', [\App\Http\Controllers\Api\TwilioController::class, 'recordingStatus']);
-
+// Recording playback proxy (streams with Twilio auth)
+Route::get('/sessions/{id}/recording', [\App\Http\Controllers\Api\TwilioController::class, 'streamRecording']);
