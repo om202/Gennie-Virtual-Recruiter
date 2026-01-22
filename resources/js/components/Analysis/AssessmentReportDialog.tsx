@@ -107,7 +107,6 @@ export function AssessmentReportDialog({ open, onClose, interview, session }: As
 
                     {/* Full Assessment Report */}
                     <div>
-                        <h2 className="text-2xl font-bold mb-4">Candidate Assessment Report</h2>
                         <Scorecard
                             result={session.analysis_result}
                             status={session.analysis_status}

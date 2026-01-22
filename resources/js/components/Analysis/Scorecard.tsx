@@ -160,48 +160,88 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                         <CardContent className="space-y-6">
                             {result.criterion_scores.map((criterion, idx) => {
                                 const percentage = (criterion.score / 100) * 100;
-                                const barColor = criterion.score >= 80 ? 'bg-green-500' : criterion.score >= 60 ? 'bg-yellow-500' : 'bg-destructive';
+                                const strokeColor = criterion.score >= 80 ? 'stroke-green-500' : criterion.score >= 60 ? 'stroke-yellow-500' : 'stroke-destructive';
+                                const textColor = criterion.score >= 80 ? 'text-green-500' : criterion.score >= 60 ? 'text-yellow-500' : 'text-destructive';
+
+                                // Circle parameters
+                                const size = 80;
+                                const strokeWidth = 6;
+                                const radius = (size - strokeWidth) / 2;
+                                const circumference = 2 * Math.PI * radius;
+                                const offset = circumference - (percentage / 100) * circumference;
 
                                 return (
                                     <div key={idx} className="space-y-3">
-                                        {/* Criterion Header */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <h5 className="font-semibold">{criterion.category}</h5>
-                                                <Badge variant="outline" className="text-xs font-normal">
-                                                    {criterion.weight}% weight
-                                                </Badge>
+                                        {/* Criterion Header and Circular Progress */}
+                                        <div className="flex items-start gap-6">
+                                            {/* Circular Progress Bar */}
+                                            <div className="flex-shrink-0">
+                                                <svg width={size} height={size} className="transform -rotate-90">
+                                                    {/* Background circle */}
+                                                    <circle
+                                                        cx={size / 2}
+                                                        cy={size / 2}
+                                                        r={radius}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth={strokeWidth}
+                                                        className="text-secondary"
+                                                    />
+                                                    {/* Progress circle */}
+                                                    <circle
+                                                        cx={size / 2}
+                                                        cy={size / 2}
+                                                        r={radius}
+                                                        fill="none"
+                                                        strokeWidth={strokeWidth}
+                                                        strokeDasharray={circumference}
+                                                        strokeDashoffset={offset}
+                                                        strokeLinecap="round"
+                                                        className={`${strokeColor} transition-all duration-500`}
+                                                    />
+                                                    {/* Score text */}
+                                                    <text
+                                                        x="50%"
+                                                        y="50%"
+                                                        dominantBaseline="middle"
+                                                        textAnchor="middle"
+                                                        transform={`rotate(90 ${size / 2} ${size / 2})`}
+                                                        className={`${textColor} font-bold`}
+                                                        style={{ fontSize: '20px' }}
+                                                    >
+                                                        {criterion.score}
+                                                    </text>
+                                                </svg>
                                             </div>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-bold">{criterion.score}</span>
-                                                <span className="text-sm text-muted-foreground">/100</span>
+
+                                            {/* Criterion Details */}
+                                            <div className="flex-1 space-y-3">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <h5 className="font-semibold text-lg">{criterion.category}</h5>
+                                                        <Badge variant="outline" className="text-xs font-normal">
+                                                            {criterion.weight}% weight
+                                                        </Badge>
+                                                    </div>
+                                                    {/* Assessment */}
+                                                    <p className="text-sm text-muted-foreground">{criterion.assessment}</p>
+                                                </div>
+
+                                                {/* Evidence */}
+                                                {criterion.evidence && criterion.evidence.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Evidence</span>
+                                                        <ul className="space-y-1.5">
+                                                            {criterion.evidence.map((item, i) => (
+                                                                <li key={i} className="text-sm text-muted-foreground pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-muted-foreground/50">
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-
-                                        {/* Progress Bar */}
-                                        <div className="w-full bg-secondary rounded-full h-2">
-                                            <div
-                                                className={`${barColor} h-2 rounded-full transition-all duration-500`}
-                                                style={{ width: `${percentage}%` }}
-                                            />
-                                        </div>
-
-                                        {/* Assessment */}
-                                        <p className="text-sm text-muted-foreground">{criterion.assessment}</p>
-
-                                        {/* Evidence */}
-                                        {criterion.evidence && criterion.evidence.length > 0 && (
-                                            <div className="pt-2 space-y-2">
-                                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Evidence</span>
-                                                <ul className="space-y-1.5">
-                                                    {criterion.evidence.map((item, i) => (
-                                                        <li key={i} className="text-sm text-muted-foreground pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-muted-foreground/50">
-                                                            {item}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
 
                                         {/* Separator between criteria */}
                                         {idx < result.criterion_scores!.length - 1 && (

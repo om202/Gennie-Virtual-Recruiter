@@ -202,38 +202,53 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                 </div>
                                             )}
                                             {(isFiltered || expandedInterview === int.id) && (
-                                                <div className={cn(!isFiltered && "ml-6 space-y-1")}>
-                                                    {int.sessions.map((session) => (
-                                                        <div
-                                                            key={session.id}
-                                                            onClick={() => setSelectedSessionId(session.id)}
-                                                            className={cn(
-                                                                "p-3 rounded-lg cursor-pointer transition-colors border",
-                                                                selectedSessionId === session.id
-                                                                    ? "bg-primary/5 border-primary shadow-sm"
-                                                                    : "hover:bg-muted border-transparent"
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <Badge variant={session.status === 'completed' ? 'default' : 'secondary'} className="text-[10px] h-5">
-                                                                    {session.status}
-                                                                </Badge>
-                                                                <span className="text-xs text-muted-foreground">
-                                                                    {new Date(session.created_at).toLocaleDateString()}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                                                                <Clock className="h-3 w-3" />
-                                                                {new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </div>
-                                                            {session.progress_state?.completed_questions && (
-                                                                <div className="flex items-center gap-1 text-[10px] text-green-600 font-medium">
-                                                                    <CheckCircle className="h-3 w-3" />
-                                                                    {session.progress_state.completed_questions.length} Qs Answered
+                                                <div className={cn(!isFiltered && "ml-6 space-y-2")}>
+                                                    {int.sessions.map((session) => {
+                                                        const isSelected = selectedSessionId === session.id;
+                                                        const sessionDate = new Date(session.created_at);
+
+                                                        return (
+                                                            <div
+                                                                key={session.id}
+                                                                onClick={() => setSelectedSessionId(session.id)}
+                                                                className={cn(
+                                                                    "rounded-lg p-3 cursor-pointer transition-colors",
+                                                                    isSelected
+                                                                        ? "bg-accent"
+                                                                        : "hover:bg-accent/50"
+                                                                )}
+                                                            >
+                                                                <div className="flex items-start justify-between gap-2 mb-2">
+                                                                    <Badge
+                                                                        variant={session.status === 'completed' ? 'default' : 'secondary'}
+                                                                        className="text-xs"
+                                                                    >
+                                                                        {session.status}
+                                                                    </Badge>
+                                                                    <time className="text-xs text-muted-foreground whitespace-nowrap">
+                                                                        {sessionDate.toLocaleDateString([], {
+                                                                            month: 'short',
+                                                                            day: 'numeric'
+                                                                        })}
+                                                                        {' '}
+                                                                        {sessionDate.toLocaleTimeString([], {
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit'
+                                                                        })}
+                                                                    </time>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
+
+                                                                {session.progress_state?.completed_questions && (
+                                                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                                        <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                                                                        <span>
+                                                                            {session.progress_state.completed_questions.length} questions answered
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             )}
                                         </div>
@@ -372,7 +387,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                 return null;
                             })()}
 
-                            {/* Interview Statistics Card */}
+                            {/* Interview Statistics Cards */}
                             {selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 && (() => {
                                 const sessionLogs = logs[selectedSessionId];
                                 const candidateLogs = sessionLogs.filter(l => l.speaker === 'candidate');
@@ -380,6 +395,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                 const candidateWords = candidateLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
                                 const agentWords = agentLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
                                 const totalMessages = candidateLogs.length + agentLogs.length;
+                                const candidatePercentage = Math.round(candidateWords / (candidateWords + agentWords || 1) * 100);
+                                const agentPercentage = Math.round(agentWords / (candidateWords + agentWords || 1) * 100);
 
                                 // Calculate duration if we have timestamps
                                 let durationText = '';
@@ -393,43 +410,65 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                 }
 
                                 return (
-                                    <Card>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-base">Interview Statistics</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                                <div>
-                                                    <div className="text-2xl font-bold text-foreground">{totalMessages}</div>
-                                                    <div className="text-xs text-muted-foreground">Messages</div>
-                                                </div>
-                                                <div>
-                                                    <div className="text-2xl font-bold text-primary">
-                                                        {candidateWords}
-                                                        <span className="text-sm text-muted-foreground ml-1">
-                                                            ({Math.round(candidateWords / (candidateWords + agentWords || 1) * 100)}%)
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">Candidate Words</div>
-                                                </div>
-                                                <div>
-                                                    <div className="text-2xl font-bold text-muted-foreground">
-                                                        {agentWords}
-                                                        <span className="text-sm ml-1">
-                                                            ({Math.round(agentWords / (candidateWords + agentWords || 1) * 100)}%)
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">Gennie Words</div>
-                                                </div>
-                                                {durationText && (
-                                                    <div>
-                                                        <div className="text-2xl font-bold text-foreground">{durationText}</div>
-                                                        <div className="text-xs text-muted-foreground">Duration</div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                        {/* Messages Card */}
+                                        <Card>
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium">Messages</CardTitle>
+                                                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold">{totalMessages}</div>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Total exchanges
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+
+                                        {/* Candidate Words Card */}
+                                        <Card>
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium">Candidate Words</CardTitle>
+                                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold text-primary">{candidateWords}</div>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {candidatePercentage}% of conversation
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+
+                                        {/* Gennie Words Card */}
+                                        <Card>
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium">Gennie Words</CardTitle>
+                                                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold">{agentWords}</div>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {agentPercentage}% of conversation
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+
+                                        {/* Duration Card */}
+                                        {durationText && (
+                                            <Card>
+                                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                    <CardTitle className="text-sm font-medium">Duration</CardTitle>
+                                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="text-2xl font-bold">{durationText}</div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        Interview length
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+                                    </div>
                                 );
                             })()}
 
