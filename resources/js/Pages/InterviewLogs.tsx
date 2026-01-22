@@ -51,6 +51,8 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
     const [logs, setLogs] = useState<Record<string, Log[]>>({})
     const [loadingLogs, setLoadingLogs] = useState<string | null>(null)
+    const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
+    const [sessionAnalysis, setSessionAnalysis] = useState<Record<string, { status: 'pending' | 'processing' | 'completed' | 'failed'; result: any }>>({})
 
     // Auto-select first session when viewing filtered interview
     useEffect(() => {
@@ -64,6 +66,33 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
             fetchLogs(selectedSessionId)
         }
     }, [selectedSessionId])
+
+    // Poll for analysis completion
+    useEffect(() => {
+        if (!analyzingSession) return;
+
+        const pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/sessions/${analyzingSession}`);
+                const data = await res.json();
+                if (data.success && data.session) {
+                    const { analysis_status, analysis_result } = data.session;
+
+                    if (analysis_status === 'completed' || analysis_status === 'failed') {
+                        setSessionAnalysis(prev => ({
+                            ...prev,
+                            [analyzingSession]: { status: analysis_status, result: analysis_result }
+                        }));
+                        setAnalyzingSession(null);
+                    }
+                }
+            } catch (e) {
+                console.error('Polling error:', e);
+            }
+        }, 2000); // Poll every 2 seconds
+
+        return () => clearInterval(pollInterval);
+    }, [analyzingSession]);
 
     const fetchLogs = async (sessionId: string) => {
         setLoadingLogs(sessionId)
@@ -143,13 +172,13 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-[calc(100vh-250px)]">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {/* Sidebar: Session List */}
-                        <Card className="col-span-1 h-full overflow-hidden flex flex-col md:border-r-0 md:rounded-r-none">
-                            <CardHeader className="py-4 px-4 border-b">
+                        <Card className="col-span-1 md:sticky md:top-6 md:self-start overflow-hidden flex flex-col md:max-h-[calc(100vh-8rem)]">
+                            <CardHeader className="py-4 px-4 border-b bg-muted/30">
                                 <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Sessions</CardTitle>
                             </CardHeader>
-                            <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                            <div className="overflow-y-auto p-2 space-y-2">
                                 {interviews.map((int) => (
                                     (int.sessions && int.sessions.length > 0) && (
                                         <div key={int.id} className="space-y-1">
@@ -212,30 +241,49 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                         </Card>
 
                         {/* Main Content: Scorecard & Transcript */}
-                        <div className="col-span-3 h-full flex flex-col space-y-6 overflow-hidden">
+                        <div className="col-span-3 flex flex-col space-y-6">
                             {/* Scorecard or Generate Analysis Button */}
                             {selectedSessionId && (() => {
                                 const session = interviews.flatMap(i => i.sessions || []).find(s => s.id === selectedSessionId);
                                 const hasLogs = logs[selectedSessionId] && logs[selectedSessionId].length > 0;
+                                const localAnalysis = sessionAnalysis[selectedSessionId];
+                                const isAnalyzing = analyzingSession === selectedSessionId;
 
                                 if (!session) return null;
 
-                                // Case 1: Analysis Exists or is Processing -> Show Scorecard
-                                if (session.analysis_result || session.analysis_status === 'processing' || session.analysis_status === 'completed') {
+                                // Case 1: Analysis Exists (from server or local state) -> Show Scorecard
+                                const analysisStatus = localAnalysis?.status || session.analysis_status;
+                                const analysisResult = localAnalysis?.result || session.analysis_result;
+
+                                if (analysisResult || analysisStatus === 'completed' || analysisStatus === 'failed') {
                                     return (
-                                        <div className="shrink-0">
+                                        <div>
                                             <Scorecard
-                                                status={session.analysis_status || 'pending'}
-                                                result={session.analysis_result}
+                                                status={analysisStatus || 'pending'}
+                                                result={analysisResult}
                                             />
                                         </div>
                                     );
                                 }
 
-                                // Case 2: No Analysis, has logs -> Show Generate Button
+                                // Case 2: Currently Analyzing -> Show Processing State
+                                if (isAnalyzing || analysisStatus === 'processing') {
+                                    return (
+                                        <div>
+                                            <Card>
+                                                <CardContent className="flex items-center justify-center p-6">
+                                                    <Loader2 className="h-5 w-5 animate-spin mr-3" />
+                                                    <span className="text-muted-foreground">Analyzing interview...</span>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    );
+                                }
+
+                                // Case 3: No Analysis, has logs -> Show Generate Button
                                 if (hasLogs) {
                                     return (
-                                        <div className="shrink-0">
+                                        <div>
                                             <Card>
                                                 <CardContent className="flex items-center justify-between p-6">
                                                     <div className="space-y-1">
@@ -244,15 +292,16 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                                     </div>
                                                     <Button
                                                         onClick={async () => {
+                                                            setAnalyzingSession(session.id);
                                                             try {
                                                                 const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
                                                                 const data = await res.json();
-                                                                if (data.success) {
-                                                                    window.location.reload();
-                                                                } else {
+                                                                if (!data.success) {
+                                                                    setAnalyzingSession(null);
                                                                     alert(data.message || 'Failed to start analysis');
                                                                 }
                                                             } catch (e) {
+                                                                setAnalyzingSession(null);
                                                                 console.error(e);
                                                             }
                                                         }}
@@ -269,7 +318,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                 return null;
                             })()}
 
-                            <Card className="flex-1 overflow-hidden flex flex-col md:rounded-l-none border-l-0">
+                            <Card className="min-h-[500px]">
                                 <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
                                     <div>
                                         <CardTitle className="text-base">
@@ -287,19 +336,19 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                         <Button size="sm" variant="outline" onClick={() => fetchLogs(selectedSessionId)}>Re-sync Logs</Button>
                                     )}
                                 </CardHeader>
-                                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+                                <div className="p-6 bg-slate-50/50 min-h-[400px]">
                                     {!selectedSessionId ? (
-                                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                                        <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground">
                                             <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
                                             <p>Select a session from the left to view its transcript</p>
                                         </div>
                                     ) : selectedSessionId && loadingLogs === selectedSessionId ? (
-                                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                                        <div className="flex items-center justify-center min-h-[300px] text-muted-foreground">
                                             <Loader2 className="h-6 w-6 animate-spin mr-2" />
                                             Loading transcript...
                                         </div>
                                     ) : selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 ? (
-                                        <div className="space-y-6 max-w-3xl mx-auto">
+                                        <div className="space-y-6 max-w-3xl mx-auto pb-8">
                                             {logs[selectedSessionId].map((log) => (
                                                 <div key={log.id} className={cn(
                                                     "flex gap-4",
@@ -339,7 +388,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                                        <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground">
                                             <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
                                             <p>No transcript available for this session.</p>
                                         </div>
