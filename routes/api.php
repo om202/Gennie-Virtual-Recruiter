@@ -25,6 +25,8 @@ Route::get('/sessions/{id}/context', [InterviewSessionController::class, 'getCon
 Route::post('/sessions/{id}/progress', [InterviewSessionController::class, 'updateProgress']);
 Route::post('/sessions/{id}/log', [InterviewSessionController::class, 'logInteraction']);
 Route::get('/sessions/{id}/logs', [InterviewSessionController::class, 'getLogs']);
+Route::post('/sessions/{id}/analyze', [InterviewSessionController::class, 'analyze']);
+Route::post('/sessions/{id}/end', [InterviewSessionController::class, 'end']);
 
 // Twilio Routes
 Route::post('/twilio/call', [\App\Http\Controllers\Api\TwilioController::class, 'startCall']);

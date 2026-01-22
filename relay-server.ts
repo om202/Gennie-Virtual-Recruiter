@@ -95,7 +95,7 @@ wss.on("connection", async (ws, req) => {
     // Fetch session context from Laravel if we have a session ID
     if (sessionId) {
         try {
-            const appUrl = "http://127.0.0.1:8000";
+            const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
             const response = await fetch(`${appUrl}/api/sessions/${sessionId}/context`);
             sessionContext = await response.json() as SessionContext;
             console.log("Session context loaded:", sessionContext);
@@ -258,7 +258,7 @@ wss.on("connection", async (ws, req) => {
 
             if (functionName === "get_context") {
                 try {
-                    const appUrl = "http://127.0.0.1:8000";
+                    const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
                     const response = await fetch(`${appUrl}/api/agent/context`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -299,6 +299,19 @@ wss.on("connection", async (ws, req) => {
                     name: functionName,
                     content: "Interview ended successfully. Goodbye!",
                 });
+
+                // Notify Backend to end session and start analysis
+                if (sessionId) {
+                    try {
+                        const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
+                        await fetch(`${appUrl}/api/sessions/${sessionId}/end`, {
+                            method: "POST",
+                        });
+                        console.log("Backend notified of session end.");
+                    } catch (err) {
+                        console.error("Failed to notify backend of session end:", err);
+                    }
+                }
 
                 // Give the AI time to say goodbye, then disconnect
                 setTimeout(() => {

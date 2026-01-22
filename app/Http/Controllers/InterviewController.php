@@ -217,7 +217,7 @@ class InterviewController extends Controller
                 'sessions' => function ($query) {
                     $query->has('logs')
                         ->orderBy('created_at', 'desc')
-                        ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state');
+                        ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'analysis_status', 'analysis_result');
                 }
             ])
             ->orderBy('updated_at', 'desc')

@@ -286,6 +286,30 @@ class InterviewSessionController extends Controller
         return response()->json(['success' => true]);
     }
     /**
+     * End the interview session and trigger analysis.
+     */
+    public function end(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        if ($session->status === 'completed') {
+            return response()->json(['success' => true, 'message' => 'Session already completed']);
+        }
+
+        $session->update([
+            'status' => 'completed',
+        ]);
+
+        // Dispatch Analysis Job
+        \App\Jobs\GenerateSessionAnalysis::dispatch($session);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Session ended and analysis queued',
+        ]);
+    }
+
+    /**
      * Get logs for this session.
      */
     public function getLogs(string $id)
@@ -299,6 +323,36 @@ class InterviewSessionController extends Controller
         return response()->json([
             'success' => true,
             'logs' => $logs,
+        ]);
+    }
+
+    /**
+     * Manually trigger analysis for a session.
+     */
+    public function analyze(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        if ($session->analysis_status === 'processing' || $session->analysis_status === 'completed') {
+            return response()->json(['success' => false, 'message' => 'Analysis already in progress or completed']);
+        }
+
+        // Check for content
+        $hasContent = !empty($session->transcript) || $session->logs()->exists();
+
+        if (!$hasContent) {
+            return response()->json(['success' => false, 'message' => 'Cannot analyze empty session']);
+        }
+
+        // Update status to processing
+        $session->update(['analysis_status' => 'processing']);
+
+        // Dispatch Analysis Job
+        \App\Jobs\GenerateSessionAnalysis::dispatch($session);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Analysis queued',
         ]);
     }
 }

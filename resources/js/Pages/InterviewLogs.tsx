@@ -3,7 +3,8 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, ArrowLeft, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Clock, CheckCircle, ArrowLeft, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react'
+import { Scorecard } from '@/components/Analysis/Scorecard'
 import { cn } from '@/lib/utils'
 
 interface Session {
@@ -12,7 +13,10 @@ interface Session {
     created_at: string
     metadata: any
     progress_state: any
+    analysis_status: 'pending' | 'processing' | 'completed' | 'failed'
+    analysis_result: any
 }
+
 
 interface Log {
     id: number
@@ -207,84 +211,142 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                             </div>
                         </Card>
 
-                        {/* Main Content: Transcript */}
-                        <Card className="col-span-3 h-full overflow-hidden flex flex-col md:rounded-l-none border-l-0">
-                            <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
-                                <div>
-                                    <CardTitle className="text-base">
-                                        Transcript
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {selectedSessionId ? (
-                                            <>Session ID: <span className="font-mono text-xs">{selectedSessionId}</span></>
-                                        ) : (
-                                            'Select a session to view transcript'
-                                        )}
-                                    </CardDescription>
-                                </div>
-                                {selectedSessionId && (
-                                    <Button size="sm" variant="outline" onClick={() => fetchLogs(selectedSessionId)}>Re-sync Logs</Button>
-                                )}
-                            </CardHeader>
-                            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
-                                {!selectedSessionId ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                                        <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
-                                        <p>Select a session from the left to view its transcript</p>
-                                    </div>
-                                ) : selectedSessionId && loadingLogs === selectedSessionId ? (
-                                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                                        Loading transcript...
-                                    </div>
-                                ) : selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 ? (
-                                    <div className="space-y-6 max-w-3xl mx-auto">
-                                        {logs[selectedSessionId].map((log) => (
-                                            <div key={log.id} className={cn(
-                                                "flex gap-4",
-                                                log.speaker === 'candidate' ? "flex-row-reverse" : "flex-row"
-                                            )}>
-                                                <div className={cn(
-                                                    "h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold",
-                                                    log.speaker === 'candidate' ? "bg-primary text-primary-foreground" : "bg-muted border text-muted-foreground"
-                                                )}>
-                                                    {log.speaker === 'candidate' ? 'C' : 'G'}
-                                                </div>
+                        {/* Main Content: Scorecard & Transcript */}
+                        <div className="col-span-3 h-full flex flex-col space-y-6 overflow-hidden">
+                            {/* Scorecard or Generate Analysis Button */}
+                            {selectedSessionId && (() => {
+                                const session = interviews.flatMap(i => i.sessions || []).find(s => s.id === selectedSessionId);
+                                const hasLogs = logs[selectedSessionId] && logs[selectedSessionId].length > 0;
 
-                                                <div className={cn(
-                                                    "flex flex-col max-w-[80%]",
-                                                    log.speaker === 'candidate' ? "items-end" : "items-start"
-                                                )}>
-                                                    <div className="flex items-baseline gap-2 mb-1">
-                                                        <span className="text-xs font-semibold text-foreground">
-                                                            {log.speaker === 'agent' ? 'Gennie' : log.speaker === 'candidate' ? 'Candidate' : 'System'}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground">
-                                                            {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                                        </span>
+                                if (!session) return null;
+
+                                // Case 1: Analysis Exists or is Processing -> Show Scorecard
+                                if (session.analysis_result || session.analysis_status === 'processing' || session.analysis_status === 'completed') {
+                                    return (
+                                        <div className="shrink-0">
+                                            <Scorecard
+                                                status={session.analysis_status || 'pending'}
+                                                result={session.analysis_result}
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                // Case 2: No Analysis, has logs -> Show Generate Button
+                                if (hasLogs) {
+                                    return (
+                                        <div className="shrink-0">
+                                            <Card>
+                                                <CardContent className="flex items-center justify-between p-6">
+                                                    <div className="space-y-1">
+                                                        <h3 className="font-semibold">Interview Analysis</h3>
+                                                        <p className="text-sm text-muted-foreground">Generate a scorecard and summary for this session.</p>
                                                     </div>
+                                                    <Button
+                                                        onClick={async () => {
+                                                            try {
+                                                                const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
+                                                                const data = await res.json();
+                                                                if (data.success) {
+                                                                    window.location.reload();
+                                                                } else {
+                                                                    alert(data.message || 'Failed to start analysis');
+                                                                }
+                                                            } catch (e) {
+                                                                console.error(e);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <TrendingUp className="h-4 w-4 mr-2" />
+                                                        Generate Analysis
+                                                    </Button>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    );
+                                }
+
+                                return null;
+                            })()}
+
+                            <Card className="flex-1 overflow-hidden flex flex-col md:rounded-l-none border-l-0">
+                                <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
+                                    <div>
+                                        <CardTitle className="text-base">
+                                            Transcript
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {selectedSessionId ? (
+                                                <>Session ID: <span className="font-mono text-xs">{selectedSessionId}</span></>
+                                            ) : (
+                                                'Select a session to view transcript'
+                                            )}
+                                        </CardDescription>
+                                    </div>
+                                    {selectedSessionId && (
+                                        <Button size="sm" variant="outline" onClick={() => fetchLogs(selectedSessionId)}>Re-sync Logs</Button>
+                                    )}
+                                </CardHeader>
+                                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+                                    {!selectedSessionId ? (
+                                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                                            <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
+                                            <p>Select a session from the left to view its transcript</p>
+                                        </div>
+                                    ) : selectedSessionId && loadingLogs === selectedSessionId ? (
+                                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                                            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                                            Loading transcript...
+                                        </div>
+                                    ) : selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 ? (
+                                        <div className="space-y-6 max-w-3xl mx-auto">
+                                            {logs[selectedSessionId].map((log) => (
+                                                <div key={log.id} className={cn(
+                                                    "flex gap-4",
+                                                    log.speaker === 'candidate' ? "flex-row-reverse" : "flex-row"
+                                                )}>
                                                     <div className={cn(
-                                                        "rounded-lg p-3 text-sm leading-relaxed shadow-sm",
-                                                        log.speaker === 'candidate'
-                                                            ? "bg-primary text-primary-foreground rounded-tr-none"
-                                                            : log.speaker === 'system'
-                                                                ? "bg-muted/50 italic text-muted-foreground w-full text-center border-none shadow-none"
-                                                                : "bg-white border rounded-tl-none"
+                                                        "h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold",
+                                                        log.speaker === 'candidate' ? "bg-primary text-primary-foreground" : "bg-muted border text-muted-foreground"
                                                     )}>
-                                                        {log.message}
+                                                        {log.speaker === 'candidate' ? 'C' : 'G'}
+                                                    </div>
+
+                                                    <div className={cn(
+                                                        "flex flex-col max-w-[80%]",
+                                                        log.speaker === 'candidate' ? "items-end" : "items-start"
+                                                    )}>
+                                                        <div className="flex items-baseline gap-2 mb-1">
+                                                            <span className="text-xs font-semibold text-foreground">
+                                                                {log.speaker === 'agent' ? 'Gennie' : log.speaker === 'candidate' ? 'Candidate' : 'System'}
+                                                            </span>
+                                                            <span className="text-[10px] text-muted-foreground">
+                                                                {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                            </span>
+                                                        </div>
+                                                        <div className={cn(
+                                                            "rounded-lg p-3 text-sm leading-relaxed shadow-sm",
+                                                            log.speaker === 'candidate'
+                                                                ? "bg-primary text-primary-foreground rounded-tr-none"
+                                                                : log.speaker === 'system'
+                                                                    ? "bg-muted/50 italic text-muted-foreground w-full text-center border-none shadow-none"
+                                                                    : "bg-white border rounded-tl-none"
+                                                        )}>
+                                                            {log.message}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                                        <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
-                                        <p>No transcript available for this session.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                                            <MessageSquare className="h-10 w-10 mb-2 opacity-20" />
+                                            <p>No transcript available for this session.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        </div>
                     </div>
                 )}
             </div>

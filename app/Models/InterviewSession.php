@@ -19,11 +19,15 @@ class InterviewSession extends Model
         'metadata',
         'progress_state',
         'status',
+        'analysis_status',
+        'analysis_result',
+        'transcript',
     ];
 
     protected $casts = [
         'metadata' => 'array',
         'progress_state' => 'array',
+        'analysis_result' => 'array',
     ];
 
     /**
