@@ -182,7 +182,7 @@ class TwilioController extends Controller
 
     /**
      * Proxy endpoint to stream Twilio recordings with authentication.
-     * Twilio recordings require HTTP Basic Auth, so we fetch server-side and stream to browser.
+     * Streams directly from Twilio - no local caching to avoid disk fill.
      */
     public function streamRecording(string $id)
     {
@@ -193,28 +193,24 @@ class TwilioController extends Controller
         }
 
         $recordingUrl = $session->twilio_data['recording_url'] . '.mp3';
-
         $sid = env('TWILIO_ACCOUNT_SID');
         $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
 
-        // Fetch recording with Twilio credentials
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $recordingUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-        $audioData = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-        curl_close($ch);
-
-        if ($httpCode !== 200) {
-            abort($httpCode, 'Failed to fetch recording from Twilio');
-        }
-
-        return response($audioData)
-            ->header('Content-Type', $contentType ?: 'audio/mpeg')
-            ->header('Content-Disposition', 'inline');
+        // Stream directly from Twilio with authentication
+        return response()->stream(function () use ($recordingUrl, $sid, $token) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $recordingUrl);
+            curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $data) {
+                echo $data;
+                flush();
+                return strlen($data);
+            });
+            curl_exec($ch);
+            curl_close($ch);
+        }, 200, [
+            'Content-Type' => 'audio/mpeg',
+        ]);
     }
 }
