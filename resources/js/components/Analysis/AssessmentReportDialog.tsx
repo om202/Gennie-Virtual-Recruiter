@@ -31,6 +31,12 @@ interface AssessmentReportDialogProps {
 }
 
 export function AssessmentReportDialog({ open, onClose, interview, session }: AssessmentReportDialogProps) {
+    // Don't show dialog for insufficient interview data
+    const errorResult = session.analysis_result as { error?: string } | null;
+    if (errorResult?.error && (errorResult.error.includes('Insufficient') || errorResult.error.includes('insufficient'))) {
+        return null;
+    }
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-6xl w-[95vw] max-h-[95vh] overflow-y-auto p-0">

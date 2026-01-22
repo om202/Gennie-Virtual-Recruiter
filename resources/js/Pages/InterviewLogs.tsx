@@ -44,7 +44,7 @@ interface InterviewLogsProps {
     interview: Interview | null // null means show all interviews
 }
 
-export default function InterviewLogs({ auth, interviews, interview }: InterviewLogsProps) {
+export default function InterviewLogs({ auth: _auth, interviews, interview }: InterviewLogsProps) {
     const isFiltered = interview !== null
     const [expandedInterview, setExpandedInterview] = useState<string | null>(
         isFiltered ? interview.id : null
@@ -300,7 +300,16 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                                 </Button>
                                             </div>
                                             {/* Clickable Scorecard - Opens Full-Screen Dialog */}
-                                            <div onClick={() => setAssessmentDialogOpen(true)} className="cursor-pointer">
+                                            <div
+                                                onClick={() => {
+                                                    // Only open dialog if not insufficient data error
+                                                    const errorResult = analysisResult as { error?: string } | null;
+                                                    const isInsufficientData = errorResult?.error && (errorResult.error.includes('Insufficient') || errorResult.error.includes('insufficient'));
+                                                    if (!isInsufficientData) {
+                                                        setAssessmentDialogOpen(true);
+                                                    }
+                                                }}
+                                            >
                                                 <Scorecard
                                                     status={analysisStatus || 'pending'}
                                                     result={analysisResult}
@@ -363,7 +372,68 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                 return null;
                             })()}
 
+                            {/* Interview Statistics Card */}
+                            {selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 && (() => {
+                                const sessionLogs = logs[selectedSessionId];
+                                const candidateLogs = sessionLogs.filter(l => l.speaker === 'candidate');
+                                const agentLogs = sessionLogs.filter(l => l.speaker === 'agent');
+                                const candidateWords = candidateLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
+                                const agentWords = agentLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
+                                const totalMessages = candidateLogs.length + agentLogs.length;
 
+                                // Calculate duration if we have timestamps
+                                let durationText = '';
+                                if (sessionLogs.length >= 2) {
+                                    const startTime = new Date(sessionLogs[0].created_at).getTime();
+                                    const endTime = new Date(sessionLogs[sessionLogs.length - 1].created_at).getTime();
+                                    const durationMs = endTime - startTime;
+                                    const minutes = Math.floor(durationMs / 60000);
+                                    const seconds = Math.floor((durationMs % 60000) / 1000);
+                                    durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                                }
+
+                                return (
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-base">Interview Statistics</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                                <div>
+                                                    <div className="text-2xl font-bold text-foreground">{totalMessages}</div>
+                                                    <div className="text-xs text-muted-foreground">Messages</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-2xl font-bold text-primary">
+                                                        {candidateWords}
+                                                        <span className="text-sm text-muted-foreground ml-1">
+                                                            ({Math.round(candidateWords / (candidateWords + agentWords || 1) * 100)}%)
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">Candidate Words</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-2xl font-bold text-muted-foreground">
+                                                        {agentWords}
+                                                        <span className="text-sm ml-1">
+                                                            ({Math.round(agentWords / (candidateWords + agentWords || 1) * 100)}%)
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">Gennie Words</div>
+                                                </div>
+                                                {durationText && (
+                                                    <div>
+                                                        <div className="text-2xl font-bold text-foreground">{durationText}</div>
+                                                        <div className="text-xs text-muted-foreground">Duration</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })()}
+
+                            {/* Transcript Card */}
                             <Card className="min-h-[500px]">
                                 <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
                                     <div>
@@ -395,70 +465,6 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                         </div>
                                     ) : selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 ? (
                                         <div className="space-y-6 max-w-3xl mx-auto pb-8">
-                                            {/* Interview Statistics Summary */}
-                                            {(() => {
-                                                const sessionLogs = logs[selectedSessionId];
-                                                const candidateLogs = sessionLogs.filter(l => l.speaker === 'candidate');
-                                                const agentLogs = sessionLogs.filter(l => l.speaker === 'agent');
-                                                const candidateWords = candidateLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
-                                                const agentWords = agentLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
-                                                const totalMessages = candidateLogs.length + agentLogs.length;
-
-                                                // Calculate duration if we have timestamps
-                                                let durationText = '';
-                                                if (sessionLogs.length >= 2) {
-                                                    const startTime = new Date(sessionLogs[0].created_at).getTime();
-                                                    const endTime = new Date(sessionLogs[sessionLogs.length - 1].created_at).getTime();
-                                                    const durationMs = endTime - startTime;
-                                                    const minutes = Math.floor(durationMs / 60000);
-                                                    const seconds = Math.floor((durationMs % 60000) / 1000);
-                                                    durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                                                }
-
-                                                return (
-                                                    <div className="bg-white border rounded-lg p-4 mb-6">
-                                                        <h4 className="text-sm font-medium text-muted-foreground mb-3">Interview Statistics</h4>
-                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                                            <div>
-                                                                <div className="text-2xl font-bold text-foreground">{totalMessages}</div>
-                                                                <div className="text-xs text-muted-foreground">Messages</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-2xl font-bold text-primary">{candidateWords}</div>
-                                                                <div className="text-xs text-muted-foreground">Candidate Words</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-2xl font-bold text-muted-foreground">{agentWords}</div>
-                                                                <div className="text-xs text-muted-foreground">Gennie Words</div>
-                                                            </div>
-                                                            {durationText && (
-                                                                <div>
-                                                                    <div className="text-2xl font-bold text-foreground">{durationText}</div>
-                                                                    <div className="text-xs text-muted-foreground">Duration</div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {/* Speaking ratio bar */}
-                                                        <div className="mt-4">
-                                                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                                                <span>Candidate ({Math.round(candidateWords / (candidateWords + agentWords || 1) * 100)}%)</span>
-                                                                <span>Gennie ({Math.round(agentWords / (candidateWords + agentWords || 1) * 100)}%)</span>
-                                                            </div>
-                                                            <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-                                                                <div
-                                                                    className="bg-primary transition-all"
-                                                                    style={{ width: `${candidateWords / (candidateWords + agentWords || 1) * 100}%` }}
-                                                                />
-                                                                <div
-                                                                    className="bg-muted-foreground/40 transition-all"
-                                                                    style={{ width: `${agentWords / (candidateWords + agentWords || 1) * 100}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-
                                             {/* Transcript Messages */}
                                             {logs[selectedSessionId].map((log) => {
                                                 const wordCount = log.message.split(/\s+/).filter(Boolean).length;

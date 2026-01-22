@@ -1,6 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, XCircle, AlertCircle, TrendingUp, TrendingDown, ChevronRight, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CriterionScore {
     category: string
@@ -28,10 +29,22 @@ interface ScorecardProps {
 export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) {
     if (status === 'pending' || status === 'processing') {
         return (
-            <Card className="bg-muted/30 border-dashed">
-                <CardContent className="flex items-center justify-center py-4 gap-3">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    <span className="text-muted-foreground">AI Analysis in progress...</span>
+            <Card className="border-dashed">
+                <CardContent className="flex items-center justify-between py-6 px-6">
+                    <div className="flex items-center gap-4">
+                        {/* Loading Icon */}
+                        <div className="flex items-center justify-center h-16 w-16">
+                            <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                        </div>
+
+                        {/* Loading Message */}
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">Analysis in Progress</h4>
+                            <p className="text-sm text-muted-foreground">
+                                AI is analyzing the interview transcript...
+                            </p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         )
@@ -44,17 +57,26 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
         const errorReason = errorResult?.reason;
 
         return (
-            <Card className="bg-red-50/50 border-red-200">
-                <CardContent className="flex flex-col items-center justify-center py-4 gap-2 text-red-600">
-                    <div className="flex items-center gap-2">
-                        <AlertCircle className="h-5 w-5" />
-                        <span className="font-medium">{errorMessage}</span>
+            <Card>
+                <CardContent className="flex items-center justify-between py-6 px-6">
+                    <div className="flex items-center gap-4">
+                        {/* Alert Icon */}
+                        <div className="flex items-center justify-center h-16 w-16">
+                            <AlertCircle className="h-10 w-10 text-orange-500" />
+                        </div>
+
+                        {/* Error Message */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <h4 className="font-semibold">{errorMessage}</h4>
+                            </div>
+                            {errorReason && (
+                                <p className="text-sm text-muted-foreground max-w-md">
+                                    {errorReason}
+                                </p>
+                            )}
+                        </div>
                     </div>
-                    {errorReason && (
-                        <p className="text-sm text-red-500/80 text-center max-w-md">
-                            {errorReason}
-                        </p>
-                    )}
                 </CardContent>
             </Card>
         )
@@ -62,187 +84,219 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
 
     if (!result) {
         return (
-            <Card className="bg-red-50/50 border-red-200">
-                <CardContent className="flex items-center justify-center py-4 gap-2 text-red-600">
-                    <AlertCircle className="h-5 w-5" />
-                    <span>No analysis result available</span>
+            <Card>
+                <CardContent className="flex items-center justify-between py-6 px-6">
+                    <div className="flex items-center gap-4">
+                        {/* Alert Icon */}
+                        <div className="flex items-center justify-center h-16 w-16">
+                            <AlertCircle className="h-10 w-10 text-orange-500" />
+                        </div>
+
+                        {/* Error Message */}
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">No analysis result available</h4>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         )
     }
 
-    const getScoreColor = (score: number) => {
-        if (score >= 80) return "text-green-600 bg-green-50 border-green-300"
-        if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-300"
-        return "text-red-600 bg-red-50 border-red-300"
-    }
 
     const getScoreRingColor = (score: number) => {
-        if (score >= 80) return "border-green-400"
-        if (score >= 60) return "border-yellow-400"
-        return "border-red-400"
+        if (score >= 80) return "border-green-500"
+        if (score >= 60) return "border-yellow-500"
+        return "border-destructive"
     }
 
-    const getRecommendationStyle = (rec: string) => {
-        const styles: Record<string, string> = {
-            'Strong Hire': 'bg-green-100 text-green-800',
-            'Hire': 'bg-green-100 text-green-800',
-            'Weak Hire': 'bg-yellow-100 text-yellow-800',
-            'Reject': 'bg-red-100 text-red-800',
-        }
-        return styles[rec] || ''
+    const getRecommendationVariant = (rec: string): "default" | "secondary" | "destructive" => {
+        if (rec === 'Strong Hire' || rec === 'Hire') return "default"
+        if (rec === 'Weak Hire') return "secondary"
+        return "destructive"
     }
 
     // Full mode - render content directly without dialog
     if (mode === 'full' && result) {
         return (
-            <div className="space-y-8">
-                {/* Header Section */}
-                <div className="bg-muted border rounded-lg p-8">
-                    <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold">
-                                AI-Powered Interview Analysis
-                            </h2>
-                            <p className="text-muted-foreground">
-                                Comprehensive candidate evaluation and hiring recommendation
-                            </p>
-                            <Badge className={`${getRecommendationStyle(result.recommendation)} text-sm px-4 py-1.5 mt-3`}>
-                                {result.recommendation}
-                            </Badge>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <div className={`flex flex-col items-center justify-center h-24 w-24 rounded-full border-4 ${getScoreRingColor(result.score)} bg-background shadow-sm`}>
-                                <span className="font-bold text-3xl">{result.score}</span>
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">Score</span>
+            <div className="space-y-6">
+                {/* Overall Score Card */}
+                <Card>
+                    <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-1.5">
+                                <CardTitle className="text-2xl">Interview Assessment</CardTitle>
+                                <CardDescription className="text-base">
+                                    AI-powered evaluation and hiring recommendation
+                                </CardDescription>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className={`flex flex-col items-center justify-center h-20 w-20 rounded-full border-4 ${getScoreRingColor(result.score)} bg-background`}>
+                                    <span className="font-bold text-2xl">{result.score}</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Score</span>
+                                </div>
+                                <Badge variant={getRecommendationVariant(result.recommendation)} className="text-xs">
+                                    {result.recommendation}
+                                </Badge>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Executive Summary */}
-                <div className="bg-muted/50 rounded-lg p-6 border">
-                    <h4 className="font-semibold text-base mb-3">
-                        Executive Summary
-                    </h4>
-                    <p className="text-muted-foreground leading-relaxed">{result.summary}</p>
-                </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-muted-foreground">Summary</h4>
+                            <p className="text-sm leading-relaxed">{result.summary}</p>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* Detailed Criterion Scores */}
                 {result.criterion_scores && result.criterion_scores.length > 0 && (
-                    <div className="space-y-4">
-                        <h4 className="font-semibold text-lg">Evaluation Criteria Breakdown</h4>
-                        <div className="space-y-3">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Evaluation Criteria</CardTitle>
+                            <CardDescription>
+                                Detailed breakdown of performance across key competencies
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
                             {result.criterion_scores.map((criterion, idx) => {
                                 const percentage = (criterion.score / 100) * 100;
-                                const barColor = criterion.score >= 80 ? 'bg-green-500' : criterion.score >= 60 ? 'bg-yellow-500' : 'bg-orange-500';
+                                const barColor = criterion.score >= 80 ? 'bg-green-500' : criterion.score >= 60 ? 'bg-yellow-500' : 'bg-destructive';
 
                                 return (
-                                    <div key={idx} className="bg-muted/30 rounded-lg p-4 border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-semibold">{criterion.category}</span>
-                                                <Badge variant="outline" className="text-xs">
+                                    <div key={idx} className="space-y-3">
+                                        {/* Criterion Header */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <h5 className="font-semibold">{criterion.category}</h5>
+                                                <Badge variant="outline" className="text-xs font-normal">
                                                     {criterion.weight}% weight
                                                 </Badge>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-baseline gap-1">
                                                 <span className="text-2xl font-bold">{criterion.score}</span>
                                                 <span className="text-sm text-muted-foreground">/100</span>
                                             </div>
                                         </div>
 
                                         {/* Progress Bar */}
-                                        <div className="w-full bg-muted rounded-full h-2 mb-3">
+                                        <div className="w-full bg-secondary rounded-full h-2">
                                             <div
-                                                className={`${barColor} h-2 rounded-full transition-all`}
+                                                className={`${barColor} h-2 rounded-full transition-all duration-500`}
                                                 style={{ width: `${percentage}%` }}
                                             />
                                         </div>
 
                                         {/* Assessment */}
-                                        <p className="text-base text-muted-foreground mb-2">{criterion.assessment}</p>
+                                        <p className="text-sm text-muted-foreground">{criterion.assessment}</p>
 
                                         {/* Evidence */}
                                         {criterion.evidence && criterion.evidence.length > 0 && (
-                                            <div className="mt-2 space-y-1">
-                                                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Evidence:</span>
-                                                <ul className="space-y-1">
+                                            <div className="pt-2 space-y-2">
+                                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Evidence</span>
+                                                <ul className="space-y-1.5">
                                                     {criterion.evidence.map((item, i) => (
-                                                        <li key={i} className="text-sm text-muted-foreground pl-4 relative before:content-['•'] before:absolute before:left-0">
+                                                        <li key={i} className="text-sm text-muted-foreground pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-muted-foreground/50">
                                                             {item}
                                                         </li>
                                                     ))}
                                                 </ul>
                                             </div>
                                         )}
+
+                                        {/* Separator between criteria */}
+                                        {idx < result.criterion_scores!.length - 1 && (
+                                            <div className="border-t pt-3" />
+                                        )}
                                     </div>
                                 );
                             })}
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 )}
 
-                {/* Strengths & Improvements Grid */}
+                {/* Strengths & Improvements */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Key Strengths */}
-                    <div className="bg-green-50/50 dark:bg-green-950/10 rounded-lg p-6 border">
-                        <h4 className="flex items-center gap-2 font-semibold text-base mb-4">
-                            <TrendingUp className="h-5 w-5 text-green-600" />
-                            Key Strengths
-                        </h4>
-                        <ul className="space-y-3">
-                            {result.key_pros.map((pro, i) => (
-                                <li key={i} className="flex items-start gap-3 text-sm">
-                                    <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                                    <span className="text-foreground">{pro}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                                <TrendingUp className="h-5 w-5 text-green-600" />
+                                Key Strengths
+                            </CardTitle>
+                            <CardDescription>
+                                Notable positive attributes demonstrated
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-3">
+                                {result.key_pros.map((pro, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-sm">
+                                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                                        <span>{pro}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
 
                     {/* Areas for Improvement */}
-                    <div className="bg-orange-50/50 dark:bg-orange-950/10 rounded-lg p-6 border">
-                        <h4 className="flex items-center gap-2 font-semibold text-base mb-4">
-                            <TrendingDown className="h-5 w-5 text-orange-600" />
-                            Areas for Improvement
-                        </h4>
-                        <ul className="space-y-3">
-                            {result.key_cons.map((con, i) => (
-                                <li key={i} className="flex items-start gap-3 text-sm">
-                                    <XCircle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
-                                    <span className="text-foreground">{con}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                                <TrendingDown className="h-5 w-5 text-orange-600" />
+                                Areas for Improvement
+                            </CardTitle>
+                            <CardDescription>
+                                Opportunities for growth and development
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-3">
+                                {result.key_cons.map((con, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-sm">
+                                        <XCircle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
+                                        <span>{con}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Footer Note */}
-                <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-                    This assessment was generated by AI and should be used as a guide alongside your own judgment.
-                </div>
+                <Card className="bg-muted/50">
+                    <CardContent className="py-4">
+                        <p className="text-xs text-center text-muted-foreground">
+                            This assessment was generated by AI and should be used as a guide alongside your own judgment.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
+    // Check if this is an insufficient data error
+    const errorResult = result as { error?: string } | null;
+    const isInsufficientData = errorResult?.error && (errorResult.error.includes('Insufficient') || errorResult.error.includes('insufficient'));
+
     return (
         /* Compact Score Display */
-        <Card
-            className={`transition-all hover:shadow-md hover:border-primary/50 ${getScoreColor(result.score)}`}
-        >
-            <CardContent className="flex items-center justify-between py-4 px-6">
+        <Card className={cn(
+            "transition-all",
+            !isInsufficientData && "hover:shadow-md cursor-pointer"
+        )}>
+            <CardContent className="flex items-center justify-between py-6 px-6">
                 <div className="flex items-center gap-4">
                     {/* Score Circle */}
-                    <div className={`flex items-center justify-center h-14 w-14 rounded-full border-4 ${getScoreRingColor(result.score)} bg-white font-bold text-xl`}>
-                        {result.score}
+                    <div className={`flex items-center justify-center h-16 w-16 rounded-full border-4 ${getScoreRingColor(result.score)} bg-background`}>
+                        <span className="font-bold text-xl">{result.score}</span>
                     </div>
 
                     {/* Recommendation & Summary Preview */}
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                            <span className="font-semibold text-foreground">Interview Score</span>
-                            <Badge className={`${getRecommendationStyle(result.recommendation)} text-xs`}>
+                            <h4 className="font-semibold">Interview Score</h4>
+                            <Badge variant={getRecommendationVariant(result.recommendation)}>
                                 {result.recommendation}
                             </Badge>
                         </div>
@@ -253,7 +307,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                 </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="text-sm">View Details</span>
+                    <span className="text-sm font-medium">View Details</span>
                     <ChevronRight className="h-5 w-5" />
                 </div>
             </CardContent>
