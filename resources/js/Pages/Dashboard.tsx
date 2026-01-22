@@ -93,14 +93,6 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
         return colors[type] || 'bg-gray-100 text-gray-800'
     }
 
-    const getStatusColor = (status: string) => {
-        const colors: Record<string, string> = {
-            draft: 'bg-yellow-100 text-yellow-800',
-            active: 'bg-green-100 text-green-800',
-            archived: 'bg-gray-100 text-gray-800',
-        }
-        return colors[status] || 'bg-gray-100 text-gray-800'
-    }
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never'
@@ -203,9 +195,6 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                     <CardDescription>{interview.company_name}</CardDescription>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Badge className={getStatusColor(interview.status)}>
-                                                        {interview.status}
-                                                    </Badge>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="ghost" size="icon" className="h-8 w-8">
