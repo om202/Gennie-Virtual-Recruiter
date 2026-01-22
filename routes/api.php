@@ -26,6 +26,8 @@ Route::post('/sessions/{id}/progress', [InterviewSessionController::class, 'upda
 Route::post('/sessions/{id}/log', [InterviewSessionController::class, 'logInteraction']);
 Route::get('/sessions/{id}/logs', [InterviewSessionController::class, 'getLogs']);
 Route::post('/sessions/{id}/analyze', [InterviewSessionController::class, 'analyze']);
+// TODO: TEMPORARY - Remove this route later
+Route::post('/sessions/{id}/reset-analysis', [InterviewSessionController::class, 'resetAnalysis']);
 Route::post('/sessions/{id}/end', [InterviewSessionController::class, 'end']);
 
 // Twilio Routes

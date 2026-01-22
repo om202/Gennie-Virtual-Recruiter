@@ -257,7 +257,46 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
 
                                 if (analysisResult || analysisStatus === 'completed' || analysisStatus === 'failed') {
                                     return (
-                                        <div>
+                                        <div className="space-y-3">
+                                            {/* TODO: TEMPORARY - Remove this button later */}
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={isAnalyzing}
+                                                    onClick={async () => {
+                                                        setAnalyzingSession(session.id);
+                                                        // Clear local state first
+                                                        setSessionAnalysis(prev => {
+                                                            const newState = { ...prev };
+                                                            delete newState[session.id];
+                                                            return newState;
+                                                        });
+                                                        try {
+                                                            // Force re-analysis by resetting status first
+                                                            await fetch(`/api/sessions/${session.id}/reset-analysis`, { method: 'POST' });
+                                                            const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
+                                                            const data = await res.json();
+                                                            if (!data.success) {
+                                                                setAnalyzingSession(null);
+                                                                alert(data.message || 'Failed to start analysis');
+                                                            }
+                                                        } catch (e) {
+                                                            setAnalyzingSession(null);
+                                                            console.error(e);
+                                                        }
+                                                    }}
+                                                >
+                                                    {isAnalyzing ? (
+                                                        <>
+                                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                            Re-running...
+                                                        </>
+                                                    ) : (
+                                                        'Re-run Assessment'
+                                                    )}
+                                                </Button>
+                                            </div>
                                             <Scorecard
                                                 status={analysisStatus || 'pending'}
                                                 result={analysisResult}

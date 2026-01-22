@@ -53,10 +53,51 @@ class GenerateSessionAnalysis implements ShouldQueue
                 return;
             }
 
+            // Validate minimum interview content - require actual candidate participation
+            $lines = array_filter(explode("\n", $transcript), fn($line) => !empty(trim($line)));
+            $candidateResponses = array_filter(
+                $lines,
+                fn($line) =>
+                stripos($line, 'candidate:') === 0 ||
+                stripos($line, 'user:') === 0 ||
+                stripos($line, 'human:') === 0
+            );
+
+            // Require at least 3 candidate responses for a valid assessment
+            if (count($candidateResponses) < 3) {
+                $this->session->update([
+                    'analysis_status' => 'failed',
+                    'analysis_result' => [
+                        'error' => 'Insufficient interview data',
+                        'reason' => 'The interview requires at least 3 candidate responses to generate a valid assessment. Only ' . count($candidateResponses) . ' response(s) found.',
+                    ]
+                ]);
+                return;
+            }
+
+            // Also require minimum transcript length (at least 500 characters of actual content)
+            if (strlen($transcript) < 500) {
+                $this->session->update([
+                    'analysis_status' => 'failed',
+                    'analysis_result' => [
+                        'error' => 'Insufficient interview content',
+                        'reason' => 'The interview transcript is too short to generate a meaningful assessment.',
+                    ]
+                ]);
+                return;
+            }
+
+            // Extract interview metadata for analysis context
+            $metadata = $this->session->metadata ?? [];
+            $interviewType = $metadata['interview_type'] ?? 'screening';
+            $difficultyLevel = $metadata['difficulty_level'] ?? 'mid';
+
             $result = $analysisService->analyzeSession(
                 $transcript,
                 $this->session->getJobDescription(),
-                $this->session->getResume()
+                $this->session->getResume(),
+                $interviewType,
+                $difficultyLevel
             );
 
             $this->session->update([

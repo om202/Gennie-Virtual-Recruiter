@@ -355,4 +355,23 @@ class InterviewSessionController extends Controller
             'message' => 'Analysis queued',
         ]);
     }
+
+    /**
+     * Reset analysis status for a session.
+     * TODO: TEMPORARY - Remove this method later
+     */
+    public function resetAnalysis(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        $session->update([
+            'analysis_status' => 'pending',
+            'analysis_result' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Analysis reset',
+        ]);
+    }
 }

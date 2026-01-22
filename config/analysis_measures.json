@@ -1,0 +1,327 @@
+{
+    "interview_types": {
+        "screening": {
+            "name": "Initial Screening",
+            "description": "First-round interview to assess basic qualifications and fit",
+            "evaluation_criteria": [
+                {
+                    "category": "Communication Skills",
+                    "weight": 30,
+                    "sub_criteria": [
+                        "Clarity of expression",
+                        "Active listening",
+                        "Professional demeanor",
+                        "Response coherence"
+                    ]
+                },
+                {
+                    "category": "Basic Qualifications",
+                    "weight": 25,
+                    "sub_criteria": [
+                        "Relevant experience",
+                        "Technical background",
+                        "Educational fit",
+                        "Career progression"
+                    ]
+                },
+                {
+                    "category": "Cultural Fit",
+                    "weight": 20,
+                    "sub_criteria": [
+                        "Values alignment",
+                        "Work style preferences",
+                        "Team collaboration attitude",
+                        "Company interest level"
+                    ]
+                },
+                {
+                    "category": "Motivation & Interest",
+                    "weight": 15,
+                    "sub_criteria": [
+                        "Enthusiasm for role",
+                        "Career goals alignment",
+                        "Company knowledge",
+                        "Growth mindset"
+                    ]
+                },
+                {
+                    "category": "Availability & Logistics",
+                    "weight": 10,
+                    "sub_criteria": [
+                        "Start date flexibility",
+                        "Salary expectations",
+                        "Location/remote preferences",
+                        "Work authorization"
+                    ]
+                }
+            ]
+        },
+        "technical": {
+            "name": "Technical Interview",
+            "description": "Deep-dive into technical skills and problem-solving abilities",
+            "evaluation_criteria": [
+                {
+                    "category": "Problem-Solving",
+                    "weight": 30,
+                    "sub_criteria": [
+                        "Analytical thinking",
+                        "Approach to breaking down problems",
+                        "Edge case consideration",
+                        "Solution optimization"
+                    ]
+                },
+                {
+                    "category": "Technical Depth",
+                    "weight": 25,
+                    "sub_criteria": [
+                        "Domain knowledge",
+                        "Technology stack proficiency",
+                        "Best practices awareness",
+                        "Code quality standards"
+                    ]
+                },
+                {
+                    "category": "Coding Skills",
+                    "weight": 20,
+                    "sub_criteria": [
+                        "Algorithm implementation",
+                        "Data structure selection",
+                        "Code readability",
+                        "Debugging approach"
+                    ]
+                },
+                {
+                    "category": "System Understanding",
+                    "weight": 15,
+                    "sub_criteria": [
+                        "Architecture awareness",
+                        "Scalability considerations",
+                        "Performance optimization",
+                        "Security awareness"
+                    ]
+                },
+                {
+                    "category": "Communication of Technical Concepts",
+                    "weight": 10,
+                    "sub_criteria": [
+                        "Explanation clarity",
+                        "Handling technical questions",
+                        "Thought process articulation",
+                        "Collaboration during problem-solving"
+                    ]
+                }
+            ]
+        },
+        "behavioral": {
+            "name": "Behavioral Interview",
+            "description": "Assessment of soft skills, teamwork, and past experience",
+            "evaluation_criteria": [
+                {
+                    "category": "Leadership & Ownership",
+                    "weight": 25,
+                    "sub_criteria": [
+                        "Initiative taking",
+                        "Project ownership",
+                        "Decision-making ability",
+                        "Accountability"
+                    ]
+                },
+                {
+                    "category": "Teamwork & Collaboration",
+                    "weight": 25,
+                    "sub_criteria": [
+                        "Cross-functional collaboration",
+                        "Conflict resolution",
+                        "Communication effectiveness",
+                        "Feedback receptiveness"
+                    ]
+                },
+                {
+                    "category": "Problem-Solving & Adaptability",
+                    "weight": 20,
+                    "sub_criteria": [
+                        "Handling ambiguity",
+                        "Learning from failures",
+                        "Adaptation to change",
+                        "Creative thinking"
+                    ]
+                },
+                {
+                    "category": "Impact & Results",
+                    "weight": 15,
+                    "sub_criteria": [
+                        "Measurable outcomes",
+                        "Quality of deliverables",
+                        "Efficiency improvements",
+                        "Strategic thinking"
+                    ]
+                },
+                {
+                    "category": "Cultural & Values Alignment",
+                    "weight": 15,
+                    "sub_criteria": [
+                        "Work ethic",
+                        "Integrity",
+                        "Customer focus",
+                        "Growth mindset"
+                    ]
+                }
+            ]
+        },
+        "system_design": {
+            "name": "System Design Interview",
+            "description": "Evaluation of architectural and design capabilities",
+            "evaluation_criteria": [
+                {
+                    "category": "Architecture & Design",
+                    "weight": 30,
+                    "sub_criteria": [
+                        "System component design",
+                        "Architecture patterns knowledge",
+                        "Modularity and separation of concerns",
+                        "Design principles application"
+                    ]
+                },
+                {
+                    "category": "Scalability & Performance",
+                    "weight": 25,
+                    "sub_criteria": [
+                        "Horizontal vs vertical scaling",
+                        "Load balancing strategies",
+                        "Caching mechanisms",
+                        "Database optimization"
+                    ]
+                },
+                {
+                    "category": "Trade-offs & Decision Making",
+                    "weight": 20,
+                    "sub_criteria": [
+                        "Identifying constraints",
+                        "Evaluating alternatives",
+                        "Justifying choices",
+                        "Understanding limitations"
+                    ]
+                },
+                {
+                    "category": "Reliability & Resilience",
+                    "weight": 15,
+                    "sub_criteria": [
+                        "Fault tolerance",
+                        "Error handling",
+                        "Monitoring and observability",
+                        "Disaster recovery"
+                    ]
+                },
+                {
+                    "category": "Communication & Collaboration",
+                    "weight": 10,
+                    "sub_criteria": [
+                        "Diagram clarity",
+                        "Explaining technical decisions",
+                        "Asking clarifying questions",
+                        "Stakeholder consideration"
+                    ]
+                }
+            ]
+        }
+    },
+    "difficulty_levels": {
+        "junior": {
+            "name": "Junior Level",
+            "experience_range": "0-2 years",
+            "focus_areas": [
+                "Foundational knowledge",
+                "Learning agility",
+                "Coachability",
+                "Basic technical skills",
+                "Communication basics"
+            ],
+            "scoring_adjustments": {
+                "technical_depth_weight": 0.7,
+                "growth_potential_weight": 1.3,
+                "independence_weight": 0.6
+            }
+        },
+        "mid": {
+            "name": "Mid Level",
+            "experience_range": "2-5 years",
+            "focus_areas": [
+                "Independent execution",
+                "Technical proficiency",
+                "Project ownership",
+                "Mentoring juniors",
+                "Process improvement"
+            ],
+            "scoring_adjustments": {
+                "technical_depth_weight": 1.0,
+                "growth_potential_weight": 1.0,
+                "independence_weight": 1.0
+            }
+        },
+        "senior": {
+            "name": "Senior Level",
+            "experience_range": "5-10 years",
+            "focus_areas": [
+                "Technical leadership",
+                "System design expertise",
+                "Cross-team collaboration",
+                "Strategic thinking",
+                "Mentoring and coaching"
+            ],
+            "scoring_adjustments": {
+                "technical_depth_weight": 1.2,
+                "growth_potential_weight": 0.8,
+                "independence_weight": 1.3,
+                "leadership_weight": 1.5
+            }
+        },
+        "staff": {
+            "name": "Staff/Principal Level",
+            "experience_range": "10+ years",
+            "focus_areas": [
+                "Architectural vision",
+                "Organizational impact",
+                "Technical strategy",
+                "Influencing without authority",
+                "Industry expertise"
+            ],
+            "scoring_adjustments": {
+                "technical_depth_weight": 1.3,
+                "growth_potential_weight": 0.6,
+                "independence_weight": 1.5,
+                "leadership_weight": 2.0,
+                "strategic_impact_weight": 2.0
+            }
+        }
+    },
+    "assessment_guidelines": {
+        "score_ranges": {
+            "90_100": {
+                "label": "Exceptional",
+                "description": "Exceeds expectations significantly, rare top-tier candidate"
+            },
+            "80_89": {
+                "label": "Strong Hire",
+                "description": "Exceeds expectations, highly qualified"
+            },
+            "70_79": {
+                "label": "Hire",
+                "description": "Meets expectations, solid candidate"
+            },
+            "60_69": {
+                "label": "Weak Hire",
+                "description": "Borderline, consider with reservations"
+            },
+            "0_59": {
+                "label": "Reject",
+                "description": "Does not meet minimum requirements"
+            }
+        },
+        "recommendation_mapping": {
+            "Strong Hire": "Score >= 80, demonstrated excellence across multiple criteria",
+            "Hire": "Score 70-79, meets expectations with few gaps",
+            "Weak Hire": "Score 60-69, meets minimum bar but has concerns",
+            "Reject": "Score < 60, significant gaps in key criteria"
+        }
+    }
+}
