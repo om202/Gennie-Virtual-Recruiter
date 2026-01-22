@@ -75,10 +75,17 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
     const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
     const [sessionAnalysis, setSessionAnalysis] = useState<Record<string, { status: 'pending' | 'processing' | 'completed' | 'failed'; result: any }>>({})
 
-    // Auto-select first session when viewing filtered interview
+    // Auto-select first session on initial load
     useEffect(() => {
         if (isFiltered && interview.sessions && interview.sessions.length > 0) {
+            // Filtered view: select first session of this interview
             setSelectedSessionId(interview.sessions[0].id)
+            setExpandedInterview(interview.id)
+        } else if (!isFiltered && allSessions.length > 0) {
+            // All interviews view: select the first available session
+            const firstSession = allSessions[0]
+            setSelectedSessionId(firstSession.id)
+            setExpandedInterview(firstSession.interview_id)
         }
     }, [])
 
