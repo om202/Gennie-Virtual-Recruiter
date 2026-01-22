@@ -3,8 +3,9 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, ArrowLeft, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react'
+import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
+import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 import { cn } from '@/lib/utils'
 
 interface Session {
@@ -49,6 +50,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
         isFiltered ? interview.id : null
     )
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+    const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false)
     const [logs, setLogs] = useState<Record<string, Log[]>>({})
     const [loadingLogs, setLoadingLogs] = useState<string | null>(null)
     const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
@@ -251,7 +253,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
 
                                 if (!session) return null;
 
-                                // Case 1: Analysis Exists (from server or local state) -> Show Scorecard
+                                // Case 1: Analysis Exists (from server or local state) -> Show Scorecard as Link
                                 const analysisStatus = localAnalysis?.status || session.analysis_status;
                                 const analysisResult = localAnalysis?.result || session.analysis_result;
 
@@ -297,10 +299,14 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                                     )}
                                                 </Button>
                                             </div>
-                                            <Scorecard
-                                                status={analysisStatus || 'pending'}
-                                                result={analysisResult}
-                                            />
+                                            {/* Clickable Scorecard - Opens Full-Screen Dialog */}
+                                            <div onClick={() => setAssessmentDialogOpen(true)} className="cursor-pointer">
+                                                <Scorecard
+                                                    status={analysisStatus || 'pending'}
+                                                    result={analysisResult}
+                                                    mode="compact"
+                                                />
+                                            </div>
                                         </div>
                                     );
                                 }
@@ -356,6 +362,7 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
 
                                 return null;
                             })()}
+
 
                             <Card className="min-h-[500px]">
                                 <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
@@ -512,6 +519,23 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                     </div>
                 )}
             </div>
+
+            {/* Assessment Report Dialog */}
+            {selectedSessionId && (() => {
+                const session = allSessions.find(s => s.id === selectedSessionId);
+                const sessionInterview = interviews.find(i => i.id === session?.interview_id);
+
+                if (!session || !sessionInterview) return null;
+
+                return (
+                    <AssessmentReportDialog
+                        open={assessmentDialogOpen}
+                        onClose={() => setAssessmentDialogOpen(false)}
+                        interview={sessionInterview}
+                        session={session}
+                    />
+                );
+            })()}
         </div>
     )
 }
