@@ -32,11 +32,7 @@ if [ -f "$ENV_FILE" ]; then
     else
         echo "RELAY_SERVER_URL=$NGROK_URL" >> "$ENV_FILE"
     fi
-    
-    # Update APP_URL
-    if grep -q "^APP_URL=" "$ENV_FILE"; then
-        sed -i '' "s|^APP_URL=.*|APP_URL=$NGROK_URL|" "$ENV_FILE"
-    fi
+
     
     echo "✅ Updated .env with new URL"
 else

@@ -3,10 +3,24 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react'
+import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 import { cn } from '@/lib/utils'
+
+interface TwilioData {
+    status?: string
+    duration?: number
+    from?: string
+    to?: string
+    direction?: string
+    start_time?: string
+    end_time?: string
+    recording_sid?: string
+    recording_url?: string
+    recording_duration?: number
+    recording_status?: string
+}
 
 interface Session {
     id: string
@@ -16,6 +30,8 @@ interface Session {
     progress_state: any
     analysis_status: 'pending' | 'processing' | 'completed' | 'failed'
     analysis_result: any
+    channel?: 'web' | 'phone'
+    twilio_data?: TwilioData
 }
 
 
@@ -219,12 +235,22 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                 )}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                                                    <Badge
-                                                                        variant={session.status === 'completed' ? 'default' : 'secondary'}
-                                                                        className="text-xs"
-                                                                    >
-                                                                        {session.status}
-                                                                    </Badge>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Badge
+                                                                            variant={session.status === 'completed' ? 'default' : 'secondary'}
+                                                                            className="text-xs"
+                                                                        >
+                                                                            {session.status}
+                                                                        </Badge>
+                                                                        {/* Channel Badge */}
+                                                                        <Badge variant="outline" className="text-xs gap-1">
+                                                                            {session.channel === 'phone' ? (
+                                                                                <><Phone className="h-3 w-3" /></>
+                                                                            ) : (
+                                                                                <><Globe className="h-3 w-3" /></>
+                                                                            )}
+                                                                        </Badge>
+                                                                    </div>
                                                                     <time className="text-xs text-muted-foreground whitespace-nowrap">
                                                                         {sessionDate.toLocaleDateString([], {
                                                                             month: 'short',
@@ -469,6 +495,73 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                             </Card>
                                         )}
                                     </div>
+                                );
+                            })()}
+
+                            {/* Twilio Call Details Card (for phone interviews) */}
+                            {selectedSessionId && (() => {
+                                const session = interviews.flatMap(i => i.sessions || []).find(s => s.id === selectedSessionId);
+                                if (!session || session.channel !== 'phone' || !session.twilio_data) return null;
+
+                                const formatDuration = (seconds?: number) => {
+                                    if (!seconds) return 'N/A';
+                                    const mins = Math.floor(seconds / 60);
+                                    const secs = seconds % 60;
+                                    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                                };
+
+                                return (
+                                    <Card>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="flex items-center gap-2 text-base">
+                                                <Phone className="h-5 w-5" />
+                                                Call Details
+                                            </CardTitle>
+                                            <CardDescription>
+                                                This interview was conducted via phone call
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                <div>
+                                                    <span className="text-muted-foreground block text-xs mb-1">Status</span>
+                                                    <Badge variant={session.twilio_data.status === 'completed' ? 'default' : 'secondary'}>
+                                                        {session.twilio_data.status || 'N/A'}
+                                                    </Badge>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground block text-xs mb-1">Duration</span>
+                                                    <p className="font-medium">{formatDuration(session.twilio_data.duration)}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground block text-xs mb-1">Called Number</span>
+                                                    <p className="font-medium font-mono text-sm">{session.twilio_data.to || 'N/A'}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground block text-xs mb-1">From</span>
+                                                    <p className="font-medium font-mono text-sm">{session.twilio_data.from || 'N/A'}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Recording Player */}
+                                            {session.twilio_data.recording_url && (
+                                                <div className="pt-2 border-t">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-sm font-medium">Call Recording</span>
+                                                        {session.twilio_data.recording_duration && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {formatDuration(session.twilio_data.recording_duration)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <audio controls className="w-full h-10">
+                                                        <source src={`${session.twilio_data.recording_url}.mp3`} type="audio/mpeg" />
+                                                        Your browser does not support the audio element.
+                                                    </audio>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
                                 );
                             })()}
 

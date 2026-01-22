@@ -33,4 +33,7 @@ Route::post('/sessions/{id}/end', [InterviewSessionController::class, 'end']);
 // Twilio Routes
 Route::post('/twilio/call', [\App\Http\Controllers\Api\TwilioController::class, 'startCall']);
 Route::post('/twilio/voice', [\App\Http\Controllers\Api\TwilioController::class, 'voiceHook']);
+// Twilio Callbacks (called by Twilio - no auth)
+Route::post('/twilio/call-status', [\App\Http\Controllers\Api\TwilioController::class, 'callStatus']);
+Route::post('/twilio/recording-status', [\App\Http\Controllers\Api\TwilioController::class, 'recordingStatus']);
 

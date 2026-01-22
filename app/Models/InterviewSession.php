@@ -22,12 +22,16 @@ class InterviewSession extends Model
         'analysis_status',
         'analysis_result',
         'transcript',
+        'channel',
+        'call_sid',
+        'twilio_data',
     ];
 
     protected $casts = [
         'metadata' => 'array',
         'progress_state' => 'array',
         'analysis_result' => 'array',
+        'twilio_data' => 'array',
     ];
 
     /**

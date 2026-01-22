@@ -22,6 +22,10 @@ if (!DEEPGRAM_API_KEY) {
     process.exit(1);
 }
 
+// Laravel API URL for internal calls (NOT the ngrok URL which points to this relay server)
+// The relay server runs on port 8080, Laravel runs on port 8000
+const LARAVEL_API_URL = process.env.LARAVEL_INTERNAL_URL || "http://127.0.0.1:8000";
+
 // Session context type from Laravel API
 interface SessionContext {
     success: boolean;
@@ -54,15 +58,16 @@ app.post("/twilio/voice", (req: Request, res: Response) => {
 
     // Get session ID from query params
     const sessionId = (req.query.session || req.body.session || '') as string;
-    const streamUrl = sessionId
-        ? `${wsProtocol}://${host}/streams?session=${sessionId}`
-        : `${wsProtocol}://${host}/streams`;
+    const streamUrl = `${wsProtocol}://${host}/streams`;
 
-    // TwiML to connect to the stream
+    // TwiML to connect to the stream - use Parameter element to pass session ID
+    // Twilio strips query params from WebSocket URLs, so we use Parameter instead
     const twiml = `
     <Response>
         <Connect>
-            <Stream url="${streamUrl}" />
+            <Stream url="${streamUrl}">
+                <Parameter name="sessionId" value="${sessionId}" />
+            </Stream>
         </Connect>
     </Response>
     `;
@@ -81,28 +86,26 @@ wss.on("connection", async (ws, req) => {
         return;
     }
 
-    // Extract session ID from query params (e.g., /streams?session=uuid)
-    const urlParams = new URLSearchParams(req.url.split('?')[1] || '');
-    const sessionId = urlParams.get('session');
-    console.log("Twilio Media Stream Connected, Session ID:", sessionId);
+    console.log("Twilio Media Stream Connected");
 
     let deepgram: ReturnType<ReturnType<typeof createClient>['agent']> | null = null;
     let streamSid: string | null = null;
     let deepgramReady = false;
     let audioBuffer: Buffer[] = [];
     let sessionContext: SessionContext | null = null;
+    // Session ID will be extracted from Twilio's start event custom parameters
+    let sessionId: string | null = null;
 
-    // Fetch session context from Laravel if we have a session ID
-    if (sessionId) {
+    // Helper to fetch session context once we have the session ID
+    const fetchSessionContext = async (sid: string) => {
         try {
-            const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
-            const response = await fetch(`${appUrl}/api/sessions/${sessionId}/context`);
+            const response = await fetch(`${LARAVEL_API_URL}/api/sessions/${sid}/context`);
             sessionContext = await response.json() as SessionContext;
-            console.log("Session context loaded:", sessionContext);
+            console.log("Session context loaded for session:", sid);
         } catch (err) {
             console.error("Failed to fetch session context:", err);
         }
-    }
+    };
 
     const deepgramClient = createClient(DEEPGRAM_API_KEY);
 
@@ -112,6 +115,17 @@ wss.on("connection", async (ws, req) => {
 
     // Log all events for debugging
     console.log("AgentEvents available:", AgentEvents);
+
+    // CRITICAL DEBUG: Catch ALL events to see what's being emitted
+    // This helps identify the correct event name for transcripts
+    const originalEmit = deepgram.emit.bind(deepgram);
+    deepgram.emit = function (event: string, ...args: any[]) {
+        // Don't log Audio events (too many) or binary data
+        if (event !== 'Audio' && event !== AgentEvents.Audio) {
+            console.log(`[DEEPGRAM EVENT] ${event}:`, JSON.stringify(args).substring(0, 500));
+        }
+        return originalEmit(event, ...args);
+    };
 
     // Build config object for shared functions
     const buildInterviewConfig = (): InterviewConfig => ({
@@ -223,7 +237,7 @@ wss.on("connection", async (ws, req) => {
 
     // Handle Audio from Deepgram -> Twilio
     deepgram.on(AgentEvents.Audio, (data: Buffer) => {
-        console.log("Received audio from Deepgram, length:", data.length);
+        // Audio data received - forwarding to Twilio
         if (ws.readyState === WebSocket.OPEN && streamSid) {
             const message = {
                 event: "media",
@@ -258,8 +272,7 @@ wss.on("connection", async (ws, req) => {
 
             if (functionName === "get_context") {
                 try {
-                    const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
-                    const response = await fetch(`${appUrl}/api/agent/context`, {
+                    const response = await fetch(`${LARAVEL_API_URL}/api/agent/context`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ query: input?.query }),
@@ -303,8 +316,7 @@ wss.on("connection", async (ws, req) => {
                 // Notify Backend to end session and start analysis
                 if (sessionId) {
                     try {
-                        const appUrl = process.env.APP_URL || "http://127.0.0.1:8000";
-                        await fetch(`${appUrl}/api/sessions/${sessionId}/end`, {
+                        await fetch(`${LARAVEL_API_URL}/api/sessions/${sessionId}/end`, {
                             method: "POST",
                         });
                         console.log("Backend notified of session end.");
@@ -336,9 +348,27 @@ wss.on("connection", async (ws, req) => {
         }
     });
 
-    // Log other events
-    deepgram.on(AgentEvents.ConversationText, (data: any) => {
+    // Log conversation text events and persist to database
+    deepgram.on(AgentEvents.ConversationText, async (data: any) => {
         console.log("Conversation text:", data);
+
+        // Persist to database (same as web frontend does)
+        if (sessionId && data.role && data.content) {
+            const logUrl = `${LARAVEL_API_URL}/api/sessions/${sessionId}/log`;
+            try {
+                await fetch(logUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        speaker: data.role === "user" ? "candidate" : "agent",
+                        message: data.content,
+                        metadata: { timestamp: Date.now(), channel: "phone" },
+                    }),
+                });
+            } catch (err) {
+                console.error("Failed to persist conversation log:", err);
+            }
+        }
     });
 
     deepgram.on(AgentEvents.UserStartedSpeaking, () => {
@@ -347,6 +377,28 @@ wss.on("connection", async (ws, req) => {
 
     deepgram.on(AgentEvents.AgentStartedSpeaking, () => {
         console.log("Agent started speaking");
+    });
+
+    // DEBUG: Catch unhandled events
+    deepgram.on(AgentEvents.Unhandled, (data: any) => {
+        console.log("UNHANDLED EVENT:", JSON.stringify(data).substring(0, 500));
+    });
+
+    // DEBUG: Log all other events
+    deepgram.on(AgentEvents.Welcome, (data: any) => {
+        console.log("Welcome event:", data);
+    });
+
+    deepgram.on(AgentEvents.SettingsApplied, (data: any) => {
+        console.log("SettingsApplied event:", data);
+    });
+
+    deepgram.on(AgentEvents.AgentThinking, (data: any) => {
+        console.log("AgentThinking event:", data);
+    });
+
+    deepgram.on(AgentEvents.AgentAudioDone, (data: any) => {
+        console.log("AgentAudioDone event:", data);
     });
 
 
@@ -360,7 +412,23 @@ wss.on("connection", async (ws, req) => {
                 break;
             case "start":
                 console.log("Twilio: Start Event, StreamSid:", msg.start.streamSid);
+                console.log("Twilio: Custom Parameters:", JSON.stringify(msg.start.customParameters));
                 streamSid = msg.start.streamSid;
+
+                // Extract sessionId from custom parameters (passed via TwiML <Parameter>)
+                if (msg.start.customParameters?.sessionId) {
+                    sessionId = msg.start.customParameters.sessionId;
+                    console.log("📍 Session ID extracted from Twilio:", sessionId);
+
+                    // Fetch session context now that we have the sessionId
+                    fetchSessionContext(sessionId!).then(() => {
+                        console.log("✅ Session context loaded successfully");
+                    }).catch((err) => {
+                        console.error("❌ Failed to load session context:", err);
+                    });
+                } else {
+                    console.warn("⚠️ No sessionId in Twilio custom parameters!");
+                }
                 break;
             case "media":
                 // Buffer or send audio to Deepgram
