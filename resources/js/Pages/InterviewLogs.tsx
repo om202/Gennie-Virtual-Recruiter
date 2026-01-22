@@ -388,43 +388,117 @@ export default function InterviewLogs({ auth, interviews, interview }: Interview
                                         </div>
                                     ) : selectedSessionId && logs[selectedSessionId] && logs[selectedSessionId].length > 0 ? (
                                         <div className="space-y-6 max-w-3xl mx-auto pb-8">
-                                            {logs[selectedSessionId].map((log) => (
-                                                <div key={log.id} className={cn(
-                                                    "flex gap-4",
-                                                    log.speaker === 'candidate' ? "flex-row-reverse" : "flex-row"
-                                                )}>
-                                                    <div className={cn(
-                                                        "h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold",
-                                                        log.speaker === 'candidate' ? "bg-primary text-primary-foreground" : "bg-muted border text-muted-foreground"
-                                                    )}>
-                                                        {log.speaker === 'candidate' ? 'C' : 'G'}
-                                                    </div>
+                                            {/* Interview Statistics Summary */}
+                                            {(() => {
+                                                const sessionLogs = logs[selectedSessionId];
+                                                const candidateLogs = sessionLogs.filter(l => l.speaker === 'candidate');
+                                                const agentLogs = sessionLogs.filter(l => l.speaker === 'agent');
+                                                const candidateWords = candidateLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
+                                                const agentWords = agentLogs.reduce((sum, l) => sum + l.message.split(/\s+/).filter(Boolean).length, 0);
+                                                const totalMessages = candidateLogs.length + agentLogs.length;
 
-                                                    <div className={cn(
-                                                        "flex flex-col max-w-[80%]",
-                                                        log.speaker === 'candidate' ? "items-end" : "items-start"
-                                                    )}>
-                                                        <div className="flex items-baseline gap-2 mb-1">
-                                                            <span className="text-xs font-semibold text-foreground">
-                                                                {log.speaker === 'agent' ? 'Gennie' : log.speaker === 'candidate' ? 'Candidate' : 'System'}
-                                                            </span>
-                                                            <span className="text-[10px] text-muted-foreground">
-                                                                {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                                            </span>
+                                                // Calculate duration if we have timestamps
+                                                let durationText = '';
+                                                if (sessionLogs.length >= 2) {
+                                                    const startTime = new Date(sessionLogs[0].created_at).getTime();
+                                                    const endTime = new Date(sessionLogs[sessionLogs.length - 1].created_at).getTime();
+                                                    const durationMs = endTime - startTime;
+                                                    const minutes = Math.floor(durationMs / 60000);
+                                                    const seconds = Math.floor((durationMs % 60000) / 1000);
+                                                    durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                                                }
+
+                                                return (
+                                                    <div className="bg-white border rounded-lg p-4 mb-6">
+                                                        <h4 className="text-sm font-medium text-muted-foreground mb-3">Interview Statistics</h4>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                                            <div>
+                                                                <div className="text-2xl font-bold text-foreground">{totalMessages}</div>
+                                                                <div className="text-xs text-muted-foreground">Messages</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-2xl font-bold text-primary">{candidateWords}</div>
+                                                                <div className="text-xs text-muted-foreground">Candidate Words</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-2xl font-bold text-muted-foreground">{agentWords}</div>
+                                                                <div className="text-xs text-muted-foreground">Gennie Words</div>
+                                                            </div>
+                                                            {durationText && (
+                                                                <div>
+                                                                    <div className="text-2xl font-bold text-foreground">{durationText}</div>
+                                                                    <div className="text-xs text-muted-foreground">Duration</div>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <div className={cn(
-                                                            "rounded-lg p-3 text-sm leading-relaxed shadow-sm",
-                                                            log.speaker === 'candidate'
-                                                                ? "bg-primary text-primary-foreground rounded-tr-none"
-                                                                : log.speaker === 'system'
-                                                                    ? "bg-muted/50 italic text-muted-foreground w-full text-center border-none shadow-none"
-                                                                    : "bg-white border rounded-tl-none"
-                                                        )}>
-                                                            {log.message}
+                                                        {/* Speaking ratio bar */}
+                                                        <div className="mt-4">
+                                                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                                                <span>Candidate ({Math.round(candidateWords / (candidateWords + agentWords || 1) * 100)}%)</span>
+                                                                <span>Gennie ({Math.round(agentWords / (candidateWords + agentWords || 1) * 100)}%)</span>
+                                                            </div>
+                                                            <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+                                                                <div
+                                                                    className="bg-primary transition-all"
+                                                                    style={{ width: `${candidateWords / (candidateWords + agentWords || 1) * 100}%` }}
+                                                                />
+                                                                <div
+                                                                    className="bg-muted-foreground/40 transition-all"
+                                                                    style={{ width: `${agentWords / (candidateWords + agentWords || 1) * 100}%` }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })()}
+
+                                            {/* Transcript Messages */}
+                                            {logs[selectedSessionId].map((log) => {
+                                                const wordCount = log.message.split(/\s+/).filter(Boolean).length;
+
+                                                return (
+                                                    <div key={log.id} className={cn(
+                                                        "flex gap-4",
+                                                        log.speaker === 'candidate' ? "flex-row-reverse" : "flex-row"
+                                                    )}>
+                                                        <div className={cn(
+                                                            "h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold",
+                                                            log.speaker === 'candidate' ? "bg-primary text-primary-foreground" : "bg-muted border text-muted-foreground"
+                                                        )}>
+                                                            {log.speaker === 'candidate' ? 'C' : 'G'}
+                                                        </div>
+
+                                                        <div className={cn(
+                                                            "flex flex-col max-w-[80%]",
+                                                            log.speaker === 'candidate' ? "items-end" : "items-start"
+                                                        )}>
+                                                            <div className="flex items-baseline gap-2 mb-1">
+                                                                <span className="text-xs font-semibold text-foreground">
+                                                                    {log.speaker === 'agent' ? 'Gennie' : log.speaker === 'candidate' ? 'Candidate' : 'System'}
+                                                                </span>
+                                                                <span className="text-[10px] text-muted-foreground">
+                                                                    {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                                </span>
+                                                                {log.speaker !== 'system' && (
+                                                                    <span className="text-[10px] text-muted-foreground/60">
+                                                                        {wordCount} words
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className={cn(
+                                                                "rounded-lg p-3 text-sm leading-relaxed shadow-sm",
+                                                                log.speaker === 'candidate'
+                                                                    ? "bg-primary text-primary-foreground rounded-tr-none"
+                                                                    : log.speaker === 'system'
+                                                                        ? "bg-muted/50 italic text-muted-foreground w-full text-center border-none shadow-none"
+                                                                        : "bg-white border rounded-tl-none"
+                                                            )}>
+                                                                {log.message}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground">
