@@ -7,6 +7,8 @@ use App\Models\InterviewSession;
 use App\Services\DocumentParserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InterviewSessionController extends Controller
 {
@@ -374,4 +376,98 @@ class InterviewSessionController extends Controller
             'message' => 'Analysis reset',
         ]);
     }
+    /**
+     * Upload recording file for web interviews.
+     */
+    public function uploadRecording(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        if (!$request->hasFile('file')) {
+            return response()->json(['success' => false, 'error' => 'No file uploaded'], 400);
+        }
+
+        $file = $request->file('file');
+        $path = $file->storeAs('recordings', "session_{$id}.webm", 'public');
+
+        // Update session with recording metadata
+        // We use twilio_data structure to maintain compatibility with existing UI
+        $twilioData = $session->twilio_data ?? [];
+        $twilioData['recording_url'] = 'local'; // Indicator that it's a local file
+        $twilioData['recording_status'] = 'completed';
+        $twilioData['recording_duration'] = $request->input('duration', 0); // Client should send duration
+
+        $session->update([
+            'twilio_data' => $twilioData,
+            'channel' => 'web',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'path' => $path
+        ]);
+    }
+
+    /**
+     * Get or stream the recording for a session.
+     * Handles both local web recordings and Twilio proxied recordings.
+     */
+    public function getRecording(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+        $twilioData = $session->twilio_data ?? [];
+
+        if (empty($twilioData['recording_url'])) {
+            abort(404, 'No recording available');
+        }
+
+        // Case 1: Local Web Recording
+        if ($twilioData['recording_url'] === 'local') {
+            $path = "recordings/session_{$id}.webm";
+
+            if (!Storage::disk('public')->exists($path)) {
+                abort(404, 'Recording file not found');
+            }
+
+            if (!Storage::disk('public')->exists($path)) {
+                abort(404, 'Recording file not found');
+            }
+
+            $fullPath = storage_path('app/public/' . $path);
+            return response()->download($fullPath, "interview_{$id}.webm", [
+                'Content-Type' => 'audio/webm',
+                'Content-Disposition' => 'inline', // Stream instead of download
+            ]);
+        }
+
+        // Case 2: Twilio Recording (Delegate to Twilio Controller logic)
+        // We can reproduce the logic here to avoid circular dependencies or redirect
+
+        $recordingUrl = $twilioData['recording_url'];
+        // Ensure it has an extension if missing (Twilio usually keeps it clean but we add .mp3 for browser compatibility if needed)
+        // But the stored URL usually is without extension. Twilio supports .mp3 append.
+        if (!str_ends_with($recordingUrl, '.mp3')) {
+            $recordingUrl .= '.mp3';
+        }
+
+        $sid = env('TWILIO_ACCOUNT_SID');
+        $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
+
+        return response()->stream(function () use ($recordingUrl, $sid, $token) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $recordingUrl);
+            curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $data) {
+                echo $data;
+                flush();
+                return strlen($data);
+            });
+            curl_exec($ch);
+            curl_close($ch);
+        }, 200, [
+            'Content-Type' => 'audio/mpeg',
+        ]);
+    }
 }
+

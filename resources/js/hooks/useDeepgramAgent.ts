@@ -33,6 +33,11 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     const nextPlayTimeRef = useRef<number>(0)
     const configRef = useRef<AgentConfig | undefined>(config)
 
+    // Recording Refs
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const recordingChunksRef = useRef<Blob[]>([])
+    const recordingDestRef = useRef<MediaStreamAudioDestinationNode | null>(null)
+
     // Keep configRef up to date
     configRef.current = config
 
@@ -48,6 +53,9 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 sampleRate: SAMPLE_RATE
             })
             nextPlayTimeRef.current = playbackAudioCtxRef.current.currentTime
+            // Create recording destination immediately so AI audio is captured from first chunk
+            recordingDestRef.current = playbackAudioCtxRef.current.createMediaStreamDestination()
+            console.log('🎤 Recording destination created for AI audio capture')
         }
 
         const ctx = playbackAudioCtxRef.current
@@ -78,6 +86,13 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
             const currentTime = ctx.currentTime
             if (nextPlayTimeRef.current < currentTime) {
                 nextPlayTimeRef.current = currentTime
+            }
+
+            if (recordingDestRef.current) {
+                source.connect(recordingDestRef.current)
+                console.log('🔊 AI audio connected to recording destination')
+            } else {
+                console.warn('⚠️ Recording destination not available for AI audio')
             }
 
             source.start(nextPlayTimeRef.current)
@@ -119,10 +134,105 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
 
             source.connect(workletNode)
             workletNode.connect(audioContext.destination)
+
+            // --- Initialize Recording ---
+            try {
+                // Ensure playback context exists to capture agent audio
+                if (!playbackAudioCtxRef.current) {
+                    playbackAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
+                        sampleRate: SAMPLE_RATE
+                    })
+                    nextPlayTimeRef.current = playbackAudioCtxRef.current.currentTime
+                }
+
+                // Create destination for mixed audio if not exists
+                if (!recordingDestRef.current) {
+                    recordingDestRef.current = playbackAudioCtxRef.current.createMediaStreamDestination()
+                }
+
+                // Connect user microphone to the SAME recording destination as AI audio
+                // This properly mixes both audio sources at the AudioContext level
+                const micSourceForRecording = playbackAudioCtxRef.current.createMediaStreamSource(stream)
+                micSourceForRecording.connect(recordingDestRef.current)
+
+                console.log(`📼 Recording Mixer Setup:`)
+                console.log(`  - User mic connected to recording destination`)
+                console.log(`  - AI audio already connected to same destination`)
+                console.log(`  - Output tracks: ${recordingDestRef.current.stream.getAudioTracks().length}`)
+
+                const mimeType = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/mp4',
+                    ''
+                ].find(type => type === '' || MediaRecorder.isTypeSupported(type)) || ''
+
+                console.log(`🎙️ Initializing recorder with mimeType: ${mimeType || 'default'}`)
+
+                // Record the mixed output from the destination (contains both mic + AI)
+                const recorder = new MediaRecorder(recordingDestRef.current.stream, mimeType ? { mimeType } : undefined)
+                mediaRecorderRef.current = recorder
+                recordingChunksRef.current = []
+
+                recorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordingChunksRef.current.push(e.data)
+                    }
+                }
+
+                recorder.start()
+                console.log('🎙️ Call recording started (mixed audio)')
+
+            } catch (recErr: any) {
+                console.error('Failed to start recording:', recErr)
+                addTranscript('system', `Warning: Call recording failed to start (${recErr.message})`)
+            }
+            // -----------------------------
+
         } catch (err) {
             console.error('Microphone error:', err)
             addTranscript('system', 'Error: Could not access microphone')
         }
+    }, [addTranscript])
+
+    // Shared function to stop and upload recording
+    const stopAndUploadRecording = useCallback(async () => {
+        if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+            return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+            setStatusText('Uploading Recording...')
+
+            mediaRecorderRef.current!.onstop = async () => {
+                const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm'
+                const blob = new Blob(recordingChunksRef.current, { type: mimeType })
+
+                if (configRef.current?.sessionId && blob.size > 0) {
+                    try {
+                        console.log(`Uploading recording... (${blob.size} bytes, type: ${mimeType})`)
+                        const formData = new FormData()
+                        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        formData.append('file', blob, `recording.${ext}`)
+                        formData.append('duration', '0')
+
+                        await fetch(`/api/sessions/${configRef.current.sessionId}/upload-recording`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        console.log('✅ Recording uploaded successfully')
+                        addTranscript('system', 'Interview recording saved.')
+                    } catch (uploadErr) {
+                        console.error('Failed to upload recording:', uploadErr)
+                        addTranscript('system', 'Error saving interview recording.')
+                    }
+                }
+                setStatusText('Interview Complete')
+                resolve();
+            }
+
+            mediaRecorderRef.current!.stop()
+        });
     }, [addTranscript])
 
     const stopMicrophone = useCallback(() => {
@@ -377,8 +487,12 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         })
 
                         // Give the AI time to say goodbye, then disconnect
-                        setTimeout(() => {
+                        setTimeout(async () => {
                             console.log('Disconnecting after AI goodbye...')
+
+                            // Stop and upload recording before cleanup
+                            await stopAndUploadRecording()
+
                             if (connectionRef.current) {
                                 try {
                                     connectionRef.current.disconnect()
@@ -452,8 +566,46 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
         }
     }, [startMicrophone, stopMicrophone, addTranscript, playAudio])
 
-    const stopConversation = useCallback(() => {
+    const stopConversation = useCallback(async () => {
         console.log('Stopping conversation...')
+
+        // Stop and upload recording
+        await stopAndUploadRecording()
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            setStatusText('Uploading Recording...')
+
+            // Handle Upload on Stop
+            mediaRecorderRef.current.onstop = async () => {
+                const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm'
+                const blob = new Blob(recordingChunksRef.current, { type: mimeType })
+                if (configRef.current?.sessionId && blob.size > 0) {
+                    try {
+                        console.log('Uploading recording...', blob.size, 'bytes')
+                        const formData = new FormData()
+                        formData.append('file', blob, 'recording.webm')
+
+                        // Calculate duration
+                        // We can estimate duration from chunks or just let backend handle/metadata
+                        // Ideally we pass duration logic here but keeping it simple
+                        formData.append('duration', '0') // Optional: Calculate real duration
+
+                        await fetch(`/api/sessions/${configRef.current.sessionId}/upload-recording`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        console.log('✅ Recording uploaded successfully')
+                        addTranscript('system', 'Interview recording saved.')
+                    } catch (uploadErr) {
+                        console.error('Failed to upload recording:', uploadErr)
+                        addTranscript('system', 'Error saving interview recording.')
+                    }
+                }
+                setStatusText('Interview Complete') // Reset status after upload logic
+            }
+            mediaRecorderRef.current.stop()
+        } else {
+            setStatusText('Interview Complete')
+        }
 
         // Notify backend to end session
         if (configRef.current?.sessionId) {
@@ -475,9 +627,9 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
         stopMicrophone()
         setConnectionState('idle')
         setSpeakingState('idle')
-        setStatusText('Ready to Connect...')
+        // setStatusText('Ready to Connect...') // Moved inside upload callback to show uploading status
         addTranscript('system', 'Interview stopped by user')
-    }, [stopMicrophone, addTranscript])
+    }, [stopMicrophone, stopAndUploadRecording, addTranscript])
 
     // Cleanup on unmount
     useEffect(() => {

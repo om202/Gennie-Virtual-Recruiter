@@ -522,11 +522,16 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                 );
                             })()}
 
-                            {/* Twilio Call Details Card (for phone interviews) */}
+                            {/* Recording & Call Details Card */}
                             {selectedSessionId && (() => {
-                                // USE THE HELPER HERE TO GET FRESH DATA
                                 const session = getActiveSession();
-                                if (!session || session.channel !== 'phone' || !session.twilio_data) return null;
+                                if (!session || !session.twilio_data) return null;
+
+                                const hasRecording = !!session.twilio_data.recording_url;
+                                const isPhone = session.channel === 'phone';
+
+                                // Only show if it's a phone call OR if it has a recording (for web)
+                                if (!isPhone && !hasRecording) return null;
 
                                 const formatDuration = (seconds?: number) => {
                                     if (!seconds) return 'N/A';
@@ -539,40 +544,46 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                     <Card>
                                         <CardHeader className="pb-3">
                                             <CardTitle className="flex items-center gap-2 text-base">
-                                                <Phone className="h-5 w-5" />
-                                                Call Details
+                                                {isPhone ? <Phone className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
+                                                {isPhone ? 'Call Details' : 'Session Recording'}
                                             </CardTitle>
                                             <CardDescription>
-                                                This interview was conducted via phone call
+                                                {isPhone
+                                                    ? 'This interview was conducted via phone call'
+                                                    : 'Audio recording captured from web interview'}
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                                <div>
-                                                    <span className="text-muted-foreground block text-xs mb-1">Status</span>
-                                                    <Badge variant={session.twilio_data.status === 'completed' ? 'default' : 'secondary'}>
-                                                        {session.twilio_data.status || 'N/A'}
-                                                    </Badge>
+                                            {isPhone && (
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-xs mb-1">Status</span>
+                                                        <Badge variant={session.twilio_data.status === 'completed' ? 'default' : 'secondary'}>
+                                                            {session.twilio_data.status || 'N/A'}
+                                                        </Badge>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-xs mb-1">Duration</span>
+                                                        <p className="font-medium">{formatDuration(session.twilio_data.duration)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-xs mb-1">Called Number</span>
+                                                        <p className="font-medium font-mono text-sm">{session.twilio_data.to || 'N/A'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-xs mb-1">From</span>
+                                                        <p className="font-medium font-mono text-sm">{session.twilio_data.from || 'N/A'}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span className="text-muted-foreground block text-xs mb-1">Duration</span>
-                                                    <p className="font-medium">{formatDuration(session.twilio_data.duration)}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-muted-foreground block text-xs mb-1">Called Number</span>
-                                                    <p className="font-medium font-mono text-sm">{session.twilio_data.to || 'N/A'}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-muted-foreground block text-xs mb-1">From</span>
-                                                    <p className="font-medium font-mono text-sm">{session.twilio_data.from || 'N/A'}</p>
-                                                </div>
-                                            </div>
+                                            )}
 
                                             {/* Recording Player */}
                                             {session.twilio_data.recording_url && (
-                                                <div className="pt-2 border-t">
+                                                <div className={cn("pt-2", isPhone && "border-t")}>
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-sm font-medium">Call Recording</span>
+                                                        <span className="text-sm font-medium">
+                                                            {isPhone ? 'Call Recording' : 'Session Audio'}
+                                                        </span>
                                                         {session.twilio_data.recording_duration && (
                                                             <span className="text-xs text-muted-foreground">
                                                                 {formatDuration(session.twilio_data.recording_duration)}
@@ -580,6 +591,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                         )}
                                                     </div>
                                                     <audio controls className="w-full h-10">
+                                                        <source src={`/api/sessions/${session.id}/recording`} type="audio/webm" />
                                                         <source src={`/api/sessions/${session.id}/recording`} type="audio/mpeg" />
                                                         Your browser does not support the audio element.
                                                     </audio>
