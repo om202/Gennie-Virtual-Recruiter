@@ -55,7 +55,6 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
             nextPlayTimeRef.current = playbackAudioCtxRef.current.currentTime
             // Create recording destination immediately so AI audio is captured from first chunk
             recordingDestRef.current = playbackAudioCtxRef.current.createMediaStreamDestination()
-            console.log('🎤 Recording destination created for AI audio capture')
         }
 
         const ctx = playbackAudioCtxRef.current
@@ -90,9 +89,6 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
 
             if (recordingDestRef.current) {
                 source.connect(recordingDestRef.current)
-                console.log('🔊 AI audio connected to recording destination')
-            } else {
-                console.warn('⚠️ Recording destination not available for AI audio')
             }
 
             source.start(nextPlayTimeRef.current)
@@ -155,19 +151,12 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 const micSourceForRecording = playbackAudioCtxRef.current.createMediaStreamSource(stream)
                 micSourceForRecording.connect(recordingDestRef.current)
 
-                console.log(`📼 Recording Mixer Setup:`)
-                console.log(`  - User mic connected to recording destination`)
-                console.log(`  - AI audio already connected to same destination`)
-                console.log(`  - Output tracks: ${recordingDestRef.current.stream.getAudioTracks().length}`)
-
                 const mimeType = [
                     'audio/webm;codecs=opus',
                     'audio/webm',
                     'audio/mp4',
                     ''
                 ].find(type => type === '' || MediaRecorder.isTypeSupported(type)) || ''
-
-                console.log(`🎙️ Initializing recorder with mimeType: ${mimeType || 'default'}`)
 
                 // Record the mixed output from the destination (contains both mic + AI)
                 const recorder = new MediaRecorder(recordingDestRef.current.stream, mimeType ? { mimeType } : undefined)
@@ -181,7 +170,6 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 }
 
                 recorder.start()
-                console.log('🎙️ Call recording started (mixed audio)')
 
             } catch (recErr: any) {
                 console.error('Failed to start recording:', recErr)
