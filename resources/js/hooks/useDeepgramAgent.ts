@@ -354,6 +354,19 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             summary: input?.summary,
                         })
 
+                        // Notify backend to end session
+                        if (configRef.current?.sessionId) {
+                            try {
+                                await fetch(`/api/sessions/${configRef.current.sessionId}/end`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ reason: input?.reason || 'ai_ended' })
+                                });
+                            } catch (e) {
+                                console.error('Failed to update session status on backend:', e);
+                            }
+                        }
+
                         addTranscript('system', `Interview ending: ${input?.reason || 'complete'}`)
 
                         // Acknowledge the function call
@@ -441,6 +454,16 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
 
     const stopConversation = useCallback(() => {
         console.log('Stopping conversation...')
+
+        // Notify backend to end session
+        if (configRef.current?.sessionId) {
+            fetch(`/api/sessions/${configRef.current.sessionId}/end`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: 'user_ended' })
+            }).catch(e => console.error('Failed to update session status on backend:', e));
+        }
+
         if (connectionRef.current) {
             try {
                 connectionRef.current.disconnect()
