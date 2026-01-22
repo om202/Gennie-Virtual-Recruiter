@@ -329,6 +329,30 @@ class InterviewSessionController extends Controller
     }
 
     /**
+     * Delete an entire session.
+     */
+    public function deleteSession(string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        // Delete associated recording file if it exists (for web recordings)
+        if (
+            !empty($session->twilio_data['recording_url']) &&
+            $session->twilio_data['recording_url'] === 'local'
+        ) {
+            Storage::disk('public')->delete("recordings/session_{$id}.webm");
+        }
+
+        // Delete the session (logs will cascade delete due to foreign key)
+        $session->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Session deleted successfully',
+        ]);
+    }
+
+    /**
      * Manually trigger analysis for a session.
      */
     public function analyze(string $id)

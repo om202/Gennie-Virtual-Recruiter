@@ -3,9 +3,19 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw } from 'lucide-react'
+import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2 } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 
 interface TwilioData {
@@ -68,6 +78,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
     )
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
     const [assessmentDialogOpen, setAssessmentDialogOpen] = useState(false)
+    const [deleteSessionDialogOpen, setDeleteSessionDialogOpen] = useState(false)
+    const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
     const [logs, setLogs] = useState<Record<string, Log[]>>({})
     // Store fresh session details fetched from API
     const [sessionDetails, setSessionDetails] = useState<Record<string, Session>>({})
@@ -180,6 +192,31 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
         return sessionDetails[selectedSessionId] || allSessions.find(s => s.id === selectedSessionId);
     }
 
+    const handleDeleteSession = async () => {
+        if (!sessionToDelete) return;
+
+        try {
+            const response = await fetch(`/api/sessions/${sessionToDelete}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Redirect to logs page to refresh the list
+                window.location.href = '/interviews/logs';
+            } else {
+                alert(data.error || 'Failed to delete session');
+            }
+        } catch (error) {
+            console.error('Failed to delete session:', error);
+            alert('Failed to delete session. Please try again.');
+        } finally {
+            setDeleteSessionDialogOpen(false);
+            setSessionToDelete(null);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-muted/50">
             <Head title={isFiltered ? `Logs - ${interview.job_title}` : "Interview Logs"} />
@@ -266,23 +303,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                 )}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <Badge
-                                                                            variant={session.status === 'completed' ? 'default' : 'secondary'}
-                                                                            className="text-xs"
-                                                                        >
-                                                                            {session.status}
-                                                                        </Badge>
-                                                                        {/* Channel Badge */}
-                                                                        <Badge variant="outline" className="text-xs gap-1">
-                                                                            {session.channel === 'phone' ? (
-                                                                                <><Phone className="h-3 w-3" /></>
-                                                                            ) : (
-                                                                                <><Globe className="h-3 w-3" /></>
-                                                                            )}
-                                                                        </Badge>
-                                                                    </div>
-                                                                    <time className="text-xs text-muted-foreground whitespace-nowrap">
+                                                                    <time className="text-sm text-foreground">
                                                                         {sessionDate.toLocaleDateString([], {
                                                                             month: 'short',
                                                                             day: 'numeric'
@@ -293,6 +314,14 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                             minute: '2-digit'
                                                                         })}
                                                                     </time>
+                                                                    {/* Channel Badge */}
+                                                                    <Badge variant="outline" className="text-xs gap-1">
+                                                                        {session.channel === 'phone' ? (
+                                                                            <><Phone className="h-3 w-3" /></>
+                                                                        ) : (
+                                                                            <><Globe className="h-3 w-3" /></>
+                                                                        )}
+                                                                    </Badge>
                                                                 </div>
 
                                                                 {session.progress_state?.completed_questions && (
@@ -330,46 +359,72 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                 const analysisResult = localAnalysis?.result || session.analysis_result;
 
                                 if (analysisResult || analysisStatus === 'completed' || analysisStatus === 'failed') {
+                                    // Check if this is an insufficient data case
+                                    const errorResult = analysisResult as { error?: string } | null;
+                                    const isInsufficientData = errorResult?.error && (errorResult.error.includes('Insufficient') || errorResult.error.includes('insufficient'));
+
                                     return (
                                         <div className="space-y-3">
                                             {/* TODO: TEMPORARY - Remove this button later */}
-                                            <div className="flex justify-end">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={isAnalyzing}
-                                                    onClick={async () => {
-                                                        setAnalyzingSession(session.id);
-                                                        // Clear local state first
-                                                        setSessionAnalysis(prev => {
-                                                            const newState = { ...prev };
-                                                            delete newState[session.id];
-                                                            return newState;
-                                                        });
-                                                        try {
-                                                            // Force re-analysis by resetting status first
-                                                            await fetch(`/api/sessions/${session.id}/reset-analysis`, { method: 'POST' });
-                                                            const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
-                                                            const data = await res.json();
-                                                            if (!data.success) {
-                                                                setAnalyzingSession(null);
-                                                                alert(data.message || 'Failed to start analysis');
-                                                            }
-                                                        } catch (e) {
-                                                            setAnalyzingSession(null);
-                                                            console.error(e);
-                                                        }
-                                                    }}
+                                            <div className="flex items-center justify-between gap-2">
+                                                <Badge
+                                                    variant={session.status === 'completed' ? 'default' : 'secondary'}
+                                                    className="text-sm"
                                                 >
-                                                    {isAnalyzing ? (
-                                                        <>
-                                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                            Re-running...
-                                                        </>
-                                                    ) : (
-                                                        'Re-run Assessment'
+                                                    {session.status}
+                                                </Badge>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setSessionToDelete(session.id);
+                                                            setDeleteSessionDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                                                        Delete
+                                                    </Button>
+                                                    {/* Hide Re-run Assessment for insufficient data cases */}
+                                                    {!isInsufficientData && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={isAnalyzing}
+                                                            onClick={async () => {
+                                                                setAnalyzingSession(session.id);
+                                                                // Clear local state first
+                                                                setSessionAnalysis(prev => {
+                                                                    const newState = { ...prev };
+                                                                    delete newState[session.id];
+                                                                    return newState;
+                                                                });
+                                                                try {
+                                                                    // Force re-analysis by resetting status first
+                                                                    await fetch(`/api/sessions/${session.id}/reset-analysis`, { method: 'POST' });
+                                                                    const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
+                                                                    const data = await res.json();
+                                                                    if (!data.success) {
+                                                                        setAnalyzingSession(null);
+                                                                        alert(data.message || 'Failed to start analysis');
+                                                                    }
+                                                                } catch (e) {
+                                                                    setAnalyzingSession(null);
+                                                                    console.error(e);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {isAnalyzing ? (
+                                                                <>
+                                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                                    Re-running...
+                                                                </>
+                                                            ) : (
+                                                                'Re-run Assessment'
+                                                            )}
+                                                        </Button>
                                                     )}
-                                                </Button>
+                                                </div>
                                             </div>
                                             {/* Clickable Scorecard - Opens Full-Screen Dialog */}
                                             <div
@@ -650,7 +705,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
                                                 return (
                                                     <div key={log.id} className={cn(
-                                                        "flex gap-4",
+                                                        "flex gap-4 group",
                                                         log.speaker === 'candidate' ? "flex-row-reverse" : "flex-row"
                                                     )}>
                                                         <div className={cn(
@@ -678,7 +733,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                 )}
                                                             </div>
                                                             <div className={cn(
-                                                                "rounded-lg p-3 text-sm leading-relaxed shadow-sm",
+                                                                "rounded-lg p-3 text-sm leading-relaxed shadow-sm relative",
                                                                 log.speaker === 'candidate'
                                                                     ? "bg-primary text-primary-foreground rounded-tr-none"
                                                                     : log.speaker === 'system'
@@ -721,6 +776,28 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                     />
                 );
             })()}
+
+
+            {/* Delete Session Confirmation Dialog */}
+            <AlertDialog open={deleteSessionDialogOpen} onOpenChange={setDeleteSessionDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Entire Session?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this entire interview session? This will permanently delete all logs, recordings, and analysis results. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteSession}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete Session
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

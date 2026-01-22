@@ -25,6 +25,7 @@ Route::get('/sessions/{id}/context', [InterviewSessionController::class, 'getCon
 Route::post('/sessions/{id}/progress', [InterviewSessionController::class, 'updateProgress']);
 Route::post('/sessions/{id}/log', [InterviewSessionController::class, 'logInteraction']);
 Route::get('/sessions/{id}/logs', [InterviewSessionController::class, 'getLogs']);
+Route::delete('/sessions/{id}', [InterviewSessionController::class, 'deleteSession']);
 Route::post('/sessions/{id}/analyze', [InterviewSessionController::class, 'analyze']);
 // TODO: TEMPORARY - Remove this route later
 Route::post('/sessions/{id}/reset-analysis', [InterviewSessionController::class, 'resetAnalysis']);
