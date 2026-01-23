@@ -244,13 +244,13 @@ export default function TryGennie() {
 
                     <div className="text-center space-y-2">
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
-                            Try Gennie
+                            Live Interview Simulator
                         </h1>
                         <p className="text-lg md:text-xl text-muted-foreground">
-                            Experience AI-powered interviewing - no signup required
+                            Step into the candidate's shoes. Experience the full screening workflow instantly—no setup needed.
                         </p>
-                        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                            This demo uses a sample Software Engineer role. Your interview will be recorded and analyzed.
+                        <p className="text-sm text-muted-foreground max-w-2xl mx-auto pt-2">
+                            <strong className="text-foreground">Context Note:</strong> Senior Software Engineer. The AI will conduct a technical screen and generate a performance report immediately after.
                         </p>
                     </div>
                 </div>
@@ -278,7 +278,7 @@ export default function TryGennie() {
                                     ) : (
                                         <>
                                             <Globe className="h-5 w-5 mr-2" />
-                                            Start Demo Interview
+                                            Start Live Interview
                                         </>
                                     )}
                                 </Button>

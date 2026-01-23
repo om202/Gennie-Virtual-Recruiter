@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react'
-import { CircleDot } from 'lucide-react'
 
 export default function Footer() {
     const currentYear = new Date().getFullYear()
@@ -11,11 +10,11 @@ export default function Footer() {
                     {/* Brand Section */}
                     <div className="space-y-4">
                         <div className="flex items-center space-x-2 justify-center md:justify-start">
-                            <CircleDot className="h-6 w-6 text-primary" />
-                            <span className="font-bold text-xl">Gennie</span>
+                            <img src="/gennie.png" alt="Gennie" className="h-8" />
+                            <span className="font-extrabold text-xl text-primary">Gennie Talent</span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Your AI-powered virtual recruiter. Fair, intelligent, and available 24/7.
+                            Scale Your Hiring, Not Your HR Team
                         </p>
                     </div>
 

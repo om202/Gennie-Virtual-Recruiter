@@ -46,7 +46,7 @@ export default function Header() {
                 {/* Logo/Brand */}
                 <Link href={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
                     <img src="/gennie.png" alt="Gennie" className="h-8" />
-                    <span className="font-extrabold text-2xl text-primary">Gennie</span>
+                    <span className="font-extrabold text-xl sm:text-2xl text-primary leading-tight">Gennie Talent</span>
                 </Link>
 
                 {/* Navigation Menu */}
