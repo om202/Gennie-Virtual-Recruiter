@@ -3,7 +3,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil } from 'lucide-react';
 import ViewCandidateDialog from './Components/ViewCandidateDialog';
@@ -36,14 +35,13 @@ interface Candidate {
     email: string;
     phone: string | null;
     linkedin_url: string | null;
-    skills: string[];
+    skills: string | null;
     experience_summary: string | null;
-    location: string | null;
+    city: string | null;
+    state: string | null;
     resume_path: string | null;
     created_at: string;
     address: string | null;
-    city: string | null;
-    state: string | null;
     zip: string | null;
     work_authorization: string | null;
     salary_expectation: string | null;
@@ -51,6 +49,12 @@ interface Candidate {
     education: Education[];
     certificates: Certificate[];
 }
+
+// Helper to derive location from city+state
+const getLocation = (candidate: Candidate): string | null => {
+    const parts = [candidate.city, candidate.state].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : null;
+};
 
 interface IndexProps {
     auth: any;
@@ -63,6 +67,13 @@ interface IndexProps {
         search?: string;
     };
 }
+
+// Helper to get display text below name (summary or skills as fallback)
+const getSubtitle = (candidate: Candidate): string | null => {
+    if (candidate.experience_summary) return candidate.experience_summary;
+    if (candidate.skills) return candidate.skills;
+    return null;
+};
 
 export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
@@ -183,7 +194,6 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                 <TableRow>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Contact</TableHead>
-                                    <TableHead className="hidden md:table-cell">Skills</TableHead>
                                     <TableHead className="hidden md:table-cell">Location</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -193,9 +203,9 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                     <TableRow key={candidate.id}>
                                         <TableCell>
                                             <div className="font-medium">{candidate.name}</div>
-                                            {candidate.experience_summary && (
-                                                <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs" title={candidate.experience_summary}>
-                                                    {candidate.experience_summary}
+                                            {getSubtitle(candidate) && (
+                                                <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs" title={getSubtitle(candidate) || undefined}>
+                                                    {getSubtitle(candidate)}
                                                 </div>
                                             )}
                                         </TableCell>
@@ -220,22 +230,10 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                             </div>
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
-                                            <div className="flex flex-wrap gap-1">
-                                                {Array.isArray(candidate.skills) && candidate.skills.slice(0, 3).map((skill, i) => (
-                                                    <Badge key={i} variant="secondary" className="text-xs">
-                                                        {skill}
-                                                    </Badge>
-                                                ))}
-                                                {Array.isArray(candidate.skills) && candidate.skills.length > 3 && (
-                                                    <Badge variant="outline" className="text-xs">+{candidate.skills.length - 3}</Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            {candidate.location && (
+                                            {getLocation(candidate) && (
                                                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                                     <MapPin className="h-3 w-3" />
-                                                    {candidate.location}
+                                                    {getLocation(candidate)}
                                                 </div>
                                             )}
                                         </TableCell>

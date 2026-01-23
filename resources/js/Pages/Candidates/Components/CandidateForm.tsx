@@ -9,173 +9,6 @@ import { Loader2, Upload, Plus, Trash2, CheckCircle, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-/**
- * Normalize date strings from AI parsing to YYYY-MM format for month inputs.
- * Handles: "Jan 2020", "January 2020", "2020-01", "2020", "Present", etc.
- */
-function normalizeDateToMonth(dateStr: string | null | undefined): string {
-    if (!dateStr) return '';
-    const str = dateStr.trim();
-
-    // Handle "Present", "Current", etc. - return empty for ongoing
-    if (/^(present|current|ongoing|now)$/i.test(str)) return '';
-
-    // Already in YYYY-MM format
-    if (/^\d{4}-\d{2}$/.test(str)) return str;
-
-    // YYYY only - default to January
-    if (/^\d{4}$/.test(str)) return `${str}-01`;
-
-    // Month name + Year (e.g., "Jan 2020", "January 2020")
-    const monthNames: Record<string, string> = {
-        jan: '01', january: '01', feb: '02', february: '02', mar: '03', march: '03',
-        apr: '04', april: '04', may: '05', jun: '06', june: '06',
-        jul: '07', july: '07', aug: '08', august: '08', sep: '09', september: '09',
-        oct: '10', october: '10', nov: '11', november: '11', dec: '12', december: '12'
-    };
-    const monthYearMatch = str.match(/^([a-zA-Z]+)\s*(\d{4})$/i);
-    if (monthYearMatch) {
-        const month = monthNames[monthYearMatch[1].toLowerCase()];
-        const year = monthYearMatch[2];
-        if (month && year) return `${year}-${month}`;
-    }
-
-    // Year + Month name (e.g., "2020 Jan")
-    const yearMonthMatch = str.match(/^(\d{4})\s*([a-zA-Z]+)$/i);
-    if (yearMonthMatch) {
-        const year = yearMonthMatch[1];
-        const month = monthNames[yearMonthMatch[2].toLowerCase()];
-        if (month && year) return `${year}-${month}`;
-    }
-
-    // MM/YYYY or M/YYYY
-    const slashMatch = str.match(/^(\d{1,2})\/(\d{4})$/);
-    if (slashMatch) {
-        const month = slashMatch[1].padStart(2, '0');
-        const year = slashMatch[2];
-        return `${year}-${month}`;
-    }
-
-    // Fallback: return empty if we can't parse
-    return '';
-}
-
-/**
- * Normalize phone number: remove extra chars, format consistently.
- * Handles: "(555) 123-4567", "555.123.4567", "+1 555 123 4567", etc.
- */
-function normalizePhone(phone: string | null | undefined): string {
-    if (!phone) return '';
-    // Remove everything except digits and leading +
-    const cleaned = phone.trim().replace(/[^\d+]/g, '');
-    if (!cleaned) return '';
-
-    // If it's a 10-digit US number, format it nicely
-    if (/^\d{10}$/.test(cleaned)) {
-        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-    }
-    // If it starts with 1 and has 11 digits (US with country code)
-    if (/^1\d{10}$/.test(cleaned)) {
-        return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-    }
-    // International or other formats - just clean it up
-    return phone.trim();
-}
-
-/**
- * Normalize email: lowercase and trim.
- */
-function normalizeEmail(email: string | null | undefined): string {
-    if (!email) return '';
-    return email.trim().toLowerCase();
-}
-
-/**
- * Normalize URL: ensure https:// prefix for LinkedIn and other URLs.
- */
-function normalizeUrl(url: string | null | undefined): string {
-    if (!url) return '';
-    let cleaned = url.trim();
-    if (!cleaned) return '';
-
-    // Remove trailing slashes
-    cleaned = cleaned.replace(/\/+$/, '');
-
-    // Add https:// if missing protocol
-    if (!/^https?:\/\//i.test(cleaned)) {
-        // Handle linkedin.com/in/... without protocol
-        if (cleaned.startsWith('linkedin.com') || cleaned.startsWith('www.linkedin.com')) {
-            cleaned = 'https://' + cleaned;
-        } else if (cleaned.includes('.')) {
-            cleaned = 'https://' + cleaned;
-        }
-    }
-
-    return cleaned;
-}
-
-/**
- * Normalize text: trim and proper title case for names.
- */
-function normalizeName(name: string | null | undefined): string {
-    if (!name) return '';
-    return name.trim()
-        .split(/\s+/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-}
-
-/**
- * Normalize general text: trim whitespace and normalize internal spacing.
- */
-function normalizeText(text: string | null | undefined): string {
-    if (!text) return '';
-    return text.trim().replace(/\s+/g, ' ');
-}
-
-/**
- * Normalize city/state: proper title case.
- */
-function normalizeLocation(location: string | null | undefined): string {
-    if (!location) return '';
-    return location.trim()
-        .split(/\s+/)
-        .map(word => {
-            // Handle state abbreviations (keep uppercase)
-            if (word.length === 2 && /^[A-Za-z]+$/.test(word)) {
-                return word.toUpperCase();
-            }
-            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        })
-        .join(' ');
-}
-
-/**
- * Normalize zip code: extract digits, handle ZIP+4.
- */
-function normalizeZip(zip: string | null | undefined): string {
-    if (!zip) return '';
-    const cleaned = zip.trim();
-    // Extract just digits and hyphen for ZIP+4
-    const match = cleaned.match(/^(\d{5})(-\d{4})?/);
-    if (match) {
-        return match[0];
-    }
-    return cleaned;
-}
-
-/**
- * Normalize skills array: trim each, remove empties, dedupe.
- */
-function normalizeSkills(skills: string[] | null | undefined): string {
-    if (!skills || !Array.isArray(skills)) return '';
-    return [...new Set(
-        skills
-            .map(s => s.trim())
-            .filter(Boolean)
-    )].join(', ');
-}
-
 interface CandidateFormProps {
     candidate?: any;
     onSuccess: () => void;
@@ -194,7 +27,6 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
         linkedin_url: candidate?.linkedin_url || '',
         skills: candidate?.skills ? (Array.isArray(candidate.skills) ? candidate.skills.join(', ') : candidate.skills) : '',
         experience_summary: candidate?.experience_summary || '',
-        location: candidate?.location || '',
         address: candidate?.address || '',
         city: candidate?.city || '',
         state: candidate?.state || '',
@@ -252,43 +84,25 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
             if (response.data.status === 'success') {
                 const extracted = response.data.data;
 
+                // Simple merge - use extracted values or keep existing
                 setData(prev => ({
                     ...prev,
                     resume_file: file,
                     resume_text: response.data.raw_text || '',
-
-                    // Apply normalization to all extracted fields
-                    name: normalizeName(extracted.name) || prev.name,
-                    email: normalizeEmail(extracted.email) || prev.email,
-                    phone: normalizePhone(extracted.phone) || prev.phone,
-                    linkedin_url: normalizeUrl(extracted.linkedin_url) || prev.linkedin_url,
-                    skills: normalizeSkills(extracted.skills) || prev.skills,
-                    experience_summary: normalizeText(extracted.experience_summary) || prev.experience_summary,
-
-                    location: normalizeLocation(extracted.location) || prev.location,
-                    address: normalizeText(extracted.address) || prev.address,
-                    city: normalizeLocation(extracted.city) || prev.city,
-                    state: normalizeLocation(extracted.state) || prev.state,
-                    zip: normalizeZip(extracted.zip) || prev.zip,
-
-                    work_history: Array.isArray(extracted.work_history)
-                        ? extracted.work_history.map((job: any) => ({
-                            ...job,
-                            start_date: normalizeDateToMonth(job.start_date),
-                            end_date: normalizeDateToMonth(job.end_date),
-                        }))
-                        : prev.work_history,
-                    education: Array.isArray(extracted.education)
-                        ? extracted.education.map((edu: any) => ({
-                            ...edu,
-                            start_date: normalizeDateToMonth(edu.start_date),
-                            end_date: normalizeDateToMonth(edu.end_date),
-                        }))
-                        : prev.education,
+                    name: extracted.name?.trim() || prev.name,
+                    email: extracted.email?.trim()?.toLowerCase() || prev.email,
+                    phone: extracted.phone?.trim() || prev.phone,
+                    linkedin_url: extracted.linkedin_url?.trim() || prev.linkedin_url,
+                    skills: extracted.skills?.trim() || prev.skills,
+                    experience_summary: extracted.experience_summary?.trim() || prev.experience_summary,
+                    address: extracted.address?.trim() || prev.address,
+                    city: extracted.city?.trim() || prev.city,
+                    state: extracted.state?.trim()?.toUpperCase() || prev.state,
+                    zip: extracted.zip?.trim() || prev.zip,
+                    work_history: Array.isArray(extracted.work_history) ? extracted.work_history : prev.work_history,
+                    education: Array.isArray(extracted.education) ? extracted.education : prev.education,
                     certificates: Array.isArray(extracted.certificates) ? extracted.certificates : prev.certificates,
-
                     work_authorization: extracted.work_authorization || prev.work_authorization,
-                    // Note: salary is now structured, AI-extracted value would need parsing
                 }));
 
                 setJdFilename(file.name);

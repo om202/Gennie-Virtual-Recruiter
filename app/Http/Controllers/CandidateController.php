@@ -45,24 +45,6 @@ class CandidateController extends Controller
 
     public function store(Request $request)
     {
-        \Log::info('CandidateController::store called', [
-            'all_input' => $request->all(),
-            'user_id' => $request->user()?->id,
-        ]);
-
-        // Preprocess: convert skills string to array if needed
-        if (is_string($request->input('skills'))) {
-            $skillsArray = array_map('trim', explode(',', $request->input('skills')));
-            $skillsArray = array_filter($skillsArray); // Remove empty values
-            $request->merge(['skills' => $skillsArray]);
-        }
-
-        // Preprocess: normalize boolean fields (they come as '1'/'0' strings from forms)
-        $request->merge([
-            'authorized_to_work' => filter_var($request->input('authorized_to_work'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-            'sponsorship_needed' => filter_var($request->input('sponsorship_needed'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-        ]);
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -76,8 +58,8 @@ class CandidateController extends Controller
             'state' => 'nullable|string|max:50',
             'zip' => 'nullable|string|max:20',
             'work_authorization' => 'nullable|string|max:50',
-            'authorized_to_work' => 'nullable|boolean',
-            'sponsorship_needed' => 'nullable|boolean',
+            'authorized_to_work' => 'nullable',
+            'sponsorship_needed' => 'nullable',
             'salary_type' => 'nullable|string|in:hourly,yearly',
             'salary_min' => 'nullable|numeric|min:0',
             'salary_max' => 'nullable|numeric|min:0',
@@ -128,16 +110,15 @@ class CandidateController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'linkedin_url' => $validated['linkedin_url'] ?? null,
-            'skills' => $validated['skills'] ?? [],
+            'skills' => $validated['skills'] ?? null,
             'experience_summary' => $validated['experience_summary'] ?? null,
-            'location' => $validated['location'] ?? null,
             'address' => $validated['address'] ?? null,
             'city' => $validated['city'] ?? null,
             'state' => $validated['state'] ?? null,
             'zip' => $validated['zip'] ?? null,
             'work_authorization' => $validated['work_authorization'] ?? null,
-            'authorized_to_work' => $validated['authorized_to_work'] ?? false,
-            'sponsorship_needed' => $validated['sponsorship_needed'] ?? false,
+            'authorized_to_work' => filter_var($validated['authorized_to_work'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'sponsorship_needed' => filter_var($validated['sponsorship_needed'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'salary_expectation' => $salaryExpectation,
             'work_history' => $validated['work_history'] ?? [],
             'education' => $validated['education'] ?? [],
@@ -179,8 +160,8 @@ class CandidateController extends Controller
             'state' => 'nullable|string|max:50',
             'zip' => 'nullable|string|max:20',
             'work_authorization' => 'nullable|string|max:50',
-            'authorized_to_work' => 'nullable|boolean',
-            'sponsorship_needed' => 'nullable|boolean',
+            'authorized_to_work' => 'nullable',
+            'sponsorship_needed' => 'nullable',
             'salary_type' => 'nullable|string|in:hourly,yearly',
             'salary_min' => 'nullable|numeric|min:0',
             'salary_max' => 'nullable|numeric|min:0',
@@ -189,20 +170,21 @@ class CandidateController extends Controller
             'certificates' => 'nullable|array',
         ]);
 
-        // Normalize booleans
-        $request->merge([
-            'authorized_to_work' => filter_var($request->input('authorized_to_work'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-            'sponsorship_needed' => filter_var($request->input('sponsorship_needed'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-        ]);
-
-        // Build salary expectation
+        // Build salary expectation (same format as store)
         $salaryExpectation = null;
         if (!empty($validated['salary_min']) || !empty($validated['salary_max'])) {
             $type = $validated['salary_type'] ?? 'yearly';
             $min = $validated['salary_min'] ?? '';
             $max = $validated['salary_max'] ?? '';
-            $range = $min && $max ? "$min-$max" : ($min ?: $max);
-            $salaryExpectation = "$range/" . ($type === 'hourly' ? 'hr' : 'year');
+            $suffix = $type === 'hourly' ? '/hr' : '/yr';
+
+            if ($min && $max) {
+                $salaryExpectation = "\${$min} - \${$max} {$suffix}";
+            } elseif ($min) {
+                $salaryExpectation = "\${$min}+ {$suffix}";
+            } elseif ($max) {
+                $salaryExpectation = "Up to \${$max} {$suffix}";
+            }
         }
 
         $candidate->update([
@@ -210,16 +192,15 @@ class CandidateController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'linkedin_url' => $validated['linkedin_url'] ?? null,
-            'skills' => $validated['skills'] ?? [],
+            'skills' => $validated['skills'] ?? null,
             'experience_summary' => $validated['experience_summary'] ?? null,
-            'location' => $validated['location'] ?? null,
             'address' => $validated['address'] ?? null,
             'city' => $validated['city'] ?? null,
             'state' => $validated['state'] ?? null,
             'zip' => $validated['zip'] ?? null,
             'work_authorization' => $validated['work_authorization'] ?? null,
-            'authorized_to_work' => $validated['authorized_to_work'] ?? false,
-            'sponsorship_needed' => $validated['sponsorship_needed'] ?? false,
+            'authorized_to_work' => filter_var($validated['authorized_to_work'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'sponsorship_needed' => filter_var($validated['sponsorship_needed'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'salary_expectation' => $salaryExpectation,
             'work_history' => $validated['work_history'] ?? [],
             'education' => $validated['education'] ?? [],

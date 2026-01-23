@@ -22,7 +22,6 @@ class Candidate extends Model
         'linkedin_url',
         'skills',
         'experience_summary',
-        'location',
         // ATS Data
         'work_history',
         'education',
@@ -38,7 +37,6 @@ class Candidate extends Model
     ];
 
     protected $casts = [
-        'skills' => 'array',
         'work_history' => 'array',
         'education' => 'array',
         'certificates' => 'array',

@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -35,9 +34,8 @@ interface Candidate {
     email: string;
     phone: string | null;
     linkedin_url: string | null;
-    skills: string[];
+    skills: string | null;
     experience_summary: string | null;
-    location: string | null;
     address: string | null;
     city: string | null;
     state: string | null;
@@ -48,6 +46,12 @@ interface Candidate {
     education: Education[];
     certificates: Certificate[];
 }
+
+// Helper to derive location from city+state
+const getLocation = (candidate: Candidate): string | null => {
+    const parts = [candidate.city, candidate.state].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : null;
+};
 
 interface ViewCandidateDialogProps {
     candidate: Candidate | null;
@@ -68,6 +72,22 @@ const workAuthLabels: Record<string, string> = {
     'opt': 'OPT',
     'cpt': 'CPT',
     'need_sponsorship': 'Need Sponsorship',
+};
+
+// Helper to clean skills string (remove JSON brackets if legacy format)
+const cleanSkills = (skills: string | null): string | null => {
+    if (!skills) return null;
+    const trimmed = skills.trim();
+    // Handle legacy JSON array format: ["React", "Python"] -> React, Python
+    if (trimmed.startsWith('[')) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed.join(', ');
+        } catch {
+            // Not valid JSON, fall through
+        }
+    }
+    return trimmed;
 };
 
 export default function ViewCandidateDialog({ candidate, open, onOpenChange }: ViewCandidateDialogProps) {
@@ -150,23 +170,23 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                     </div>
                                 )}
 
-                                {/* Location */}
-                                {candidate.location && (
+                                {/* Location (derived from city+state) */}
+                                {getLocation(candidate) && (
                                     <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
-                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.location)}`}
+                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getLocation(candidate)!)}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
                                         >
                                             <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                            <span>{candidate.location}</span>
+                                            <span>{getLocation(candidate)}</span>
                                         </a>
                                         <Button
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8"
-                                            onClick={() => handleCopy(candidate.location!, 'location')}
+                                            onClick={() => handleCopy(getLocation(candidate)!, 'location')}
                                         >
                                             {copiedField === 'location' ? (
                                                 <Check className="h-4 w-4 text-green-600" />
@@ -177,8 +197,8 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                     </div>
                                 )}
 
-                                {/* Full Address (only if different from location) */}
-                                {fullAddress && fullAddress !== candidate.location && (
+                                {/* Full Address (street address + city, state, zip) */}
+                                {fullAddress && (
                                     <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
@@ -278,22 +298,15 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                         )}
 
                         {/* Skills */}
-                        {candidate.skills && candidate.skills.length > 0 && (
+                        {cleanSkills(candidate.skills) && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base flex items-center gap-2">
-                                        <Award className="h-4 w-4" />
-                                        Skills
-                                    </CardTitle>
+                                    <CardTitle className="text-base">Skills</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        {candidate.skills.map((skill, i) => (
-                                            <Badge key={i} variant="secondary">
-                                                {skill}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        {cleanSkills(candidate.skills)}
+                                    </p>
                                 </CardContent>
                             </Card>
                         )}

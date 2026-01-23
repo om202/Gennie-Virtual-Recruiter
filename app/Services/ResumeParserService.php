@@ -167,12 +167,11 @@ Extract the following from this resume. Remember: COPY EXACTLY, DO NOT SUMMARIZE
 - email (string|null)  
 - phone (string|null) - Include country code if present
 - linkedin_url (string|null) - Full URL
-- location (string|null) - City, State as written
 - address (string|null) - Full street address if available
 - city (string|null)
 - state (string|null)
 - zip (string|null)
-- skills (string[]) - Each skill as separate array item, exactly as written
+- skills (string|null) - Comma-separated list of skills, exactly as written
 - experience_summary (string|null) - ONLY if explicitly written in resume as "Summary" or "Objective". Otherwise null.
 
 ## Work History (EXTRACT VERBATIM):
@@ -239,15 +238,14 @@ EOT;
             'email' => null,
             'phone' => null,
             'linkedin_url' => null,
-            'location' => null,
             'address' => null,
             'city' => null,
             'state' => null,
             'zip' => null,
+            'skills' => null,
             'experience_summary' => null,
             'work_authorization' => null,
             'salary_expectation' => null,
-            'skills' => [],
             'work_history' => [],
             'education' => [],
             'certificates' => [],
@@ -255,22 +253,24 @@ EOT;
 
         foreach ($results as $result) {
             // Scalar fields: first non-null wins
-            foreach (['name', 'email', 'phone', 'linkedin_url', 'location', 'address', 'city', 'state', 'zip', 'experience_summary', 'work_authorization', 'salary_expectation'] as $field) {
+            foreach (['name', 'email', 'phone', 'linkedin_url', 'address', 'city', 'state', 'zip', 'skills', 'experience_summary', 'work_authorization', 'salary_expectation'] as $field) {
                 if (empty($merged[$field]) && !empty($result[$field])) {
-                    $merged[$field] = $result[$field];
+                    // Handle skills - can come as array or string, normalize to string
+                    if ($field === 'skills' && is_array($result[$field])) {
+                        $merged[$field] = implode(', ', $result[$field]);
+                    } else {
+                        $merged[$field] = $result[$field];
+                    }
                 }
             }
 
             // Array fields: concatenate
-            foreach (['skills', 'work_history', 'education', 'certificates'] as $field) {
+            foreach (['work_history', 'education', 'certificates'] as $field) {
                 if (!empty($result[$field]) && is_array($result[$field])) {
                     $merged[$field] = array_merge($merged[$field], $result[$field]);
                 }
             }
         }
-
-        // Deduplicate skills (case-insensitive)
-        $merged['skills'] = array_values(array_unique($merged['skills'], SORT_REGULAR));
 
         // Deduplicate work_history by company+title
         $merged['work_history'] = $this->deduplicateByKeys($merged['work_history'], ['company', 'title']);
