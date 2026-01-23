@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\CandidateController;
 use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
@@ -49,5 +50,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
     // Candidate Management
     Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');
-    Route::resource('candidates', \App\Http\Controllers\CandidateController::class);
+    Route::resource('candidates', CandidateController::class);
 });

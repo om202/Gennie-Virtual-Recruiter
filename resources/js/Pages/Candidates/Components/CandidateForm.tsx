@@ -7,6 +7,174 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Upload, Plus, Trash2, CheckCircle, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+/**
+ * Normalize date strings from AI parsing to YYYY-MM format for month inputs.
+ * Handles: "Jan 2020", "January 2020", "2020-01", "2020", "Present", etc.
+ */
+function normalizeDateToMonth(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const str = dateStr.trim();
+
+    // Handle "Present", "Current", etc. - return empty for ongoing
+    if (/^(present|current|ongoing|now)$/i.test(str)) return '';
+
+    // Already in YYYY-MM format
+    if (/^\d{4}-\d{2}$/.test(str)) return str;
+
+    // YYYY only - default to January
+    if (/^\d{4}$/.test(str)) return `${str}-01`;
+
+    // Month name + Year (e.g., "Jan 2020", "January 2020")
+    const monthNames: Record<string, string> = {
+        jan: '01', january: '01', feb: '02', february: '02', mar: '03', march: '03',
+        apr: '04', april: '04', may: '05', jun: '06', june: '06',
+        jul: '07', july: '07', aug: '08', august: '08', sep: '09', september: '09',
+        oct: '10', october: '10', nov: '11', november: '11', dec: '12', december: '12'
+    };
+    const monthYearMatch = str.match(/^([a-zA-Z]+)\s*(\d{4})$/i);
+    if (monthYearMatch) {
+        const month = monthNames[monthYearMatch[1].toLowerCase()];
+        const year = monthYearMatch[2];
+        if (month && year) return `${year}-${month}`;
+    }
+
+    // Year + Month name (e.g., "2020 Jan")
+    const yearMonthMatch = str.match(/^(\d{4})\s*([a-zA-Z]+)$/i);
+    if (yearMonthMatch) {
+        const year = yearMonthMatch[1];
+        const month = monthNames[yearMonthMatch[2].toLowerCase()];
+        if (month && year) return `${year}-${month}`;
+    }
+
+    // MM/YYYY or M/YYYY
+    const slashMatch = str.match(/^(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+        const month = slashMatch[1].padStart(2, '0');
+        const year = slashMatch[2];
+        return `${year}-${month}`;
+    }
+
+    // Fallback: return empty if we can't parse
+    return '';
+}
+
+/**
+ * Normalize phone number: remove extra chars, format consistently.
+ * Handles: "(555) 123-4567", "555.123.4567", "+1 555 123 4567", etc.
+ */
+function normalizePhone(phone: string | null | undefined): string {
+    if (!phone) return '';
+    // Remove everything except digits and leading +
+    const cleaned = phone.trim().replace(/[^\d+]/g, '');
+    if (!cleaned) return '';
+
+    // If it's a 10-digit US number, format it nicely
+    if (/^\d{10}$/.test(cleaned)) {
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+    // If it starts with 1 and has 11 digits (US with country code)
+    if (/^1\d{10}$/.test(cleaned)) {
+        return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+    }
+    // International or other formats - just clean it up
+    return phone.trim();
+}
+
+/**
+ * Normalize email: lowercase and trim.
+ */
+function normalizeEmail(email: string | null | undefined): string {
+    if (!email) return '';
+    return email.trim().toLowerCase();
+}
+
+/**
+ * Normalize URL: ensure https:// prefix for LinkedIn and other URLs.
+ */
+function normalizeUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    let cleaned = url.trim();
+    if (!cleaned) return '';
+
+    // Remove trailing slashes
+    cleaned = cleaned.replace(/\/+$/, '');
+
+    // Add https:// if missing protocol
+    if (!/^https?:\/\//i.test(cleaned)) {
+        // Handle linkedin.com/in/... without protocol
+        if (cleaned.startsWith('linkedin.com') || cleaned.startsWith('www.linkedin.com')) {
+            cleaned = 'https://' + cleaned;
+        } else if (cleaned.includes('.')) {
+            cleaned = 'https://' + cleaned;
+        }
+    }
+
+    return cleaned;
+}
+
+/**
+ * Normalize text: trim and proper title case for names.
+ */
+function normalizeName(name: string | null | undefined): string {
+    if (!name) return '';
+    return name.trim()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+}
+
+/**
+ * Normalize general text: trim whitespace and normalize internal spacing.
+ */
+function normalizeText(text: string | null | undefined): string {
+    if (!text) return '';
+    return text.trim().replace(/\s+/g, ' ');
+}
+
+/**
+ * Normalize city/state: proper title case.
+ */
+function normalizeLocation(location: string | null | undefined): string {
+    if (!location) return '';
+    return location.trim()
+        .split(/\s+/)
+        .map(word => {
+            // Handle state abbreviations (keep uppercase)
+            if (word.length === 2 && /^[A-Za-z]+$/.test(word)) {
+                return word.toUpperCase();
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
+        .join(' ');
+}
+
+/**
+ * Normalize zip code: extract digits, handle ZIP+4.
+ */
+function normalizeZip(zip: string | null | undefined): string {
+    if (!zip) return '';
+    const cleaned = zip.trim();
+    // Extract just digits and hyphen for ZIP+4
+    const match = cleaned.match(/^(\d{5})(-\d{4})?/);
+    if (match) {
+        return match[0];
+    }
+    return cleaned;
+}
+
+/**
+ * Normalize skills array: trim each, remove empties, dedupe.
+ */
+function normalizeSkills(skills: string[] | null | undefined): string {
+    if (!skills || !Array.isArray(skills)) return '';
+    return [...new Set(
+        skills
+            .map(s => s.trim())
+            .filter(Boolean)
+    )].join(', ');
+}
 
 interface CandidateFormProps {
     onSuccess: () => void;
@@ -32,7 +200,11 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
         work_authorization: '',
         authorized_to_work: false,
         sponsorship_needed: false,
-        salary_expectation: '',
+
+        // Structured Salary Expectation
+        salary_type: 'yearly' as 'hourly' | 'yearly',
+        salary_min: '',
+        salary_max: '',
 
         // Complex Arrays
         work_history: [] as any[],
@@ -83,25 +255,38 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
                     resume_file: file,
                     resume_text: response.data.raw_text || '',
 
-                    name: extracted.name || prev.name,
-                    email: extracted.email || prev.email,
-                    phone: extracted.phone || prev.phone,
-                    linkedin_url: extracted.linkedin_url || prev.linkedin_url,
-                    skills: Array.isArray(extracted.skills) ? extracted.skills.join(', ') : prev.skills,
-                    experience_summary: extracted.experience_summary || prev.experience_summary,
+                    // Apply normalization to all extracted fields
+                    name: normalizeName(extracted.name) || prev.name,
+                    email: normalizeEmail(extracted.email) || prev.email,
+                    phone: normalizePhone(extracted.phone) || prev.phone,
+                    linkedin_url: normalizeUrl(extracted.linkedin_url) || prev.linkedin_url,
+                    skills: normalizeSkills(extracted.skills) || prev.skills,
+                    experience_summary: normalizeText(extracted.experience_summary) || prev.experience_summary,
 
-                    location: extracted.location || prev.location,
-                    address: extracted.address || prev.address,
-                    city: extracted.city || prev.city,
-                    state: extracted.state || prev.state,
-                    zip: extracted.zip || prev.zip,
+                    location: normalizeLocation(extracted.location) || prev.location,
+                    address: normalizeText(extracted.address) || prev.address,
+                    city: normalizeLocation(extracted.city) || prev.city,
+                    state: normalizeLocation(extracted.state) || prev.state,
+                    zip: normalizeZip(extracted.zip) || prev.zip,
 
-                    work_history: Array.isArray(extracted.work_history) ? extracted.work_history : prev.work_history,
-                    education: Array.isArray(extracted.education) ? extracted.education : prev.education,
+                    work_history: Array.isArray(extracted.work_history)
+                        ? extracted.work_history.map((job: any) => ({
+                            ...job,
+                            start_date: normalizeDateToMonth(job.start_date),
+                            end_date: normalizeDateToMonth(job.end_date),
+                        }))
+                        : prev.work_history,
+                    education: Array.isArray(extracted.education)
+                        ? extracted.education.map((edu: any) => ({
+                            ...edu,
+                            start_date: normalizeDateToMonth(edu.start_date),
+                            end_date: normalizeDateToMonth(edu.end_date),
+                        }))
+                        : prev.education,
                     certificates: Array.isArray(extracted.certificates) ? extracted.certificates : prev.certificates,
 
                     work_authorization: extracted.work_authorization || prev.work_authorization,
-                    salary_expectation: extracted.salary_expectation || prev.salary_expectation,
+                    // Note: salary is now structured, AI-extracted value would need parsing
                 }));
 
                 setJdFilename(file.name);
@@ -115,15 +300,26 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('Submitting form data:', data);
         post('/candidates', {
             // @ts-ignore - Inertia's transform callback typing
-            transform: (data: any) => ({
-                ...data,
-                skills: data.skills.split(',').map((s: string) => s.trim()).filter(Boolean),
-            }),
+            transform: (data: any) => {
+                const transformed = {
+                    ...data,
+                    skills: typeof data.skills === 'string'
+                        ? data.skills.split(',').map((s: string) => s.trim()).filter(Boolean)
+                        : data.skills,
+                };
+                console.log('Transformed data:', transformed);
+                return transformed;
+            },
             onSuccess: () => {
+                console.log('Form submitted successfully!');
                 reset();
                 onSuccess();
+            },
+            onError: (errors) => {
+                console.error('Form submission errors:', errors);
             },
         });
     };
@@ -188,41 +384,99 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Full Name <span className="text-destructive">*</span></Label>
-                            <Input value={data.name} onChange={e => setData('name', e.target.value)} required />
+                            <Input
+                                type="text"
+                                inputMode="text"
+                                autoComplete="name"
+                                value={data.name}
+                                onChange={e => setData('name', e.target.value)}
+                                required
+                            />
                             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label>Email <span className="text-destructive">*</span></Label>
-                            <Input type="email" value={data.email} onChange={e => setData('email', e.target.value)} required />
+                            <Input
+                                type="email"
+                                inputMode="email"
+                                autoComplete="email"
+                                value={data.email}
+                                onChange={e => setData('email', e.target.value)}
+                                required
+                            />
                             {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label>Phone</Label>
-                            <Input value={data.phone} onChange={e => setData('phone', e.target.value)} />
+                            <Input
+                                type="tel"
+                                inputMode="tel"
+                                autoComplete="tel"
+                                value={data.phone}
+                                onChange={e => setData('phone', e.target.value)}
+                                placeholder="+1 (555) 123-4567"
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label>LinkedIn URL</Label>
-                            <Input value={data.linkedin_url} onChange={e => setData('linkedin_url', e.target.value)} />
+                            <Input
+                                type="url"
+                                inputMode="url"
+                                autoComplete="url"
+                                value={data.linkedin_url}
+                                onChange={e => setData('linkedin_url', e.target.value)}
+                                placeholder="https://linkedin.com/in/..."
+                            />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Address</Label>
-                            <Input value={data.address} onChange={e => setData('address', e.target.value)} placeholder="123 Main St" />
+                            <Input
+                                type="text"
+                                inputMode="text"
+                                autoComplete="street-address"
+                                value={data.address}
+                                onChange={e => setData('address', e.target.value)}
+                                placeholder="123 Main St"
+                            />
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             <div className="space-y-2">
                                 <Label>City</Label>
-                                <Input value={data.city} onChange={e => setData('city', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    inputMode="text"
+                                    autoComplete="address-level2"
+                                    value={data.city}
+                                    onChange={e => setData('city', e.target.value)}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>State</Label>
-                                <Input value={data.state} onChange={e => setData('state', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    inputMode="text"
+                                    autoComplete="address-level1"
+                                    maxLength={2}
+                                    value={data.state}
+                                    onChange={e => setData('state', e.target.value.toUpperCase())}
+                                    placeholder="CA"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Zip</Label>
-                                <Input value={data.zip} onChange={e => setData('zip', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="postal-code"
+                                    pattern="[0-9]{5}(-[0-9]{4})?"
+                                    maxLength={10}
+                                    value={data.zip}
+                                    onChange={e => setData('zip', e.target.value)}
+                                    placeholder="12345"
+                                />
                             </div>
                         </div>
                     </div>
@@ -282,11 +536,11 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Start Date</Label>
-                                        <Input value={job.start_date} onChange={e => updateWork(index, 'start_date', e.target.value)} placeholder="YYYY-MM" />
+                                        <Input type="month" value={job.start_date} onChange={e => updateWork(index, 'start_date', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>End Date</Label>
-                                        <Input value={job.end_date} onChange={e => updateWork(index, 'end_date', e.target.value)} placeholder="YYYY-MM or Present" />
+                                        <Input type="month" value={job.end_date} onChange={e => updateWork(index, 'end_date', e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -335,8 +589,8 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
                                         <Input value={edu.field} onChange={e => updateEducation(index, 'field', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>End Year</Label>
-                                        <Input value={edu.end_date} onChange={e => updateEducation(index, 'end_date', e.target.value)} placeholder="YYYY" />
+                                        <Label>End Date</Label>
+                                        <Input type="month" value={edu.end_date} onChange={e => updateEducation(index, 'end_date', e.target.value)} />
                                     </div>
                                 </div>
                             </CardContent>
@@ -357,11 +611,87 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Work Authorization Status</Label>
-                            <Input value={data.work_authorization} onChange={e => setData('work_authorization', e.target.value)} placeholder="e.g. US Citizen, Green Card" />
+                            <Select value={data.work_authorization} onValueChange={(val) => setData('work_authorization', val)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select authorization status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="us_citizen">US Citizen</SelectItem>
+                                    <SelectItem value="green_card">Green Card (Permanent Resident)</SelectItem>
+                                    <SelectItem value="h1b">H-1B Visa</SelectItem>
+                                    <SelectItem value="h1b_transfer">H-1B Transfer</SelectItem>
+                                    <SelectItem value="l1">L-1 Visa</SelectItem>
+                                    <SelectItem value="opt">OPT (F-1 Student)</SelectItem>
+                                    <SelectItem value="opt_stem">OPT STEM Extension</SelectItem>
+                                    <SelectItem value="cpt">CPT (Curricular Practical Training)</SelectItem>
+                                    <SelectItem value="ead">EAD (Employment Authorization Document)</SelectItem>
+                                    <SelectItem value="tn_visa">TN Visa (Canada/Mexico)</SelectItem>
+                                    <SelectItem value="e2_treaty">E-2 Treaty Investor</SelectItem>
+                                    <SelectItem value="o1">O-1 Visa (Extraordinary Ability)</SelectItem>
+                                    <SelectItem value="asylum">Asylee/Refugee</SelectItem>
+                                    <SelectItem value="need_sponsorship">Need Sponsorship</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Salary Expectation</Label>
-                            <Input value={data.salary_expectation} onChange={e => setData('salary_expectation', e.target.value)} placeholder="e.g. $120k - $150k" />
+                    </div>
+
+                    {/* Salary Expectation - Structured */}
+                    <div className="space-y-3">
+                        <Label>Salary Expectation</Label>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-md transition-colors ${data.salary_type === 'yearly'
+                                        ? 'bg-background shadow-sm font-medium'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    onClick={() => setData('salary_type', 'yearly')}
+                                >
+                                    Yearly
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`px-3 py-1.5 text-sm rounded-md transition-colors ${data.salary_type === 'hourly'
+                                        ? 'bg-background shadow-sm font-medium'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    onClick={() => setData('salary_type', 'hourly')}
+                                >
+                                    Hourly
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2 flex-1">
+                                <div className="relative flex-1">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                    <Input
+                                        type="number"
+                                        inputMode="numeric"
+                                        min={0}
+                                        value={data.salary_min}
+                                        onChange={e => setData('salary_min', e.target.value)}
+                                        placeholder={data.salary_type === 'yearly' ? '80,000' : '40'}
+                                        className="pl-7"
+                                    />
+                                </div>
+                                <span className="text-muted-foreground">to</span>
+                                <div className="relative flex-1">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                    <Input
+                                        type="number"
+                                        inputMode="numeric"
+                                        min={0}
+                                        value={data.salary_max}
+                                        onChange={e => setData('salary_max', e.target.value)}
+                                        placeholder={data.salary_type === 'yearly' ? '120,000' : '65'}
+                                        className="pl-7"
+                                    />
+                                </div>
+                                <span className="text-xs text-muted-foreground w-12">
+                                    {data.salary_type === 'yearly' ? '/year' : '/hour'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-8 py-2">
