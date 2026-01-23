@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
+import DashboardNavigation from '@/components/DashboardNavigation'
 import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History } from 'lucide-react'
 import {
     DropdownMenu,
@@ -110,19 +111,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
                 {/* Navigation Tabs */}
-                <div className="border-b">
-                    <div className="flex gap-6">
-                        <div className="pb-3 text-sm font-medium text-primary border-b-2 border-primary">
-                            Your Interviews
-                        </div>
-                        <Link href="/interviews/logs" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Interview Logs
-                        </Link>
-                        <Link href="/candidates" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Candidates
-                        </Link>
-                    </div>
-                </div>
+                <DashboardNavigation activeTab="interviews" />
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

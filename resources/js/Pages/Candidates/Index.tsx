@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import DashboardNavigation from '@/components/DashboardNavigation';
 import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil } from 'lucide-react';
 import ViewCandidateDialog from './Components/ViewCandidateDialog';
 
@@ -102,19 +103,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
                 {/* Navigation Tabs - Consistent with Dashboard */}
-                <div className="border-b">
-                    <div className="flex gap-6">
-                        <Link href="/dashboard" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Your Interviews
-                        </Link>
-                        <Link href="/interviews/logs" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Interview Logs
-                        </Link>
-                        <div className="pb-3 text-sm font-medium text-primary border-b-2 border-primary">
-                            Candidates
-                        </div>
-                    </div>
-                </div>
+                <DashboardNavigation activeTab="candidates" />
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

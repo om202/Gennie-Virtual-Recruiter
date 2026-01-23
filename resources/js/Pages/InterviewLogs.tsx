@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import DashboardNavigation from '@/components/DashboardNavigation'
 import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2 } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
@@ -223,19 +224,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Navigation Tabs */}
-                <div className="border-b">
-                    <div className="flex gap-6">
-                        <Link href="/dashboard" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Your Interviews
-                        </Link>
-                        <div className="pb-3 text-sm font-medium text-primary border-b-2 border-primary">
-                            Interview Logs
-                        </div>
-                        <Link href="/candidates" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
-                            Candidates
-                        </Link>
-                    </div>
-                </div>
+                <DashboardNavigation activeTab="logs" />
 
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
