@@ -23,10 +23,27 @@ class Candidate extends Model
         'skills',
         'experience_summary',
         'location',
+        // ATS Data
+        'work_history',
+        'education',
+        'certificates',
+        'work_authorization',
+        'authorized_to_work',
+        'sponsorship_needed',
+        'salary_expectation',
+        'address',
+        'city',
+        'state',
+        'zip',
     ];
 
     protected $casts = [
         'skills' => 'array',
+        'work_history' => 'array',
+        'education' => 'array',
+        'certificates' => 'array',
+        'authorized_to_work' => 'boolean',
+        'sponsorship_needed' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -45,14 +45,31 @@ class ResumeParserService
     {
         $prompt = <<<EOT
 You are an expert recruiter AI. Extract the following candidate details from the resume text below.
-Return a valid JSON object ONLY, with these keys:
-- name (string, or null)
-- email (string, or null)
-- phone (string, or null)
-- linkedin_url (string, or null)
-- skills (array of strings, e.g. ["React", "Laravel"], or [])
-- experience_summary (string: A brief 2-3 sentence professional summary based on their role and experience, or null)
-- location (string, or null)
+Return a valid JSON object ONLY, with these precise keys:
+
+- name (string|null)
+- email (string|null)
+- phone (string|null)
+- linkedin_url (string|null)
+- location (string|null) - City, State mainly
+- address (string|null) - Full street address if available
+- city (string|null)
+- state (string|null)
+- zip (string|null)
+- skills (string[]|[])
+- experience_summary (string|null) - 2-3 sentence summary
+
+# Complex Lists (Extract as arrays of objects)
+- work_history (array):
+  [{ "company": "...", "title": "...", "start_date": "YYYY-MM", "end_date": "YYYY-MM" or "Present", "description": "..." }]
+- education (array):
+  [{ "institution": "...", "degree": "...", "field": "...", "start_date": "YYYY", "end_date": "YYYY" }]
+- certificates (array):
+  [{ "name": "...", "issuer": "...", "date": "YYYY-MM" }]
+
+# ATS Questions
+- work_authorization (string|null) - e.g. "US Citizen", "Green Card" - Infer from context if explicitly stated
+- salary_expectation (string|null) - Only if explicitly stated
 
 Resume Text:
 {$text}

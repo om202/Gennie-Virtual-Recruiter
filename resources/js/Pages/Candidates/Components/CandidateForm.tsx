@@ -6,7 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Upload, FileText, CheckCircle } from 'lucide-react';
+import { Loader2, Upload, Plus, Trash2, Briefcase, GraduationCap, CheckCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CandidateFormProps {
     onClose: () => void;
@@ -16,26 +19,58 @@ export default function CandidateForm({ onClose }: CandidateFormProps) {
     const [activeTab, setActiveTab] = useState('manual');
     const [isParsing, setIsParsing] = useState(false);
 
+    // Form Sections State for UI organization (optional, but good for long forms)
+    // We already use the hook, so we just stick to one huge form state.
+
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         phone: '',
         linkedin_url: '',
-        skills: '', // Displayed as comma-separated string
+        skills: '',
         experience_summary: '',
         location: '',
+        address: '',
+        city: '',
+        state: '',
+        zip: '',
+        work_authorization: '',
+        authorized_to_work: false,
+        sponsorship_needed: false,
+        salary_expectation: '',
+
+        // Complex Arrays
+        work_history: [] as any[],
+        education: [] as any[],
+        certificates: [] as any[],
+
         resume_file: null as File | null,
-        resume_text: '', // Hidden field to store parsed text if needed
+        resume_text: '',
     });
 
+    // --- Dynamic Field Helpers ---
+    const addWork = () => setData('work_history', [...data.work_history, { company: '', title: '', start_date: '', end_date: '', description: '' }]);
+    const removeWork = (index: number) => setData('work_history', data.work_history.filter((_, i) => i !== index));
+    const updateWork = (index: number, field: string, value: string) => {
+        const newHistory = [...data.work_history];
+        newHistory[index][field] = value;
+        setData('work_history', newHistory);
+    };
+
+    const addEducation = () => setData('education', [...data.education, { institution: '', degree: '', field: '', start_date: '', end_date: '' }]);
+    const removeEducation = (index: number) => setData('education', data.education.filter((_, i) => i !== index));
+    const updateEducation = (index: number, field: string, value: string) => {
+        const newEdu = [...data.education];
+        newEdu[index][field] = value;
+        setData('education', newEdu);
+    };
+
+    // --- Resume Parsing ---
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Set the file in the form state immediately for submission
         setData('resume_file', file);
-
-        // Auto-parse flow
         setIsParsing(true);
         const formData = new FormData();
         formData.append('resume', file);
@@ -48,26 +83,36 @@ export default function CandidateForm({ onClose }: CandidateFormProps) {
             if (response.data.status === 'success') {
                 const extracted = response.data.data;
 
-                // Auto-fill form data
                 setData(prev => ({
                     ...prev,
-                    resume_file: file, // Ensure file is kept
+                    resume_file: file,
                     resume_text: response.data.raw_text || '',
+
                     name: extracted.name || prev.name,
                     email: extracted.email || prev.email,
                     phone: extracted.phone || prev.phone,
                     linkedin_url: extracted.linkedin_url || prev.linkedin_url,
                     skills: Array.isArray(extracted.skills) ? extracted.skills.join(', ') : prev.skills,
                     experience_summary: extracted.experience_summary || prev.experience_summary,
+
                     location: extracted.location || prev.location,
+                    address: extracted.address || prev.address,
+                    city: extracted.city || prev.city,
+                    state: extracted.state || prev.state,
+                    zip: extracted.zip || prev.zip,
+
+                    work_history: Array.isArray(extracted.work_history) ? extracted.work_history : prev.work_history,
+                    education: Array.isArray(extracted.education) ? extracted.education : prev.education,
+                    certificates: Array.isArray(extracted.certificates) ? extracted.certificates : prev.certificates,
+
+                    work_authorization: extracted.work_authorization || prev.work_authorization,
+                    salary_expectation: extracted.salary_expectation || prev.salary_expectation,
                 }));
 
-                // Switch to manual tab to let user review
                 setActiveTab('manual');
             }
         } catch (error) {
             console.error("Parsing failed", error);
-            // Even if parsing fails, we keep the file attached
         } finally {
             setIsParsing(false);
         }
@@ -75,50 +120,7 @@ export default function CandidateForm({ onClose }: CandidateFormProps) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Convert comma-separated skills string back to array if needed by backend, 
-        // but our backend validation currently accepts 'skills' as array.
-        // Wait, the backend validates accepted 'skills' as nullable|array.
-        // But the input is a string. We should probably convert it before sending?
-        // Actually, Inertia sends JSON. If I send a string for an array field it might fail validation if I don't cast it.
-        // Let's modify the transform.
-
-        // Actually, let's keep it simple. The backend expects an array for 'skills'.
-        // I will transform the data before post.
-
-        const formData = new FormData();
-        formData.append('name', data.name);
-        formData.append('email', data.email);
-        if (data.phone) formData.append('phone', data.phone);
-        if (data.linkedin_url) formData.append('linkedin_url', data.linkedin_url);
-        if (data.experience_summary) formData.append('experience_summary', data.experience_summary);
-        if (data.location) formData.append('location', data.location);
-        if (data.resume_text) formData.append('resume_text', data.resume_text);
-        if (data.resume_file) formData.append('resume_file', data.resume_file);
-
-        // Handle skills
-        if (data.skills) {
-            const skillsArray = data.skills.split(',').map(s => s.trim()).filter(Boolean);
-            skillsArray.forEach((skill, index) => {
-                formData.append(`skills[${index}]`, skill);
-            });
-        }
-
-        // Use Inertia's router manually or the helper. 
-        // Since we are using useForm, we can use the post method but useForm handles JSON by default.
-        // For file uploads, we need FormData. Inertia useForm handles FormData automatically if there is a file?
-        // Yes, Inertia v1+ automatically converts to FormData if a file object is detected in the data.
-        // However, 'skills' in `data` is a string, and backend expects array.
-
-        // Let's manually do the transformation.
-        const skillsArray = data.skills.split(',').map(s => s.trim()).filter(Boolean);
-
         post('/candidates', {
-            // We need to carefully override the 'skills' field.
-            // But useForm `post` sends `data`.
-            // Solution: Update the `data` state with the array right before sending? 
-            // No, that breaks the UI input.
-            // Better: use the transform callback.
             transform: (data) => ({
                 ...data,
                 skills: data.skills.split(',').map(s => s.trim()).filter(Boolean),
@@ -131,150 +133,234 @@ export default function CandidateForm({ onClose }: CandidateFormProps) {
     };
 
     return (
-        <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-                <DialogTitle>Add Candidate</DialogTitle>
+        <DialogContent className="sm:max-w-[800px] h-[90vh] flex flex-col p-0">
+            <DialogHeader className="px-6 py-4 border-b">
+                <DialogTitle>Add Candidate Profile</DialogTitle>
                 <DialogDescription>
-                    Add a new candidate manually or upload a resume to auto-fill details.
+                    Complete the full candidate profile or upload a resume to auto-fill.
                 </DialogDescription>
             </DialogHeader>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                    <TabsTrigger value="upload">Upload Resume</TabsTrigger>
-                </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+                <div className="px-6 pt-4">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="manual">Profile Details</TabsTrigger>
+                        <TabsTrigger value="upload">Upload Resume</TabsTrigger>
+                    </TabsList>
+                </div>
 
-                <TabsContent value="upload" className="space-y-4 py-4">
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 hover:bg-muted/50 transition-colors">
-                        {isParsing ? (
-                            <div className="text-center space-y-3">
-                                <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-                                <p className="text-sm text-muted-foreground">Parsing resume with AI...</p>
-                            </div>
-                        ) : (
-                            <div className="text-center space-y-3">
-                                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-                                    <Upload className="h-6 w-6" />
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                    <TabsContent value="upload" className="h-full">
+                        <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg h-64 hover:bg-muted/50 transition-colors">
+                            {isParsing ? (
+                                <div className="text-center space-y-3">
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+                                    <p className="text-sm text-muted-foreground">Parsing full profile with AI...</p>
                                 </div>
-                                <div className="space-y-1">
+                            ) : (
+                                <div className="text-center space-y-3">
+                                    <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
+                                        <Upload className="h-6 w-6" />
+                                    </div>
                                     <Label htmlFor="resume-upload" className="cursor-pointer text-sm font-medium hover:underline text-primary">
-                                        Click to upload
+                                        Click to upload Resume
                                     </Label>
-                                    <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                                    <Input id="resume-upload" type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileChange} />
                                     <p className="text-xs text-muted-foreground">PDF or DOCX (max 10MB)</p>
                                 </div>
-                                <Input
-                                    id="resume-upload"
-                                    type="file"
-                                    accept=".pdf,.doc,.docx"
-                                    className="hidden"
-                                    onChange={handleFileChange}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="manual">
-                    <form onSubmit={submit} className="space-y-4 py-2">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Full Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={e => setData('name', e.target.value)}
-                                    placeholder="John Doe"
-                                    required
-                                />
-                                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
-                                    placeholder="john@example.com"
-                                    required
-                                />
-                                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                            </div>
+                            )}
                         </div>
+                    </TabsContent>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={data.phone}
-                                    onChange={e => setData('phone', e.target.value)}
-                                    placeholder="+1 (555) 000-0000"
-                                />
+                    <TabsContent value="manual" className="space-y-8 pb-10">
+                        <form id="candidate-form" onSubmit={submit} className="space-y-8">
+
+                            {/* Personal Info */}
+                            <div className="space-y-4">
+                                <h3 className="text-base font-semibold border-b pb-2">Personal Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Full Name *</Label>
+                                        <Input value={data.name} onChange={e => setData('name', e.target.value)} required />
+                                        {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Email *</Label>
+                                        <Input type="email" value={data.email} onChange={e => setData('email', e.target.value)} required />
+                                        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Phone</Label>
+                                        <Input value={data.phone} onChange={e => setData('phone', e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>LinkedIn URL</Label>
+                                        <Input value={data.linkedin_url} onChange={e => setData('linkedin_url', e.target.value)} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Address</Label>
+                                        <Input value={data.address} onChange={e => setData('address', e.target.value)} placeholder="123 Main St" />
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div className="space-y-2">
+                                            <Label>City</Label>
+                                            <Input value={data.city} onChange={e => setData('city', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>State</Label>
+                                            <Input value={data.state} onChange={e => setData('state', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Zip</Label>
+                                            <Input value={data.zip} onChange={e => setData('zip', e.target.value)} />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="location">Location</Label>
-                                <Input
-                                    id="location"
-                                    value={data.location}
-                                    onChange={e => setData('location', e.target.value)}
-                                    placeholder="San Francisco, CA"
-                                />
+
+                            {/* Professional Info */}
+                            <div className="space-y-4">
+                                <h3 className="text-base font-semibold border-b pb-2">Professional Summary</h3>
+                                <div className="space-y-2">
+                                    <Label>Summary</Label>
+                                    <Textarea className="h-24" value={data.experience_summary} onChange={e => setData('experience_summary', e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Skills (Comma separated)</Label>
+                                    <Input value={data.skills} onChange={e => setData('skills', e.target.value)} placeholder="Java, Python, AWS..." />
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                            <Input
-                                id="linkedin_url"
-                                value={data.linkedin_url}
-                                onChange={e => setData('linkedin_url', e.target.value)}
-                                placeholder="https://linkedin.com/in/..."
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="skills">Skills (Comma separated)</Label>
-                            <Input
-                                id="skills"
-                                value={data.skills}
-                                onChange={e => setData('skills', e.target.value)}
-                                placeholder="React, Laravel, TypeScript, Deepgram"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="experience_summary">Professional Summary</Label>
-                            <Textarea
-                                id="experience_summary"
-                                value={data.experience_summary}
-                                onChange={e => setData('experience_summary', e.target.value)}
-                                placeholder="Brief summary of candidate's experience..."
-                                className="h-24"
-                            />
-                        </div>
-
-                        {data.resume_file && (
-                            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded border border-green-200">
-                                <CheckCircle className="h-4 w-4" />
-                                <span className="truncate">{data.resume_file.name} attached</span>
+                            {/* Work History */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between border-b pb-2">
+                                    <h3 className="text-base font-semibold">Work History</h3>
+                                    <Button type="button" size="sm" variant="outline" onClick={addWork}><Plus className="h-3 w-3 mr-1" /> Add Job</Button>
+                                </div>
+                                {data.work_history.length === 0 && <p className="text-sm text-muted-foreground italic">No work history added.</p>}
+                                {data.work_history.map((job, index) => (
+                                    <Card key={index} className="relative">
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-2 text-muted-foreground hover:text-destructive" onClick={() => removeWork(index)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                        <CardContent className="pt-4 grid gap-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Company</Label>
+                                                    <Input value={job.company} onChange={e => updateWork(index, 'company', e.target.value)} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Job Title</Label>
+                                                    <Input value={job.title} onChange={e => updateWork(index, 'title', e.target.value)} />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Start Date</Label>
+                                                    <Input value={job.start_date} onChange={e => updateWork(index, 'start_date', e.target.value)} placeholder="YYYY-MM" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>End Date</Label>
+                                                    <Input value={job.end_date} onChange={e => updateWork(index, 'end_date', e.target.value)} placeholder="YYYY-MM or Present" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Description</Label>
+                                                <Textarea value={job.description} onChange={e => updateWork(index, 'description', e.target.value)} className="h-20" />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                        )}
 
-                        <DialogFooter className="pt-4">
-                            <Button type="button" variant="outline" onClick={onClose}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Save Candidate
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </TabsContent>
+                            {/* Education */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between border-b pb-2">
+                                    <h3 className="text-base font-semibold">Education</h3>
+                                    <Button type="button" size="sm" variant="outline" onClick={addEducation}><Plus className="h-3 w-3 mr-1" /> Add Education</Button>
+                                </div>
+                                {data.education.length === 0 && <p className="text-sm text-muted-foreground italic">No education history added.</p>}
+                                {data.education.map((edu, index) => (
+                                    <Card key={index} className="relative">
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-2 text-muted-foreground hover:text-destructive" onClick={() => removeEducation(index)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                        <CardContent className="pt-4 grid gap-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Institution</Label>
+                                                    <Input value={edu.institution} onChange={e => updateEducation(index, 'institution', e.target.value)} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Degree</Label>
+                                                    <Input value={edu.degree} onChange={e => updateEducation(index, 'degree', e.target.value)} />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Field of Study</Label>
+                                                    <Input value={edu.field} onChange={e => updateEducation(index, 'field', e.target.value)} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>End Year</Label>
+                                                    <Input value={edu.end_date} onChange={e => updateEducation(index, 'end_date', e.target.value)} placeholder="YYYY" />
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+
+                            {/* Additional Info */}
+                            <div className="space-y-4">
+                                <h3 className="text-base font-semibold border-b pb-2">Additional Details</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Work Authorization Status</Label>
+                                        <Input value={data.work_authorization} onChange={e => setData('work_authorization', e.target.value)} placeholder="e.g. US Citizen, Green Card" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Salary Expectation</Label>
+                                        <Input value={data.salary_expectation} onChange={e => setData('salary_expectation', e.target.value)} placeholder="e.g. $120k - $150k" />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-8 py-2">
+                                    <div className="flex items-center gap-2">
+                                        <Switch
+                                            checked={data.authorized_to_work}
+                                            onCheckedChange={(c) => setData('authorized_to_work', c)}
+                                        />
+                                        <Label>Authorized to work in US?</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Switch
+                                            checked={data.sponsorship_needed}
+                                            onCheckedChange={(c) => setData('sponsorship_needed', c)}
+                                        />
+                                        <Label>Needs Sponsorship?</Label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </TabsContent>
+                </div>
             </Tabs>
+
+            <DialogFooter className="px-6 py-4 border-t bg-muted/20">
+                <Button type="button" variant="outline" onClick={onClose}>
+                    Cancel
+                </Button>
+                {activeTab === 'manual' && (
+                    <Button type="submit" form="candidate-form" disabled={processing}>
+                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Profile
+                    </Button>
+                )}
+            </DialogFooter>
         </DialogContent>
     );
 }
