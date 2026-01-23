@@ -1,4 +1,5 @@
 import { Link, usePage, router } from '@inertiajs/react'
+import { useState } from 'react'
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -30,6 +31,7 @@ export default function Header() {
     const { auth, url } = usePage<PageProps>().props
     const user = auth?.user
     const currentPath = typeof url === 'string' ? url : window.location.pathname
+    const [imageError, setImageError] = useState(false)
 
     const handleLogout = () => {
         router.post('/logout')
@@ -73,8 +75,14 @@ export default function Header() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="rounded-full">
-                                    {user.avatar ? (
-                                        <img src={user.avatar} alt={user.name} className="h-8 w-8 rounded-full" />
+                                    {user.avatar && !imageError ? (
+                                        <img
+                                            src={user.avatar}
+                                            alt={user.name}
+                                            className="h-8 w-8 rounded-full"
+                                            onError={() => setImageError(true)}
+                                            referrerPolicy="no-referrer"
+                                        />
                                     ) : (
                                         <User className="h-5 w-5" />
                                     )}
