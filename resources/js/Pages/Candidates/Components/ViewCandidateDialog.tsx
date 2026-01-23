@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check, ExternalLink, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 interface WorkHistory {
@@ -39,6 +39,7 @@ interface Candidate {
     address: string | null;
     city: string | null;
     state: string | null;
+    resume_path: string | null;
     zip: string | null;
     work_authorization: string | null;
     salary_expectation: string | null;
@@ -253,6 +254,27 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                             </CardContent>
                         </Card>
 
+                        {/* Resume Download */}
+                        {candidate.resume_path && (
+                            <Card className="bg-muted/30 border-dashed">
+                                <CardContent className="flex items-center justify-between py-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 bg-background rounded-full flex items-center justify-center border shadow-sm">
+                                            <FileText className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium">Original Resume</p>
+                                            <p className="text-xs text-muted-foreground">Document on file</p>
+                                        </div>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => window.open(`/candidates/${candidate.id}/resume`, '_blank')}>
+                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                        View Resume
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        )}
+
                         {/* Work Authorization & Salary */}
                         {(candidate.work_authorization || candidate.salary_expectation) && (
                             <Card>
@@ -395,6 +417,6 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                     </div>
                 </ScrollArea>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

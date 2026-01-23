@@ -168,7 +168,28 @@ class CandidateController extends Controller
             'work_history' => 'nullable|array',
             'education' => 'nullable|array',
             'certificates' => 'nullable|array',
+            'resume_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'resume_text' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('resume_file')) {
+            $path = $request->file('resume_file')->store('resumes');
+            $candidate->resume_path = $path;
+
+            // If resume_text is empty, try to parse the new file
+            if (empty($validated['resume_text'])) {
+                try {
+                    $candidate->resume_text = $this->resumeParser->extractText($request->file('resume_file'));
+                } catch (\Exception $e) {
+                    // Log error but continue
+                }
+            }
+        }
+
+        // If resume_text was explicitly provided (e.g. from previous parse), update it
+        if (isset($validated['resume_text'])) {
+            $candidate->resume_text = $validated['resume_text'];
+        }
 
         // Build salary expectation (same format as store)
         $salaryExpectation = null;
@@ -205,15 +226,46 @@ class CandidateController extends Controller
             'work_history' => $validated['work_history'] ?? [],
             'education' => $validated['education'] ?? [],
             'certificates' => $validated['certificates'] ?? [],
+            // resume_path and resume_text are updated above if needed
         ]);
 
+        // Save just in case 'update' didn't pick up property changes if we mixed specific props and array
+        $candidate->save();
+
         return redirect()->route('candidates.index')->with('success', 'Candidate updated successfully.');
+    }
+
+    public function downloadResume(Candidate $candidate)
+    {
+        if ($candidate->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (!$candidate->resume_path || !Storage::exists($candidate->resume_path)) {
+            return redirect()->back()->with('error', 'Resume file not found.');
+        }
+
+        $mime = Storage::mimeType($candidate->resume_path);
+
+        // If it's a PDF, view inline
+        if ($mime === 'application/pdf') {
+            return response()->file(Storage::path($candidate->resume_path), [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $candidate->name . '_Resume.pdf"'
+            ]);
+        }
+
+        return Storage::download($candidate->resume_path, $candidate->name . '_Resume.' . pathinfo($candidate->resume_path, PATHINFO_EXTENSION));
     }
 
     public function destroy(Candidate $candidate)
     {
         if ($candidate->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        if ($candidate->resume_path && Storage::exists($candidate->resume_path)) {
+            Storage::delete($candidate->resume_path);
         }
 
         $candidate->delete();

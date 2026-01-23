@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react'; // Ensure router is not needed if using post from useForm
+// import { router } from '@inertiajs/react'; // Not needed if using useForm's post
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Upload, Plus, Trash2, CheckCircle, X } from 'lucide-react';
+import { Loader2, Upload, Plus, Trash2, CheckCircle, X, FileText, ExternalLink } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
@@ -21,7 +22,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
     const [isParsing, setIsParsing] = useState(false);
     const [jdFilename, setJdFilename] = useState<string | null>(null);
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
         name: candidate?.name || '',
         email: candidate?.email || '',
         phone: candidate?.phone || '',
@@ -52,7 +53,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
 
     // --- Dynamic Field Helpers ---
     const addWork = () => setData('work_history', [...data.work_history, { company: '', title: '', start_date: '', end_date: '', description: '' }]);
-    const removeWork = (index: number) => setData('work_history', data.work_history.filter((_, i) => i !== index));
+    const removeWork = (index: number) => setData('work_history', data.work_history.filter((_: any, i: number) => i !== index));
     const updateWork = (index: number, field: string, value: string) => {
         const newHistory = [...data.work_history];
         newHistory[index][field] = value;
@@ -60,7 +61,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
     };
 
     const addEducation = () => setData('education', [...data.education, { institution: '', degree: '', field: '', start_date: '', end_date: '' }]);
-    const removeEducation = (index: number) => setData('education', data.education.filter((_, i) => i !== index));
+    const removeEducation = (index: number) => setData('education', data.education.filter((_: any, i: number) => i !== index));
     const updateEducation = (index: number, field: string, value: string) => {
         const newEdu = [...data.education];
         newEdu[index][field] = value;
@@ -138,19 +139,26 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Use POST for both create and edit to support file uploads (Laravel handles _method: PUT)
         const url = isEditing ? `/candidates/${candidate.id}` : '/candidates';
-        const method = isEditing ? put : post;
 
-        method(url, {
+        // Add _method: 'put' for editing
+        transform((data: any) => ({
+            ...data,
+            _method: isEditing ? 'put' : undefined,
+        }));
+
+        post(url, {
             onSuccess: () => {
                 if (!isEditing) {
                     reset();
                 }
                 onSuccess();
             },
-            onError: (errors) => {
+            onError: (errors: any) => {
                 console.error('Form submission errors:', errors);
             },
+            forceFormData: true,
         });
     };
 
@@ -199,6 +207,27 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                     <p className="text-[13px] text-muted-foreground">
                         Upload a resume to automatically extract candidate information, or skip to enter details manually.
                     </p>
+
+                    {isEditing && candidate?.resume_path && (
+                        <div className="mt-4 pt-4 border-t">
+                            <h4 className="text-sm font-medium mb-3">Current Resume</h4>
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-background rounded-full flex items-center justify-center border shadow-sm">
+                                        <FileText className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Resume Document</p>
+                                        <p className="text-xs text-muted-foreground">Saved in system</p>
+                                    </div>
+                                </div>
+                                <Button type="button" variant="outline" size="sm" className='h-8' onClick={() => window.open(`/candidates/${candidate.id}/resume`, '_blank')}>
+                                    <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                                    View
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
@@ -351,7 +380,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                         <Button type="button" size="sm" variant="outline" onClick={addWork}><Plus className="h-3 w-3 mr-1" /> Add Job</Button>
                     </div>
                     {data.work_history.length === 0 && <p className="text-sm text-muted-foreground italic">No work history added.</p>}
-                    {data.work_history.map((job, index) => (
+                    {data.work_history.map((job: any, index: number) => (
                         <Card key={index} className="relative">
                             <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-2 text-muted-foreground hover:text-destructive" onClick={() => removeWork(index)}>
                                 <Trash2 className="h-4 w-4" />
@@ -416,7 +445,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                         <Button type="button" size="sm" variant="outline" onClick={addEducation}><Plus className="h-3 w-3 mr-1" /> Add Education</Button>
                     </div>
                     {data.education.length === 0 && <p className="text-sm text-muted-foreground italic">No education history added.</p>}
-                    {data.education.map((edu, index) => (
+                    {data.education.map((edu: any, index: number) => (
                         <Card key={index} className="relative">
                             <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-2 text-muted-foreground hover:text-destructive" onClick={() => removeEducation(index)}>
                                 <Trash2 className="h-4 w-4" />
