@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Sparkles, Clock, Scale, MessageSquare, Check } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Sparkles, Clock, Scale, MessageSquare, Check, Phone } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
@@ -98,18 +99,47 @@ export default function Landing({ }: PageProps) {
 
                 </section>
 
-                {/* Features Section */}
-                <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
+                {/* Stats Section */}
+                <section className="bg-background py-16 px-4 border-y border-primary/20">
                     <div className="max-w-7xl mx-auto">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12">
-                            Why Choose Gennie?
-                        </h2>
+                        <div className="grid md:grid-cols-4 gap-8 text-center">
+                            <div className="space-y-2">
+                                <div className="text-4xl md:text-5xl font-bold text-primary">24/7</div>
+                                <p className="text-sm text-muted-foreground">Always Available</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="text-4xl md:text-5xl font-bold text-primary">10x</div>
+                                <p className="text-sm text-muted-foreground">Faster Screening</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="text-4xl md:text-5xl font-bold text-primary">100%</div>
+                                <p className="text-sm text-muted-foreground">Consistent Evaluation</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="text-4xl md:text-5xl font-bold text-primary">∞</div>
+                                <p className="text-sm text-muted-foreground">Concurrent Interviews</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Core Features Section */}
+                <section className="bg-muted/50 py-20 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+                                Why Choose Gennie?
+                            </h2>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                                AI-powered recruiting that saves time, reduces bias, and scales effortlessly
+                            </p>
+                        </div>
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {features.map((feature, index) => {
                                 const Icon = feature.icon
                                 return (
-                                    <Card key={index} className="border-border">
+                                    <Card key={index} className="border-border hover:shadow-md transition-shadow">
                                         <CardHeader>
                                             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                                                 <Icon className="h-6 w-6 text-primary" />
@@ -128,50 +158,198 @@ export default function Landing({ }: PageProps) {
                     </div>
                 </section>
 
-                {/* Benefits Section */}
+                {/* Advanced Features for Business */}
+                <section className="bg-background py-20 px-4 border-t border-primary/20">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+                                Enterprise-Grade Features
+                            </h2>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                                Professional recruitment tools that deliver real business value
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {/* Multi-Channel Interviews */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                            <Phone className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                            <MessageSquare className="h-5 w-5 text-primary" />
+                                        </div>
+                                    </div>
+                                    <CardTitle className="text-lg">Multi-Channel Interviews</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        Interview candidates via phone or web browser. Maximum flexibility for both recruiters and candidates.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            Works on any device, anywhere
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+
+                            {/* Automatic Recordings */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <Clock className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg">Automatic Call Recordings</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        Every conversation recorded and transcribed automatically. No more note-taking, perfect for compliance and review.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            100% captured, searchable transcripts
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+
+                            {/* AI Assessments */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <Sparkles className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg">AI-Powered Assessments</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        Get instant, objective candidate evaluations with criterion-based scoring, strengths, and hiring recommendations.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            Analysis in minutes, not days
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+
+                            {/* Custom Templates */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <MessageSquare className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg">Custom Interview Templates</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        Create unlimited interview templates for different roles. From screening to executive-level, technical to behavioral.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            One-time setup, infinite reuse
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+
+                            {/* Smart Context */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <Sparkles className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg">Smart Context Awareness</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        AI analyzes job descriptions and resumes to ask relevant, personalized questions every time.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            Contextual, not generic
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+
+                            {/* Analytics Dashboard */}
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <Scale className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg">Complete Analytics Dashboard</CardTitle>
+                                    <CardDescription className="pt-2">
+                                        Track interview metrics, candidate performance, and recruiting trends with detailed session analytics.
+                                    </CardDescription>
+                                    <div className="pt-3">
+                                        <Badge variant="outline" className="text-primary border-primary/50">
+                                            Data-driven hiring decisions
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Benefits Section - Streamlined */}
                 <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
                     <div className="max-w-7xl mx-auto">
-                        <div className="grid md:grid-cols-2 gap-12">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+                                Built for Everyone
+                            </h2>
+                            <p className="text-lg text-muted-foreground">
+                                Powerful for recruiters, comfortable for candidates
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                             {/* For Recruiters */}
-                            <div className="space-y-6">
-                                <h3 className="text-2xl md:text-3xl font-bold text-primary">
-                                    For Recruiters
-                                </h3>
-                                <ul className="space-y-4">
-                                    {recruiterBenefits.map((benefit, index) => (
-                                        <li key={index} className="flex items-start text-muted-foreground">
-                                            <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                                            <span>{benefit}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <CardTitle className="text-2xl text-primary flex items-center gap-2">
+                                        <Sparkles className="h-6 w-6" />
+                                        For Recruiters
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ul className="space-y-3">
+                                        {recruiterBenefits.map((benefit, index) => (
+                                            <li key={index} className="flex items-start text-muted-foreground">
+                                                <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                                                <span>{benefit}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </CardContent>
+                            </Card>
 
                             {/* For Candidates */}
-                            <div className="space-y-6">
-                                <h3 className="text-2xl md:text-3xl font-bold text-primary">
-                                    For Candidates
-                                </h3>
-                                <ul className="space-y-4">
-                                    {candidateBenefits.map((benefit, index) => (
-                                        <li key={index} className="flex items-start text-muted-foreground">
-                                            <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                                            <span>{benefit}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <Card className="border-border">
+                                <CardHeader>
+                                    <CardTitle className="text-2xl text-primary flex items-center gap-2">
+                                        <MessageSquare className="h-6 w-6" />
+                                        For Candidates
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ul className="space-y-3">
+                                        {candidateBenefits.map((benefit, index) => (
+                                            <li key={index} className="flex items-start text-muted-foreground">
+                                                <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                                                <span>{benefit}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </section>
 
                 {/* CTA Section */}
-                <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
+                <section className="bg-background py-20 px-4 border-t border-primary/20">
                     <div className="max-w-7xl mx-auto text-center space-y-8">
                         <h2 className="text-3xl md:text-4xl font-bold text-primary">
-                            Ready to Experience AI Recruiting?
+                            Ready to Transform Your Hiring?
                         </h2>
-                        <p className="text-lg text-muted-foreground">
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             Start your conversation with Gennie now. It's fast, fair, and available 24/7.
                         </p>
                         <a href="/try-gennie" className="inline-block group cursor-pointer">
