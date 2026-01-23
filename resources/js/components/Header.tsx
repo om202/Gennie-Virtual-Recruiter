@@ -13,7 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User } from 'lucide-react'
+import { LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface PageProps {
@@ -97,9 +97,8 @@ export default function Header() {
                         </DropdownMenu>
                     ) : (
                         <a href="/auth/google">
-                            <Button variant="outline" size="sm">
-                                <LogIn className="h-4 w-4 mr-2" />
-                                Sign In
+                            <Button size="lg">
+                                Sign in with Google
                             </Button>
                         </a>
                     )}

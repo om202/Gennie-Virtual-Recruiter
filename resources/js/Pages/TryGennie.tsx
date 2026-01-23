@@ -128,7 +128,7 @@ export default function TryGennie() {
     const handleStartInterview = async () => {
         try {
             // Create session first
-            const newSessionId = await createSession()
+            await createSession()
 
             // Update sessionId in state, then start conversation
             // Note: We need to wait for the state to update, so we use setTimeout
@@ -238,7 +238,7 @@ export default function TryGennie() {
                             <p className="text-sm text-muted-foreground">Sign in to customize interviews with your own job descriptions.</p>
                         </div>
                         <a href="/dashboard">
-                            <Button>Sign in with Google</Button>
+                            <Button size="lg">Sign in with Google</Button>
                         </a>
                     </div>
 
@@ -262,20 +262,7 @@ export default function TryGennie() {
                         <div className="max-w-md w-full text-center space-y-8">
                             <VoiceVisualizer speakingState={speakingState} />
 
-                            {/* Demo Info */}
-                            <div className="bg-card border rounded-lg p-4 text-left space-y-2">
-                                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                                    Demo Interview
-                                </h3>
-                                <div className="space-y-1 text-sm">
-                                    <p><strong>Role:</strong> Software Engineer</p>
-                                    <p><strong>Company:</strong> TechCorp Inc.</p>
-                                    <p className="text-muted-foreground text-xs pt-2">
-                                        Gennie will conduct a brief screening interview. After it ends, you'll see your full assessment report.
-                                    </p>
-                                </div>
-                            </div>
-
+                            {/* Action Buttons */}
                             <div className="flex gap-3">
                                 <Button
                                     onClick={handleStartInterview}
@@ -305,6 +292,20 @@ export default function TryGennie() {
                                     <Phone className="h-5 w-5 mr-2" />
                                     {isCalling ? 'Calling...' : 'Call Me'}
                                 </Button>
+                            </div>
+
+                            {/* Demo Info */}
+                            <div className="bg-card border rounded-lg p-4 text-left space-y-2">
+                                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                                    Demo Interview
+                                </h3>
+                                <div className="space-y-1 text-sm">
+                                    <p><strong>Role:</strong> Software Engineer</p>
+                                    <p><strong>Company:</strong> TechCorp Inc.</p>
+                                    <p className="text-muted-foreground text-xs pt-2">
+                                        Gennie will conduct a brief screening interview. After it ends, you'll see your full assessment report.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     ) : (
