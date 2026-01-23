@@ -101,9 +101,9 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                             <CardHeader className="text-center pb-4">
                                 <CardTitle className="text-2xl">{candidate.name}</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
+                            <CardContent className="space-y-1">
                                 {/* Email */}
-                                <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                     <a
                                         href={`mailto:${candidate.email}`}
                                         className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
@@ -127,7 +127,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
 
                                 {/* Phone */}
                                 {candidate.phone && (
-                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
                                             href={`tel:${candidate.phone}`}
                                             className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
@@ -152,7 +152,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
 
                                 {/* Location */}
                                 {candidate.location && (
-                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.location)}`}
                                             target="_blank"
@@ -179,7 +179,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
 
                                 {/* Full Address (only if different from location) */}
                                 {fullAddress && fullAddress !== candidate.location && (
-                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
                                             target="_blank"
@@ -206,7 +206,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
 
                                 {/* LinkedIn */}
                                 {candidate.linkedin_url && (
-                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
                                             href={candidate.linkedin_url}
                                             target="_blank"
