@@ -5,7 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title inertia>{{ config('app.name', 'Virtual Recruiter') }}</title>
+    <title inertia>{{ config('app.name', 'Gennie AI Recruiter') }}</title>
+    <meta name="description"
+        content="Gennie - AI-powered virtual recruiter for automated candidate screening, voice interviews, and intelligent hiring automation. Fair, efficient, and available 24/7.">
+    <meta name="keywords"
+        content="AI recruiter, AI recruitment, automated hiring, voice AI interviewing, candidate screening, AI-powered recruitment">
+    <link rel="icon" type="image/x-icon" href="/favicon_gennie.ico">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

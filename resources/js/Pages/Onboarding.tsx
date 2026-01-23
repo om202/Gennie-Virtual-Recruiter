@@ -26,7 +26,7 @@ export default function Onboarding({ user }: OnboardingProps) {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-            <Head title="Welcome to Gennie" />
+            <Head title="Get Started with Gennie - AI Recruitment Platform" />
 
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">

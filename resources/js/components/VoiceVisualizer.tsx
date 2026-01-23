@@ -26,7 +26,7 @@ export function VoiceVisualizer({ speakingState, type = 'default' }: VoiceVisual
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
           "absolute w-12 h-12",
-          isHero ? "text-indigo-900" : "text-white/90"
+          isHero ? "text-primary" : "text-white/90"
         )}
         viewBox="0 0 24 24"
         fill="none"

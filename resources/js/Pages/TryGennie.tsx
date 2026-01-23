@@ -99,10 +99,14 @@ export default function TryGennie() {
     return (
         <>
             <Head>
-                <title>Try Gennie - AI Virtual Recruiter Demo</title>
+                <title>Try Gennie - Experience AI Voice Interviewing | Free Demo</title>
                 <meta
                     name="description"
-                    content="Experience Gennie, our AI Virtual Recruiter. Try a demo interview now - no signup required!"
+                    content="Experience the future of recruitment. Talk to Gennie, our AI virtual recruiter. Free interactive demo of voice-powered candidate screening and automated interviews - no signup required."
+                />
+                <meta
+                    name="keywords"
+                    content="AI interview demo, voice AI recruiter demo, try AI recruiting, automated interview experience, conversational AI hiring, free AI recruiter demo"
                 />
             </Head>
 

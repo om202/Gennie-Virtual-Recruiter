@@ -49,11 +49,25 @@ export default function Landing({ }: PageProps) {
     return (
         <>
             <Head>
-                <title>Gennie - AI Virtual Recruiter</title>
+                <title>Gennie - AI Virtual Recruiter | Voice-Powered Hiring Automation</title>
                 <meta
                     name="description"
-                    content="Experience fair, intelligent, and efficient recruiting with Gennie - your AI-powered virtual recruiter available 24/7."
+                    content="Transform your hiring with Gennie, the AI-powered virtual recruiter. Automated candidate screening, voice interviews, and bias-free evaluation available 24/7. Experience intelligent recruitment automation."
                 />
+                <meta
+                    name="keywords"
+                    content="AI recruiter, AI recruitment software, voice AI interviewing, automated candidate screening, AI-powered hiring, conversational AI recruiting, AI interview assistant, bias-free recruitment, 24/7 AI interviewing, intelligent hiring automation"
+                />
+
+                {/* Open Graph */}
+                <meta property="og:title" content="Gennie - AI Virtual Recruiter | Voice-Powered Hiring Automation" />
+                <meta property="og:description" content="Transform your hiring with Gennie. Automated AI candidate screening, voice interviews, and bias-free evaluation available 24/7." />
+                <meta property="og:type" content="website" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Gennie - AI Virtual Recruiter | Voice-Powered Hiring Automation" />
+                <meta name="twitter:description" content="Transform your hiring with Gennie. Automated AI candidate screening, voice interviews, and bias-free evaluation available 24/7." />
             </Head>
 
             <div className="bg-background text-foreground min-h-screen">

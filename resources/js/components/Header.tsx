@@ -13,7 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { CircleDot, LogIn, LogOut, User } from 'lucide-react'
+import { LogIn, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface PageProps {
@@ -43,8 +43,8 @@ export default function Header() {
             <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo/Brand */}
                 <Link href={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
-                    <CircleDot className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-xl">Gennie</span>
+                    <img src="/gennie.png" alt="Gennie" className="h-8" />
+                    <span className="font-extrabold text-2xl text-primary">Gennie</span>
                 </Link>
 
                 {/* Navigation Menu */}

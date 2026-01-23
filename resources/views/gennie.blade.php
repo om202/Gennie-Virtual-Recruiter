@@ -4,7 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gennie - Virtual Recruiter</title>
+    <title>Try Gennie - AI Interview Experience | Voice AI Recruiter</title>
+    <meta name="description"
+        content="Experience the future of recruitment. Talk to Gennie, our AI virtual recruiter. Free interactive demo of voice-powered candidate screening and automated interviews.">
+    <meta name="keywords"
+        content="AI interview demo, voice AI recruiter, try AI recruiting, automated interview demo, conversational AI hiring">
+    <link rel="icon" type="image/x-icon" href="/favicon_gennie.ico">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .speaking {
