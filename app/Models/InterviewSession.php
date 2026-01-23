@@ -11,6 +11,7 @@ class InterviewSession extends Model
     use HasUuids;
 
     protected $fillable = [
+        'candidate_id',
         'interview_id',
         'job_description',
         'job_description_raw',
@@ -51,6 +52,14 @@ class InterviewSession extends Model
     }
 
     /**
+     * Get the associated candidate.
+     */
+    public function candidate(): BelongsTo
+    {
+        return $this->belongsTo(Candidate::class);
+    }
+
+    /**
      * Check if the session has a job description (directly or from parent interview).
      */
     public function hasJobDescription(): bool
@@ -59,11 +68,11 @@ class InterviewSession extends Model
     }
 
     /**
-     * Check if the session has a resume (directly or from parent interview).
+     * Check if the session has a resume (directly, from candidate, or from parent interview).
      */
     public function hasResume(): bool
     {
-        return !empty($this->resume) || $this->interview?->hasResume();
+        return !empty($this->resume) || $this->candidate?->resume_text || $this->interview?->hasResume();
     }
 
     /**
@@ -75,11 +84,11 @@ class InterviewSession extends Model
     }
 
     /**
-     * Get the effective resume (session overrides interview).
+     * Get the effective resume (session > candidate > interview).
      */
     public function getResume(): ?string
     {
-        return $this->resume ?? $this->interview?->candidate_resume;
+        return $this->resume ?? $this->candidate?->resume_text ?? $this->interview?->candidate_resume;
     }
 
     /**

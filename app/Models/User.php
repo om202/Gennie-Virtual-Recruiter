@@ -59,4 +59,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Interview::class);
     }
+
+    /**
+     * Get all candidates created by this user.
+     */
+    public function candidates()
+    {
+        return $this->hasMany(\App\Models\Candidate::class);
+    }
 }

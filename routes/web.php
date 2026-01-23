@@ -47,4 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
     Route::get('/interviews/{interview}/logs', [InterviewController::class, 'logs'])->name('interviews.logs');
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
+    // Candidate Management
+    Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');
+    Route::resource('candidates', \App\Http\Controllers\CandidateController::class);
 });

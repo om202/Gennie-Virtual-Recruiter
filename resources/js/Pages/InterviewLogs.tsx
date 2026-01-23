@@ -231,6 +231,9 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                         <div className="pb-3 text-sm font-medium text-primary border-b-2 border-primary">
                             Interview Logs
                         </div>
+                        <Link href="/candidates" className="pb-3 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-border transition-colors">
+                            Candidates
+                        </Link>
                     </div>
                 </div>
 
