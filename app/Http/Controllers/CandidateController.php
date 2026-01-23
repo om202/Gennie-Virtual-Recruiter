@@ -38,6 +38,11 @@ class CandidateController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('Candidates/CreateCandidate');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

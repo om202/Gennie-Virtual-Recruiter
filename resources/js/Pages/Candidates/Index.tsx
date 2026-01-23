@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, MapPin, Linkedin, FileText, MoreVertical, Trash2, Mail, Phone as PhoneIcon } from 'lucide-react';
+import { Plus, Search, MapPin, Linkedin, MoreVertical, Trash2, Mail, Phone as PhoneIcon } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import CandidateForm from './Components/CandidateForm';
-import { cn } from '@/lib/utils';
 
 interface Candidate {
     id: string;
@@ -43,7 +40,6 @@ interface IndexProps {
 
 export default function CandidatesIndex({ auth, candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,15 +95,12 @@ export default function CandidatesIndex({ auth, candidates, filters }: IndexProp
                         />
                     </form>
 
-                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Candidate
-                            </Button>
-                        </DialogTrigger>
-                        <CandidateForm onClose={() => setIsCreateDialogOpen(false)} />
-                    </Dialog>
+                    <Link href="/candidates/create">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Candidate
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Candidates List */}
@@ -121,9 +114,11 @@ export default function CandidatesIndex({ auth, candidates, filters }: IndexProp
                             <p className="text-muted-foreground text-center mb-6 max-w-sm">
                                 Get started by adding candidates manually or uploading their resumes.
                             </p>
-                            <Button onClick={() => setIsCreateDialogOpen(true)}>
-                                Add Candidate
-                            </Button>
+                            <Link href="/candidates/create">
+                                <Button>
+                                    Add Candidate
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 ) : (
