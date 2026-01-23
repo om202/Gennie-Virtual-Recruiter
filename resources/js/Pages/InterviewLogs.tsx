@@ -222,7 +222,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
         <div className="min-h-screen bg-muted/50">
             <Head title={isFiltered ? `Logs - ${interview.job_title}` : "Interview Logs"} />
 
-            <div className="max-w-[90rem] mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Navigation Tabs */}
                 <DashboardNavigation activeTab="logs" />
 

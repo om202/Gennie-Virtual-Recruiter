@@ -101,7 +101,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Candidates - Gennie AI Recruiter" />
 
-            <div className="max-w-[90rem] mx-auto py-8 px-4 space-y-8">
+            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
                 {/* Navigation Tabs - Consistent with Dashboard */}
                 <DashboardNavigation activeTab="candidates" />
 

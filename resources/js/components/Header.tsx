@@ -42,7 +42,7 @@ export default function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="max-w-[90rem] mx-auto flex h-16 items-center justify-between px-4">
+            <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo/Brand */}
                 <Link href={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
                     <img src="/gennie.png" alt="Gennie" className="h-8" />
