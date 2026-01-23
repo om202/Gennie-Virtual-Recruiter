@@ -177,29 +177,31 @@ function normalizeSkills(skills: string[] | null | undefined): string {
 }
 
 interface CandidateFormProps {
+    candidate?: any;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProps) {
+export default function CandidateForm({ candidate, onSuccess, onCancel }: CandidateFormProps) {
+    const isEditing = !!candidate;
     const [isParsing, setIsParsing] = useState(false);
     const [jdFilename, setJdFilename] = useState<string | null>(null);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        phone: '',
-        linkedin_url: '',
-        skills: '',
-        experience_summary: '',
-        location: '',
-        address: '',
-        city: '',
-        state: '',
-        zip: '',
-        work_authorization: '',
-        authorized_to_work: false,
-        sponsorship_needed: false,
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        name: candidate?.name || '',
+        email: candidate?.email || '',
+        phone: candidate?.phone || '',
+        linkedin_url: candidate?.linkedin_url || '',
+        skills: candidate?.skills ? (Array.isArray(candidate.skills) ? candidate.skills.join(', ') : candidate.skills) : '',
+        experience_summary: candidate?.experience_summary || '',
+        location: candidate?.location || '',
+        address: candidate?.address || '',
+        city: candidate?.city || '',
+        state: candidate?.state || '',
+        zip: candidate?.zip || '',
+        work_authorization: candidate?.work_authorization || '',
+        authorized_to_work: candidate?.authorized_to_work || false,
+        sponsorship_needed: candidate?.sponsorship_needed || false,
 
         // Structured Salary Expectation
         salary_type: 'yearly' as 'hourly' | 'yearly',
@@ -207,12 +209,12 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
         salary_max: '',
 
         // Complex Arrays
-        work_history: [] as any[],
-        education: [] as any[],
-        certificates: [] as any[],
+        work_history: candidate?.work_history || [] as any[],
+        education: candidate?.education || [] as any[],
+        certificates: candidate?.certificates || [] as any[],
 
         resume_file: null as File | null,
-        resume_text: '',
+        resume_text: candidate?.resume_text || '',
     });
 
     // --- Dynamic Field Helpers ---
@@ -300,22 +302,15 @@ export default function CandidateForm({ onSuccess, onCancel }: CandidateFormProp
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Submitting form data:', data);
-        post('/candidates', {
-            // @ts-ignore - Inertia's transform callback typing
-            transform: (data: any) => {
-                const transformed = {
-                    ...data,
-                    skills: typeof data.skills === 'string'
-                        ? data.skills.split(',').map((s: string) => s.trim()).filter(Boolean)
-                        : data.skills,
-                };
-                console.log('Transformed data:', transformed);
-                return transformed;
-            },
+
+        const url = isEditing ? `/candidates/${candidate.id}` : '/candidates';
+        const method = isEditing ? put : post;
+
+        method(url, {
             onSuccess: () => {
-                console.log('Form submitted successfully!');
-                reset();
+                if (!isEditing) {
+                    reset();
+                }
                 onSuccess();
             },
             onError: (errors) => {

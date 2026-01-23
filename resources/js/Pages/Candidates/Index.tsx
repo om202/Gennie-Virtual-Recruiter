@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye } from 'lucide-react';
+import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil } from 'lucide-react';
 import ViewCandidateDialog from './Components/ViewCandidateDialog';
 
 interface WorkHistory {
@@ -124,7 +124,14 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                             placeholder="Search by name, email, or skills..."
                             className="pl-9"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => {
+                                const newValue = e.target.value;
+                                setSearch(newValue);
+                                // If search is cleared (empty), reset the search
+                                if (newValue === '') {
+                                    router.get('/candidates', {}, { preserveState: true });
+                                }
+                            }}
                         />
                     </form>
 
@@ -141,17 +148,32 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                     <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-16">
                             <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                                <Plus className="h-6 w-6 text-muted-foreground" />
+                                {search ? (
+                                    <Search className="h-6 w-6 text-muted-foreground" />
+                                ) : (
+                                    <Plus className="h-6 w-6 text-muted-foreground" />
+                                )}
                             </div>
-                            <h3 className="text-lg font-medium mb-2">No candidates found</h3>
+                            <h3 className="text-lg font-medium mb-2">
+                                {search ? `No results for "${search}"` : 'No candidates found'}
+                            </h3>
                             <p className="text-muted-foreground text-center mb-6 max-w-sm">
-                                Get started by adding candidates manually or uploading their resumes.
+                                {search
+                                    ? 'Try adjusting your search terms or clear the search to see all candidates.'
+                                    : 'Get started by adding candidates manually or uploading their resumes.'
+                                }
                             </p>
-                            <Link href="/candidates/create">
-                                <Button>
-                                    Add Candidate
+                            {search ? (
+                                <Button variant="outline" onClick={() => { setSearch(''); router.get('/candidates'); }}>
+                                    Clear Search
                                 </Button>
-                            </Link>
+                            ) : (
+                                <Link href="/candidates/create">
+                                    <Button>
+                                        Add Candidate
+                                    </Button>
+                                </Link>
+                            )}
                         </CardContent>
                     </Card>
                 ) : (
@@ -227,6 +249,15 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                                     <Eye className="h-4 w-4 mr-2" />
                                                     View
                                                 </Button>
+                                                <Link href={`/candidates/${candidate.id}/edit`}>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <Pencil className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </Button>
+                                                </Link>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

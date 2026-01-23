@@ -3,10 +3,18 @@ import { Button } from '@/components/ui/button'
 import CandidateForm from './Components/CandidateForm'
 import { ArrowLeft } from 'lucide-react'
 
-export default function CreateCandidate() {
+interface CreateCandidateProps {
+    candidate?: any;
+}
+
+export default function CreateCandidate({ candidate }: CreateCandidateProps) {
+    const isEditing = !!candidate;
 
     const handleSuccess = () => {
-        router.visit('/candidates')
+        router.visit('/candidates', {
+            preserveState: false,
+            preserveScroll: false,
+        })
     }
 
     const handleCancel = () => {
@@ -15,7 +23,7 @@ export default function CreateCandidate() {
 
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title="Add Candidate" />
+            <Head title={isEditing ? `Edit ${candidate.name}` : 'Add Candidate'} />
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Back Button */}
@@ -30,13 +38,19 @@ export default function CreateCandidate() {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Add Candidate</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {isEditing ? 'Edit Candidate' : 'Add Candidate'}
+                    </h1>
                     <p className="text-muted-foreground">
-                        Create a complete candidate profile or upload a resume to auto-fill.
+                        {isEditing
+                            ? 'Update candidate information and profile details.'
+                            : 'Create a complete candidate profile or upload a resume to auto-fill.'
+                        }
                     </p>
                 </div>
 
                 <CandidateForm
+                    candidate={candidate}
                     onSuccess={handleSuccess}
                     onCancel={handleCancel}
                 />
