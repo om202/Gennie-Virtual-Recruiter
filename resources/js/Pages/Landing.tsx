@@ -170,7 +170,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* Core Features Section */}
                 <section className="bg-muted/50 py-20 px-4">
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-[90rem] mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
                                 Built for High-Velocity Hiring
@@ -205,7 +205,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* Advanced Features for Business */}
                 <section className="bg-background py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-[90rem] mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
                                 Enterprise-Grade Infrastructure
@@ -334,7 +334,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* Benefits Section - Streamlined */}
                 <section className="bg-muted/50 py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-[90rem] mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
                                 A Better Experience for Both Sides of the Table
@@ -404,7 +404,7 @@ export default function Landing({ }: PageProps) {
 
                 {/* CTA Section */}
                 <section className="bg-background py-20 px-4 border-t border-primary/20">
-                    <div className="max-w-7xl mx-auto text-center space-y-8">
+                    <div className="max-w-[90rem] mx-auto text-center space-y-8">
                         <h2 className="text-3xl md:text-4xl font-bold text-primary">
                             Unlock Infinite Interview Capacity
                         </h2>

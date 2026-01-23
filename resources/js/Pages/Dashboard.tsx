@@ -109,7 +109,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
         <div className="min-h-screen bg-muted/50">
             <Head title="Dashboard - Gennie AI Recruiter" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
+            <div className="max-w-[90rem] mx-auto py-8 px-4 space-y-8">
                 {/* Navigation Tabs */}
                 <DashboardNavigation activeTab="interviews" />
 

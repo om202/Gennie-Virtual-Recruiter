@@ -20,7 +20,7 @@ export default function Profile({ auth }: ProfileProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Profile Settings" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
+            <div className="max-w-[90rem] mx-auto py-8 px-4 space-y-8">
                 {/* Back Button */}
                 <div>
                     <Link href="/dashboard">

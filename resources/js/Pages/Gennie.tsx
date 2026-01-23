@@ -28,7 +28,7 @@ export default function Gennie({ sessionId, interview }: GennietProps) {
 
             {/* Header */}
             <div className="bg-background border-b">
-                <div className="max-w-7xl mx-auto py-4 px-4">
+                <div className="max-w-[90rem] mx-auto py-4 px-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div>
@@ -60,7 +60,7 @@ export default function Gennie({ sessionId, interview }: GennietProps) {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto py-8 px-4">
+            <div className="max-w-[90rem] mx-auto py-8 px-4">
                 <GennieInterface sessionId={sessionId} onClose={handleClose} />
             </div>
         </div>
