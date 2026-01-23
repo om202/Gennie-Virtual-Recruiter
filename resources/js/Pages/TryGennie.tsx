@@ -1,10 +1,10 @@
-import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { Head, Link, router } from '@inertiajs/react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
-import { Globe, Phone, ArrowLeft } from 'lucide-react'
+import { Globe, Phone, ArrowLeft, Loader2 } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -16,12 +16,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-// Demo configuration - pre-loaded for instant try
-const DEMO_CONFIG: AgentConfig = {
-    sessionId: 'demo-session',
-    jobTitle: 'Software Engineer',
-    companyName: 'TechCorp Inc.',
-    jobDescription: `We are looking for a passionate Software Engineer to join our team.
+// Demo job description - pre-loaded for instant try
+const DEMO_JOB_DESCRIPTION = `We are looking for a passionate Software Engineer to join our team.
 
 Requirements:
 - 3+ years of experience in software development
@@ -34,8 +30,9 @@ Responsibilities:
 - Design and implement new features
 - Write clean, maintainable code
 - Collaborate with cross-functional teams
-- Participate in code reviews`,
-    resume: `John Doe - Software Engineer
+- Participate in code reviews`
+
+const DEMO_RESUME = `John Doe - Software Engineer
 
 Experience:
 - 4 years at StartupXYZ as Full Stack Developer
@@ -49,27 +46,134 @@ Skills:
 - AWS, Docker
 
 Education:
-- BS Computer Science, State University`,
-}
+- BS Computer Science, State University`
 
 export default function TryGennie() {
+    const [sessionId, setSessionId] = useState<string | null>(null)
+    const [isCreatingSession, setIsCreatingSession] = useState(false)
     const [isCalling, setIsCalling] = useState(false)
     const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
     const [phoneNumber, setPhoneNumber] = useState('')
+    const [hasEnded, setHasEnded] = useState(false)
+
+    // Create initial config (without sessionId initially)
+    const getAgentConfig = useCallback((): AgentConfig => ({
+        sessionId: sessionId || undefined,
+        jobTitle: 'Software Engineer',
+        companyName: 'TechCorp Inc.',
+        jobDescription: DEMO_JOB_DESCRIPTION,
+        resume: DEMO_RESUME,
+    }), [sessionId])
 
     const {
         speakingState,
         transcript,
-        startConversation,
-        stopConversation,
+        startConversation: startDeepgramConversation,
+        stopConversation: stopDeepgramConversation,
         isConnected,
-    } = useDeepgramAgent(DEMO_CONFIG)
+        connectionState,
+    } = useDeepgramAgent(getAgentConfig())
+
+    // Create a session in the database
+    const createSession = async (): Promise<string> => {
+        setIsCreatingSession(true)
+        try {
+            // Create session
+            const sessionRes = await fetch('/api/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    metadata: {
+                        job_title: 'Software Engineer',
+                        company_name: 'TechCorp Inc.',
+                        source: 'try-gennie',
+                    }
+                })
+            })
+            const sessionData = await sessionRes.json()
+            const newSessionId = sessionData.session.id
+
+            // Add job description
+            await fetch(`/api/sessions/${newSessionId}/jd`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: DEMO_JOB_DESCRIPTION })
+            })
+
+            // Add resume
+            await fetch(`/api/sessions/${newSessionId}/resume`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: DEMO_RESUME })
+            })
+
+            // Start the session
+            await fetch(`/api/sessions/${newSessionId}/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    job_title: 'Software Engineer',
+                    company_name: 'TechCorp Inc.'
+                })
+            })
+
+            setSessionId(newSessionId)
+            return newSessionId
+        } finally {
+            setIsCreatingSession(false)
+        }
+    }
+
+    // Start conversation with session creation
+    const handleStartInterview = async () => {
+        try {
+            // Create session first
+            const newSessionId = await createSession()
+
+            // Update sessionId in state, then start conversation
+            // Note: We need to wait for the state to update, so we use setTimeout
+            setTimeout(() => {
+                startDeepgramConversation()
+            }, 100)
+        } catch (error) {
+            console.error('Failed to create session:', error)
+            alert('Failed to start interview. Please try again.')
+        }
+    }
+
+    // Handle stop and redirect to results
+    const handleStopInterview = async () => {
+        setHasEnded(true)
+        await stopDeepgramConversation()
+
+        // Give time for upload to complete, then redirect
+        setTimeout(() => {
+            if (sessionId) {
+                router.visit(`/try-gennie/${sessionId}`)
+            }
+        }, 2000)
+    }
+
+    // Watch for interview end (when AI ends it)
+    useEffect(() => {
+        if (connectionState === 'idle' && sessionId && transcript.length > 0 && !hasEnded) {
+            // Interview ended (either by AI or user)
+            setHasEnded(true)
+            // Give time for recording upload, then redirect
+            setTimeout(() => {
+                router.visit(`/try-gennie/${sessionId}`)
+            }, 3000)
+        }
+    }, [connectionState, sessionId, transcript.length, hasEnded])
 
     const handleCallSubmit = async () => {
         if (!phoneNumber) {
             alert('Please enter a phone number')
             return
         }
+
+        // Create session first for phone call
+        const newSessionId = await createSession()
 
         setIsPhoneDialogOpen(false)
         setIsCalling(true)
@@ -79,12 +183,15 @@ export default function TryGennie() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: phoneNumber,
-                    session_id: 'demo-session'
+                    session_id: newSessionId
                 })
             })
             const data = await res.json()
             if (data.success) {
-                alert('Calling your phone...')
+                alert('Calling your phone... After the call ends, you will see your results.')
+                // For phone interviews, redirect after a delay
+                // The user will complete the call, then can visit the results page
+                router.visit(`/try-gennie/${newSessionId}`)
             } else {
                 alert('Failed to initiate call: ' + (data.error || 'Unknown error'))
             }
@@ -95,6 +202,8 @@ export default function TryGennie() {
             setIsCalling(false)
         }
     }
+
+    const isLoading = isCreatingSession || (connectionState === 'connecting')
 
     return (
         <>
@@ -141,7 +250,7 @@ export default function TryGennie() {
                             Experience AI-powered interviewing - no signup required
                         </p>
                         <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                            This demo uses a sample Software Engineer role.
+                            This demo uses a sample Software Engineer role. Your interview will be recorded and analyzed.
                         </p>
                     </div>
                 </div>
@@ -162,25 +271,35 @@ export default function TryGennie() {
                                     <p><strong>Role:</strong> Software Engineer</p>
                                     <p><strong>Company:</strong> TechCorp Inc.</p>
                                     <p className="text-muted-foreground text-xs pt-2">
-                                        Gennie will conduct a brief screening interview based on this role.
+                                        Gennie will conduct a brief screening interview. After it ends, you'll see your full assessment report.
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex gap-3">
                                 <Button
-                                    onClick={startConversation}
+                                    onClick={handleStartInterview}
                                     size="lg"
                                     className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
+                                    disabled={isLoading}
                                 >
-                                    <Globe className="h-5 w-5 mr-2" />
-                                    Start Demo Interview
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                            Setting up...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Globe className="h-5 w-5 mr-2" />
+                                            Start Demo Interview
+                                        </>
+                                    )}
                                 </Button>
                                 <Button
                                     onClick={() => setIsPhoneDialogOpen(true)}
                                     variant="outline"
                                     size="lg"
-                                    disabled={isCalling}
+                                    disabled={isCalling || isLoading}
                                     className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     <Phone className="h-5 w-5 mr-2" />
@@ -197,12 +316,20 @@ export default function TryGennie() {
 
                                 <div className="flex gap-3 justify-center">
                                     <Button
-                                        onClick={stopConversation}
+                                        onClick={handleStopInterview}
                                         variant="destructive"
                                         size="lg"
                                         className="hover:scale-[1.02] active:scale-[0.98]"
+                                        disabled={hasEnded}
                                     >
-                                        Stop Interview
+                                        {hasEnded ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Stop Interview'
+                                        )}
                                     </Button>
                                 </div>
                             </div>
@@ -242,7 +369,16 @@ export default function TryGennie() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit" onClick={handleCallSubmit}>Call Me</Button>
+                        <Button type="submit" onClick={handleCallSubmit} disabled={isCreatingSession}>
+                            {isCreatingSession ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Setting up...
+                                </>
+                            ) : (
+                                'Call Me'
+                            )}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

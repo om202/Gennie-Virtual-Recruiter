@@ -108,6 +108,9 @@ export default function Landing({ }: PageProps) {
                                         <p className="text-2xl font-semibold text-white group-hover:text-white/90 transition-colors">
                                             Try Gennie Now
                                         </p>
+                                        <p className="text-sm text-white/60 max-w-xs text-center -mt-2">
+                                            Experience a live AI interview with a real Software Engineer job description
+                                        </p>
                                     </div>
                                 </a>
                             </div>

@@ -12,6 +12,7 @@ Route::get('/', [VoiceClientController::class, 'landing']);
 
 // Public Try Gennie Demo (no login required)
 Route::get('/try-gennie', fn() => Inertia::render('TryGennie'))->name('try-gennie');
+Route::get('/try-gennie/{session}', fn($session) => Inertia::render('TryGennieResult', ['sessionId' => $session]))->name('try-gennie.result');
 
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
