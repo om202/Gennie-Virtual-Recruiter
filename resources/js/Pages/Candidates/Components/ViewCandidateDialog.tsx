@@ -1,0 +1,387 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
+
+interface WorkHistory {
+    company: string;
+    title: string;
+    start_date: string | null;
+    end_date: string | null;
+    description: string;
+}
+
+interface Education {
+    institution: string;
+    degree: string;
+    field: string;
+    start_date: string | null;
+    end_date: string | null;
+}
+
+interface Certificate {
+    name: string;
+    issuer: string;
+    date: string | null;
+}
+
+interface Candidate {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    linkedin_url: string | null;
+    skills: string[];
+    experience_summary: string | null;
+    location: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+    work_authorization: string | null;
+    salary_expectation: string | null;
+    work_history: WorkHistory[];
+    education: Education[];
+    certificates: Certificate[];
+}
+
+interface ViewCandidateDialogProps {
+    candidate: Candidate | null;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+const formatDate = (date: string | null) => {
+    if (!date) return 'Present';
+    const d = new Date(date + '-01');
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+
+const workAuthLabels: Record<string, string> = {
+    'us_citizen': 'US Citizen',
+    'green_card': 'Green Card Holder',
+    'h1b': 'H-1B Visa',
+    'opt': 'OPT',
+    'cpt': 'CPT',
+    'need_sponsorship': 'Need Sponsorship',
+};
+
+export default function ViewCandidateDialog({ candidate, open, onOpenChange }: ViewCandidateDialogProps) {
+    if (!candidate) return null;
+
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    const handleCopy = async (text: string, field: string) => {
+        await navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const fullAddress = [
+        candidate.address,
+        [candidate.city, candidate.state].filter(Boolean).join(', '),
+        candidate.zip
+    ].filter(Boolean).join(', ');
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                <DialogHeader className="px-6 pt-6 pb-4">
+                    <DialogTitle>Candidate Profile</DialogTitle>
+                </DialogHeader>
+
+                <ScrollArea className="h-[calc(90vh-100px)] px-6 pb-6">
+                    <div className="space-y-6">
+                        {/* Header Card */}
+                        <Card>
+                            <CardHeader className="text-center pb-4">
+                                <CardTitle className="text-2xl">{candidate.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {/* Email */}
+                                <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <a
+                                        href={`mailto:${candidate.email}`}
+                                        className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
+                                    >
+                                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                        <span>{candidate.email}</span>
+                                    </a>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => handleCopy(candidate.email, 'email')}
+                                    >
+                                        {copiedField === 'email' ? (
+                                            <Check className="h-4 w-4 text-green-600" />
+                                        ) : (
+                                            <Copy className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </div>
+
+                                {/* Phone */}
+                                {candidate.phone && (
+                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                        <a
+                                            href={`tel:${candidate.phone}`}
+                                            className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
+                                        >
+                                            <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                            <span>{candidate.phone}</span>
+                                        </a>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleCopy(candidate.phone!, 'phone')}
+                                        >
+                                            {copiedField === 'phone' ? (
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            ) : (
+                                                <Copy className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Location */}
+                                {candidate.location && (
+                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.location)}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
+                                        >
+                                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                            <span>{candidate.location}</span>
+                                        </a>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleCopy(candidate.location!, 'location')}
+                                        >
+                                            {copiedField === 'location' ? (
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            ) : (
+                                                <Copy className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Full Address (only if different from location) */}
+                                {fullAddress && fullAddress !== candidate.location && (
+                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
+                                        >
+                                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                            <span className="text-muted-foreground">{fullAddress}</span>
+                                        </a>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleCopy(fullAddress, 'address')}
+                                        >
+                                            {copiedField === 'address' ? (
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            ) : (
+                                                <Copy className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* LinkedIn */}
+                                {candidate.linkedin_url && (
+                                    <div className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                        <a
+                                            href={candidate.linkedin_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="flex items-center gap-2 text-sm flex-1 text-blue-600 hover:underline"
+                                        >
+                                            <Linkedin className="h-4 w-4 flex-shrink-0" />
+                                            <span>LinkedIn Profile</span>
+                                        </a>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleCopy(candidate.linkedin_url!, 'linkedin')}
+                                        >
+                                            {copiedField === 'linkedin' ? (
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            ) : (
+                                                <Copy className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Work Authorization & Salary */}
+                        {(candidate.work_authorization || candidate.salary_expectation) && (
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="flex flex-wrap gap-6">
+                                        {candidate.work_authorization && (
+                                            <div className="flex items-center gap-2">
+                                                <FileCheck className="h-4 w-4 text-muted-foreground" />
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Work Authorization</p>
+                                                    <p className="font-medium text-sm">
+                                                        {workAuthLabels[candidate.work_authorization] || candidate.work_authorization}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {candidate.salary_expectation && (
+                                            <div className="flex items-center gap-2">
+                                                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Salary Expectation</p>
+                                                    <p className="font-medium text-sm">{candidate.salary_expectation}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Experience Summary */}
+                        {candidate.experience_summary && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Professional Summary</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {candidate.experience_summary}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Skills */}
+                        {candidate.skills && candidate.skills.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Award className="h-4 w-4" />
+                                        Skills
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-wrap gap-2">
+                                        {candidate.skills.map((skill, i) => (
+                                            <Badge key={i} variant="secondary">
+                                                {skill}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Work History */}
+                        {candidate.work_history && candidate.work_history.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Briefcase className="h-4 w-4" />
+                                        Work Experience
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {candidate.work_history.map((job, i) => (
+                                        <div key={i}>
+                                            {i > 0 && <Separator className="my-4" />}
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <h4 className="font-semibold">{job.title}</h4>
+                                                    <p className="text-sm text-muted-foreground">{job.company}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {formatDate(job.start_date)} - {formatDate(job.end_date)}
+                                                    </p>
+                                                </div>
+                                                {job.description && (
+                                                    <p className="text-sm whitespace-pre-wrap">{job.description}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Education */}
+                        {candidate.education && candidate.education.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <GraduationCap className="h-4 w-4" />
+                                        Education
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {candidate.education.map((edu, i) => (
+                                        <div key={i}>
+                                            {i > 0 && <Separator className="my-4" />}
+                                            <div className="space-y-1">
+                                                <h4 className="font-semibold">{edu.degree} in {edu.field}</h4>
+                                                <p className="text-sm text-muted-foreground">{edu.institution}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDate(edu.start_date)} - {formatDate(edu.end_date)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Certificates */}
+                        {candidate.certificates && candidate.certificates.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Award className="h-4 w-4" />
+                                        Certifications
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    {candidate.certificates.map((cert, i) => (
+                                        <div key={i} className="flex items-start gap-3">
+                                            <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                                            <div className="flex-1">
+                                                <p className="font-medium text-sm">{cert.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {cert.issuer} {cert.date && `• ${formatDate(cert.date)}`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                </ScrollArea>
+            </DialogContent>
+        </Dialog>
+    );
+}

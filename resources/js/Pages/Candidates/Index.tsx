@@ -5,13 +5,30 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, MapPin, Linkedin, MoreVertical, Trash2, Mail, Phone as PhoneIcon } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye } from 'lucide-react';
+import ViewCandidateDialog from './Components/ViewCandidateDialog';
+
+interface WorkHistory {
+    company: string;
+    title: string;
+    start_date: string | null;
+    end_date: string | null;
+    description: string;
+}
+
+interface Education {
+    institution: string;
+    degree: string;
+    field: string;
+    start_date: string | null;
+    end_date: string | null;
+}
+
+interface Certificate {
+    name: string;
+    issuer: string;
+    date: string | null;
+}
 
 interface Candidate {
     id: string;
@@ -24,6 +41,15 @@ interface Candidate {
     location: string | null;
     resume_path: string | null;
     created_at: string;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+    work_authorization: string | null;
+    salary_expectation: string | null;
+    work_history: WorkHistory[];
+    education: Education[];
+    certificates: Certificate[];
 }
 
 interface IndexProps {
@@ -38,8 +64,10 @@ interface IndexProps {
     };
 }
 
-export default function CandidatesIndex({ auth, candidates, filters }: IndexProps) {
+export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
+    const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,6 +78,11 @@ export default function CandidatesIndex({ auth, candidates, filters }: IndexProp
         if (confirm('Are you sure you want to delete this candidate?')) {
             router.delete(`/candidates/${id}`);
         }
+    };
+
+    const handleView = (candidate: Candidate) => {
+        setSelectedCandidate(candidate);
+        setDialogOpen(true);
     };
 
     return (
@@ -186,21 +219,23 @@ export default function CandidatesIndex({ auth, candidates, filters }: IndexProp
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {/* Resume Download (if we had a route for it, or just direct link if public) */}
-                                                {/* For now just Actions dropdown */}
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(candidate.id)}>
-                                                            <Trash2 className="h-4 w-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleView(candidate)}
+                                                >
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    View
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleDelete(candidate.id)}
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    Delete
+                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -209,6 +244,13 @@ export default function CandidatesIndex({ auth, candidates, filters }: IndexProp
                         </Table>
                     </Card>
                 )}
+
+                {/* View Candidate Dialog */}
+                <ViewCandidateDialog
+                    candidate={selectedCandidate}
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                />
             </div>
         </div>
     );
