@@ -73,35 +73,52 @@ export default function Landing({ }: PageProps) {
 
             <div className="bg-background text-foreground min-h-screen">
                 {/* Hero Section */}
-                <section ref={vantaRef} className="relative flex items-center justify-center h-[640px] px-4 py-20 overflow-hidden">
-                    <div className="max-w-4xl text-center space-y-8 relative z-10">
-                        <div className="space-y-4">
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-                                Meet Gennie
-                            </h1>
-                            <p className="text-2xl md:text-3xl text-white/90">
-                                Your AI Recruiting Assistant
-                            </p>
-                            <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto">
-                                Experience fair, intelligent, and efficient recruiting. Available 24/7 to screen candidates with consistency and without bias.
-                            </p>
-                        </div>
+                <section ref={vantaRef} className="relative flex items-center justify-center min-h-[640px] px-4 py-20 overflow-hidden">
+                    <div className="max-w-5xl mx-auto w-full relative z-10">
+                        <div className="grid md:grid-cols-2 gap-12 items-center">
+                            {/* Left Column - Content */}
+                            <div className="space-y-6 text-center md:text-left">
+                                {/* Gennie Logo */}
+                                <div className="flex justify-center md:justify-start">
+                                    <img
+                                        src="/gennie.png"
+                                        alt="Gennie AI Logo"
+                                        className="h-48 w-48 object-contain -mb-10"
+                                    />
+                                </div>
 
-                        <a href="/try-gennie" className="inline-block group cursor-pointer mt-12">
-                            <div className="flex flex-col items-center gap-0 transition-transform hover:scale-105">
-                                <VoiceVisualizer speakingState="listening" type='hero' />
-                                <p className="text-2xl font-semibold text-white group-hover:text-white/90 transition-colors">
-                                    Try Gennie Now
-                                </p>
+                                <div className="space-y-4">
+                                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+                                        Meet Gennie
+                                    </h1>
+                                    <p className="text-2xl md:text-3xl text-white/90">
+                                        Your AI Recruiting Assistant
+                                    </p>
+                                    <p className="text-lg md:text-xl text-white/70 max-w-2xl">
+                                        Experience fair, intelligent, and efficient recruiting. Available 24/7 to screen candidates with consistency and without bias.
+                                    </p>
+                                </div>
                             </div>
-                        </a>
+
+                            {/* Right Column - CTA */}
+                            <div className="flex flex-col items-center justify-center">
+                                <a href="/try-gennie" className="inline-block group cursor-pointer">
+                                    <div className="flex flex-col items-center gap-4 transition-transform hover:scale-105">
+                                        <VoiceVisualizer speakingState="listening" type='hero' />
+                                        <p className="text-2xl font-semibold text-white group-hover:text-white/90 transition-colors">
+                                            Try Gennie Now
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
                 </section>
 
                 {/* Stats Section */}
-                <section className="bg-background py-16 px-4 border-y border-primary/20">
-                    <div className="max-w-7xl mx-auto">
+                <section className="bg-background py-12 px-4 border-y border-primary/20">
+                    <div className="max-w-5xl mx-auto">
                         <div className="grid md:grid-cols-4 gap-8 text-center">
                             <div className="space-y-2">
                                 <div className="text-4xl md:text-5xl font-bold text-primary">24/7</div>
