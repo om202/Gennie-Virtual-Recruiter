@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Upload, Plus, Trash2, CheckCircle, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/sonner';
 
 interface CandidateFormProps {
     candidate?: any;
@@ -99,16 +100,36 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                     city: extracted.city?.trim() || prev.city,
                     state: extracted.state?.trim()?.toUpperCase() || prev.state,
                     zip: extracted.zip?.trim() || prev.zip,
-                    work_history: Array.isArray(extracted.work_history) ? extracted.work_history : prev.work_history,
-                    education: Array.isArray(extracted.education) ? extracted.education : prev.education,
+                    work_history: Array.isArray(extracted.work_history)
+                        ? extracted.work_history.map((job: any) => ({
+                            ...job,
+                            end_date: /^(present|current|ongoing|now)$/i.test(job.end_date?.trim() || '') ? 'Present' : (job.end_date || '')
+                        }))
+                        : prev.work_history,
+                    education: Array.isArray(extracted.education)
+                        ? extracted.education.map((edu: any) => ({
+                            ...edu,
+                            end_date: /^(present|current|ongoing|now|in progress)$/i.test(edu.end_date?.trim() || '') ? 'Present' : (edu.end_date || '')
+                        }))
+                        : prev.education,
                     certificates: Array.isArray(extracted.certificates) ? extracted.certificates : prev.certificates,
                     work_authorization: extracted.work_authorization || prev.work_authorization,
                 }));
 
                 setJdFilename(file.name);
+                toast.success('Resume parsed successfully', {
+                    description: `Extracted data from ${file.name}`,
+                });
+            } else {
+                toast.error('Parsing returned no data', {
+                    description: 'The resume could not be parsed. Please try again or enter details manually.',
+                });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Parsing failed", error);
+            toast.error('Resume parsing failed', {
+                description: error?.response?.data?.message || error?.message || 'Please try again or enter details manually.',
+            });
         } finally {
             setIsParsing(false);
         }
@@ -216,7 +237,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                             {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label>Phone</Label>
+                            <Label>Phone <span className="text-destructive">*</span></Label>
                             <Input
                                 type="tel"
                                 inputMode="tel"
@@ -224,7 +245,9 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                                 value={data.phone}
                                 onChange={e => setData('phone', e.target.value)}
                                 placeholder="+1 (555) 123-4567"
+                                required
                             />
+                            {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label>LinkedIn URL</Label>
@@ -241,7 +264,7 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Address</Label>
+                            <Label>Address <span className="text-destructive">*</span></Label>
                             <Input
                                 type="text"
                                 inputMode="text"
@@ -249,7 +272,9 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                                 value={data.address}
                                 onChange={e => setData('address', e.target.value)}
                                 placeholder="123 Main St"
+                                required
                             />
+                            {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             <div className="space-y-2">
@@ -334,22 +359,37 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                             <CardContent className="pt-4 grid gap-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Company</Label>
-                                        <Input value={job.company} onChange={e => updateWork(index, 'company', e.target.value)} />
+                                        <Label>Company <span className="text-destructive">*</span></Label>
+                                        <Input value={job.company} onChange={e => updateWork(index, 'company', e.target.value)} required />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Job Title</Label>
-                                        <Input value={job.title} onChange={e => updateWork(index, 'title', e.target.value)} />
+                                        <Label>Job Title <span className="text-destructive">*</span></Label>
+                                        <Input value={job.title} onChange={e => updateWork(index, 'title', e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Start Date</Label>
-                                        <Input type="month" value={job.start_date} onChange={e => updateWork(index, 'start_date', e.target.value)} />
+                                        <Label>Start Date <span className="text-destructive">*</span></Label>
+                                        <Input type="month" value={job.start_date} onChange={e => updateWork(index, 'start_date', e.target.value)} required />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>End Date</Label>
-                                        <Input type="month" value={job.end_date} onChange={e => updateWork(index, 'end_date', e.target.value)} />
+                                        <div className="flex items-center justify-between">
+                                            <Label>End Date</Label>
+                                            <div className="flex items-center gap-2">
+                                                <Switch
+                                                    id={`current-job-${index}`}
+                                                    checked={job.end_date === 'Present'}
+                                                    onCheckedChange={(checked) => updateWork(index, 'end_date', checked ? 'Present' : '')}
+                                                />
+                                                <Label htmlFor={`current-job-${index}`} className="text-xs text-muted-foreground cursor-pointer">Current</Label>
+                                            </div>
+                                        </div>
+                                        {job.end_date !== 'Present' && (
+                                            <Input type="month" value={job.end_date} onChange={e => updateWork(index, 'end_date', e.target.value)} />
+                                        )}
+                                        {job.end_date === 'Present' && (
+                                            <p className="text-sm text-muted-foreground italic py-2">Currently working here</p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -384,12 +424,12 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                             <CardContent className="pt-4 grid gap-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Institution</Label>
-                                        <Input value={edu.institution} onChange={e => updateEducation(index, 'institution', e.target.value)} />
+                                        <Label>Institution <span className="text-destructive">*</span></Label>
+                                        <Input value={edu.institution} onChange={e => updateEducation(index, 'institution', e.target.value)} required />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Degree</Label>
-                                        <Input value={edu.degree} onChange={e => updateEducation(index, 'degree', e.target.value)} />
+                                        <Label>Degree <span className="text-destructive">*</span></Label>
+                                        <Input value={edu.degree} onChange={e => updateEducation(index, 'degree', e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -398,8 +438,23 @@ export default function CandidateForm({ candidate, onSuccess, onCancel }: Candid
                                         <Input value={edu.field} onChange={e => updateEducation(index, 'field', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>End Date</Label>
-                                        <Input type="month" value={edu.end_date} onChange={e => updateEducation(index, 'end_date', e.target.value)} />
+                                        <div className="flex items-center justify-between">
+                                            <Label>Graduation Date</Label>
+                                            <div className="flex items-center gap-2">
+                                                <Switch
+                                                    id={`current-edu-${index}`}
+                                                    checked={edu.end_date === 'Present'}
+                                                    onCheckedChange={(checked) => updateEducation(index, 'end_date', checked ? 'Present' : '')}
+                                                />
+                                                <Label htmlFor={`current-edu-${index}`} className="text-xs text-muted-foreground cursor-pointer">Enrolled</Label>
+                                            </div>
+                                        </div>
+                                        {edu.end_date !== 'Present' && (
+                                            <Input type="month" value={edu.end_date} onChange={e => updateEducation(index, 'end_date', e.target.value)} required />
+                                        )}
+                                        {edu.end_date === 'Present' && (
+                                            <p className="text-sm text-muted-foreground italic py-2">Currently enrolled</p>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
