@@ -6,6 +6,7 @@ use App\Models\Interview;
 use App\Models\ScheduledInterview;
 use App\Models\InterviewSession;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PublicInterviewController extends Controller
@@ -24,6 +25,9 @@ class PublicInterviewController extends Controller
             abort(404, 'Interview not found or no longer available.');
         }
 
+        // Check if current user is the interview owner (self-preview)
+        $isSelfPreview = Auth::check() && Auth::id() === $interview->user_id;
+
         return Inertia::render('PublicInterview', [
             'interview' => [
                 'id' => $interview->id,
@@ -35,6 +39,7 @@ class PublicInterviewController extends Controller
             ],
             'token' => $token,
             'type' => 'interview',
+            'isSelfPreview' => $isSelfPreview,
         ]);
     }
 
@@ -111,6 +116,9 @@ class PublicInterviewController extends Controller
             $scheduleId = $schedule->id;
         }
 
+        // Check if current user is the interview owner (self-preview)
+        $isSelfPreview = Auth::check() && Auth::id() === $interview->user_id;
+
         // Create a new session
         $session = $interview->sessions()->create([
             'candidate_id' => $candidateId,
@@ -119,7 +127,8 @@ class PublicInterviewController extends Controller
             'metadata' => [
                 'job_title' => $interview->job_title,
                 'company_name' => $interview->company_name,
-                'source' => 'public_link',
+                'source' => $isSelfPreview ? 'self_preview' : 'public_link',
+                'is_self_preview' => $isSelfPreview,
                 'public_token' => $token,
                 'started_at' => now()->toIso8601String(),
             ],

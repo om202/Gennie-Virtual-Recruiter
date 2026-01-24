@@ -4,7 +4,7 @@ import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
-import { Globe, Phone, Briefcase, Clock, User, Loader2 } from 'lucide-react'
+import { Globe, Phone, Briefcase, Clock, User, Loader2, Eye, ArrowLeft, Pencil, Copy, Check } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -39,9 +39,10 @@ interface Props {
     token: string
     type: 'interview' | 'scheduled'
     error?: string
+    isSelfPreview?: boolean
 }
 
-export default function PublicInterview({ interview, candidate, token, error }: Props) {
+export default function PublicInterview({ interview, candidate, token, error, isSelfPreview }: Props) {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [isCreatingSession, setIsCreatingSession] = useState(false)
     const [isCalling, setIsCalling] = useState(false)
@@ -49,6 +50,13 @@ export default function PublicInterview({ interview, candidate, token, error }: 
     const [phoneNumber, setPhoneNumber] = useState('')
     const [hasEnded, setHasEnded] = useState(false)
     const [interviewData, setInterviewData] = useState<{ job_description?: string } | null>(null)
+    const [urlCopied, setUrlCopied] = useState(false)
+
+    const handleCopyUrl = async () => {
+        await navigator.clipboard.writeText(window.location.href)
+        setUrlCopied(true)
+        setTimeout(() => setUrlCopied(false), 2000)
+    }
 
     // Error state
     if (error || !interview) {
@@ -177,6 +185,59 @@ export default function PublicInterview({ interview, candidate, token, error }: 
             </Head>
 
             <div className="bg-muted/50 text-foreground min-h-screen flex flex-col p-4">
+                {/* Self Preview Banner */}
+                {isSelfPreview && (
+                    <div className="w-full max-w-6xl mx-auto mb-6">
+                        <div className="bg-card border rounded-xl p-5 shadow-sm">
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                                        <Eye className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-amber-700 dark:text-amber-300">Preview Mode</h3>
+                                        <p className="text-sm text-muted-foreground">You're seeing exactly what candidates will experience</p>
+                                    </div>
+                                </div>
+                                <a href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 shrink-0">
+                                    <ArrowLeft className="h-3 w-3" />
+                                    Dashboard
+                                </a>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCopyUrl}
+                                    className="gap-2"
+                                >
+                                    {urlCopied ? (
+                                        <><Check className="h-4 w-4 text-green-600" /> Copied!</>
+                                    ) : (
+                                        <><Copy className="h-4 w-4" /> Copy URL</>
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    asChild
+                                    className="gap-2"
+                                >
+                                    <a href={`/interviews/${interview.id}/edit`}>
+                                        <Pencil className="h-4 w-4" />
+                                        Edit Interview
+                                    </a>
+                                </Button>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md text-sm text-muted-foreground">
+                                    <User className="h-4 w-4" />
+                                    Session marked as "Self"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="w-full max-w-6xl mx-auto mb-6">
                     <div className="text-center space-y-4">

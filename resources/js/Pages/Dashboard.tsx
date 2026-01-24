@@ -3,8 +3,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GennieInterface } from '@/components/GennieInterface'
-import { Plus, Play, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Link2, Check } from 'lucide-react'
+import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Copy, Check, Eye } from 'lucide-react'
 
 import {
     AlertDialog,
@@ -68,9 +67,8 @@ interface DashboardProps {
     candidates: Candidate[]
 }
 
-export default function Dashboard({ auth, interviews: initialInterviews }: DashboardProps) {
+export default function Dashboard({ interviews: initialInterviews }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
-    const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
     const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
@@ -125,13 +123,18 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
         }
     }
 
-    const handleStartInterview = (interview: Interview) => {
-        // Navigate to start interview session
-        router.visit(`/interviews/${interview.id}/start`)
-    }
+    const handleStartInterview = async (interview: Interview) => {
+        try {
+            // Ensure public link is enabled and get the URL
+            const res = await window.axios.post(`/interviews/${interview.id}/enable-public-link`)
+            const publicUrl = res.data.url
 
-    const handleCloseInterview = () => {
-        setActiveSessionId(null)
+            // Navigate to the public interview page (will detect self-preview)
+            window.location.href = publicUrl
+        } catch (error) {
+            console.error("Failed to start preview:", error)
+            alert('Failed to start preview. Please try again.')
+        }
     }
 
     const getTypeColor = (type: string) => {
@@ -171,12 +174,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                 </div>
 
                 {/* Main Content */}
-                {activeSessionId ? (
-                    <GennieInterface
-                        sessionId={activeSessionId}
-                        onClose={handleCloseInterview}
-                    />
-                ) : (<>
+                <>
                     {/* Actions Bar - Only show when there are interviews */}
                     {interviews.length > 0 && (
                         <div className="flex justify-end items-center gap-2">
@@ -226,7 +224,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                     {copiedLinkId === interview.id ? (
                                                         <Check className="h-4 w-4 text-green-600" />
                                                     ) : (
-                                                        <Link2 className="h-4 w-4" />
+                                                        <Copy className="h-4 w-4" />
                                                     )}
                                                 </Button>
                                                 <Link href={`/interviews/${interview.id}/edit`}>
@@ -293,8 +291,8 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                 onClick={() => handleStartInterview(interview)}
                                                 disabled={interview.status === 'archived' || !interview.job_description_id}
                                             >
-                                                <Play className="h-4 w-4 mr-2" />
-                                                Start Interview
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                Preview
                                             </Button>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <Button
@@ -319,7 +317,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                             ))}
                         </div>
                     )}
-                </>)}
+                </>
             </div>
 
             {/* Delete Confirmation Alert */}

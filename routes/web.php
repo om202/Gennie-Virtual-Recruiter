@@ -52,7 +52,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interviews/{interview}/edit', [InterviewController::class, 'edit'])->name('interviews.edit');
     Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
     Route::delete('/interviews/{interview}', [InterviewController::class, 'destroy'])->name('interviews.destroy');
-    Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
     Route::get('/interviews/{interview}/logs', [InterviewController::class, 'logs'])->name('interviews.logs');
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
     Route::post('/interviews/{interview}/enable-public-link', [InterviewController::class, 'enablePublicLink'])->name('interviews.enable-public-link');

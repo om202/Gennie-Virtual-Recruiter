@@ -197,32 +197,6 @@ class InterviewController extends Controller
     }
 
     /**
-     * Start a new session for an interview.
-     */
-    public function startSession(Interview $interview)
-    {
-        $this->authorize('view', $interview);
-
-        // Create a new session linked to this interview
-        $session = $interview->sessions()->create([
-            'status' => 'active',
-            'metadata' => [
-                'job_title' => $interview->job_title,
-                'company_name' => $interview->company_name,
-                'started_at' => now()->toIso8601String(),
-            ],
-        ]);
-
-        // Update interview tracking
-        $interview->recordSession();
-
-        return Inertia::render('Gennie', [
-            'sessionId' => $session->id,
-            'interview' => $interview,
-        ]);
-    }
-
-    /**
      * Display all logs across all interviews for the user
      */
     public function allLogs()
