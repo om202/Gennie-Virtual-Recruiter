@@ -23,6 +23,7 @@ interface Interview {
     duration_minutes: number
     interview_type: string
     difficulty_level: string
+    candidate_instructions?: string | null
 }
 
 interface Candidate {
@@ -315,7 +316,19 @@ export default function PublicInterview({ interview, candidate, token, error, is
                                 </Button>
                             </div>
 
-                            {/* Instructions */}
+                            {/* Candidate Instructions (from recruiter) */}
+                            {interview.candidate_instructions && (
+                                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-left space-y-2">
+                                    <h3 className="font-semibold text-sm text-primary uppercase tracking-wide">
+                                        Interview Instructions
+                                    </h3>
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">
+                                        {interview.candidate_instructions}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Default Instructions */}
                             <div className="bg-card border rounded-lg p-4 text-left space-y-2">
                                 <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                                     Before You Begin

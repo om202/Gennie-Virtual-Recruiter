@@ -17,6 +17,7 @@ class Interview extends Model
         'job_description_id',
         'job_title',
         'job_description',
+        'candidate_instructions',
         'candidate_resume',
         'company_name',
         'duration_minutes',

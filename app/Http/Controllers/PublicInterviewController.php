@@ -36,6 +36,7 @@ class PublicInterviewController extends Controller
                 'duration_minutes' => $interview->duration_minutes,
                 'interview_type' => $interview->interview_type,
                 'difficulty_level' => $interview->difficulty_level,
+                'candidate_instructions' => $interview->candidate_instructions,
             ],
             'token' => $token,
             'type' => 'interview',
