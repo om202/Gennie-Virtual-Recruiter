@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MarkdownViewer, DEFAULT_CANDIDATE_INSTRUCTIONS } from "@/components/MarkdownEditor"
 
 interface Interview {
     id: string
@@ -280,65 +281,48 @@ export default function PublicInterview({ interview, candidate, token, error, is
                             </p>
                         </div>
                     ) : !isConnected ? (
-                        /* Ready to Start */
-                        <div className="max-w-md w-full text-center space-y-8">
-                            <VoiceVisualizer speakingState={speakingState} />
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-3">
-                                <Button
-                                    onClick={handleStartInterview}
-                                    size="lg"
-                                    className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                                            Starting...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Globe className="h-5 w-5 mr-2" />
-                                            Start Interview
-                                        </>
-                                    )}
-                                </Button>
-                                <Button
-                                    onClick={() => setIsPhoneDialogOpen(true)}
-                                    variant="outline"
-                                    size="lg"
-                                    disabled={isCalling || isLoading}
-                                    className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
-                                >
-                                    <Phone className="h-5 w-5 mr-2" />
-                                    {isCalling ? 'Calling...' : 'Call Me'}
-                                </Button>
+                        /* Ready to Start - Two Column Layout */
+                        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                            {/* Left Column: Instructions */}
+                            <div className="bg-card border rounded-xl p-6 text-left order-2 lg:order-1">
+                                <MarkdownViewer content={interview.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS} />
                             </div>
 
-                            {/* Candidate Instructions (from recruiter) */}
-                            {interview.candidate_instructions && (
-                                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-left space-y-2">
-                                    <h3 className="font-semibold text-sm text-primary uppercase tracking-wide">
-                                        Interview Instructions
-                                    </h3>
-                                    <p className="text-sm text-foreground whitespace-pre-wrap">
-                                        {interview.candidate_instructions}
-                                    </p>
-                                </div>
-                            )}
+                            {/* Right Column: Start Controls */}
+                            <div className="flex flex-col items-center space-y-8 order-1 lg:order-2">
+                                <VoiceVisualizer speakingState={speakingState} />
 
-                            {/* Default Instructions */}
-                            <div className="bg-card border rounded-lg p-4 text-left space-y-2">
-                                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                                    Before You Begin
-                                </h3>
-                                <ul className="text-sm space-y-1 text-muted-foreground">
-                                    <li>• Find a quiet place with good internet connection</li>
-                                    <li>• Allow microphone access when prompted</li>
-                                    <li>• Speak naturally and clearly</li>
-                                    <li>• The interview will take approximately {interview.duration_minutes} minutes</li>
-                                </ul>
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 w-full max-w-sm">
+                                    <Button
+                                        onClick={handleStartInterview}
+                                        size="lg"
+                                        className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                                Starting...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Globe className="h-5 w-5 mr-2" />
+                                                Start Interview
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={() => setIsPhoneDialogOpen(true)}
+                                        variant="outline"
+                                        size="lg"
+                                        disabled={isCalling || isLoading}
+                                        className="flex-1 hover:scale-[1.02] active:scale-[0.98]"
+                                    >
+                                        <Phone className="h-5 w-5 mr-2" />
+                                        {isCalling ? 'Calling...' : 'Call Me'}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ) : (

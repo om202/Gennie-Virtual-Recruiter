@@ -22,6 +22,7 @@ import {
     type AuraVoice
 } from '@/shared/interviewConfig'
 import { Link } from '@inertiajs/react'
+import { MarkdownEditor, DEFAULT_CANDIDATE_INSTRUCTIONS } from '@/components/MarkdownEditor'
 
 interface JobDescription {
     id: string
@@ -113,7 +114,7 @@ export function InterviewForm({
         interview_type: initialData?.interview_type || 'screening' as InterviewTemplateType,
         difficulty_level: initialData?.difficulty_level || 'mid' as 'entry' | 'mid' | 'senior' | 'executive',
         custom_instructions: initialData?.custom_instructions || '',
-        candidate_instructions: initialData?.candidate_instructions || '',
+        candidate_instructions: initialData?.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS,
         stt_model: initialData?.metadata?.stt_model || 'flux-general-en' as SttModel,
         voice_id: initialData?.metadata?.voice_id || 'aura-asteria-en' as AuraVoice,
         endpointing: initialData?.metadata?.endpointing || 300,
@@ -151,7 +152,7 @@ export function InterviewForm({
                 interview_type: initialData.interview_type || 'screening',
                 difficulty_level: initialData.difficulty_level || 'mid',
                 custom_instructions: initialData.custom_instructions || '',
-                candidate_instructions: initialData.candidate_instructions || '',
+                candidate_instructions: initialData.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS,
                 stt_model: sttModel,
                 voice_id: initialData.voice_id || 'aura-asteria-en',
                 endpointing: sttConfig.endpointing || 300,
@@ -170,7 +171,7 @@ export function InterviewForm({
                 interview_type: 'screening',
                 difficulty_level: 'mid',
                 custom_instructions: '',
-                candidate_instructions: '',
+                candidate_instructions: DEFAULT_CANDIDATE_INSTRUCTIONS,
                 stt_model: 'flux-general-en',
                 voice_id: 'aura-asteria-en',
                 endpointing: 300,
@@ -465,22 +466,17 @@ export function InterviewForm({
                     <div className="flex items-center justify-between">
                         <div>
                             <CardTitle>Candidate Instructions</CardTitle>
-                            <CardDescription>Information displayed to candidates before they start</CardDescription>
+                            <CardDescription>Information displayed to candidates before they start (Markdown supported)</CardDescription>
                         </div>
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold bg-muted px-2 py-1 rounded">Optional</span>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Textarea
-                        id="candidate_instructions"
-                        placeholder="e.g., Please have your resume ready. This interview will cover technical skills and past experience. Feel free to ask clarifying questions..."
-                        className="min-h-[120px]"
+                    <MarkdownEditor
                         value={formData.candidate_instructions}
-                        onChange={(e) => setFormData({ ...formData, candidate_instructions: e.target.value })}
+                        onChange={(value) => setFormData({ ...formData, candidate_instructions: value })}
+                        placeholder="Instructions for candidates..."
+                        minHeight="200px"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
-                        This will be shown to candidates on the interview page before they begin.
-                    </p>
                 </CardContent>
             </Card>
 
