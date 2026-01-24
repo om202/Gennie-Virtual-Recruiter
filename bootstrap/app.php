@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
+        // Exclude public interview endpoints from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'public/start/*',
+        ]);
+
         // Redirect authenticated users away from guest-only routes (e.g., /login)
         $middleware->redirectUsersTo('/dashboard');
     })

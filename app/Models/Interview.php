@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Interview extends Model
 {
@@ -30,6 +31,8 @@ class Interview extends Model
         'last_session_at',
         'metadata',
         'required_questions',
+        'public_token',
+        'public_link_enabled',
     ];
 
     protected $casts = [
@@ -38,6 +41,7 @@ class Interview extends Model
         'last_session_at' => 'datetime',
         'duration_minutes' => 'integer',
         'total_sessions' => 'integer',
+        'public_link_enabled' => 'boolean',
     ];
 
     /**
@@ -178,4 +182,54 @@ class Interview extends Model
     {
         return $query->whereNotNull('job_description');
     }
+
+    /**
+     * Generate a public token for this interview.
+     */
+    public function generatePublicToken(): string
+    {
+        if (!$this->public_token) {
+            $this->public_token = Str::random(32);
+            $this->save();
+        }
+        return $this->public_token;
+    }
+
+    /**
+     * Get the public URL for this interview.
+     */
+    public function getPublicUrl(): ?string
+    {
+        if (!$this->public_token) {
+            return null;
+        }
+        return url("/i/{$this->public_token}");
+    }
+
+    /**
+     * Enable public link access for this interview.
+     */
+    public function enablePublicLink(): string
+    {
+        $token = $this->generatePublicToken();
+        $this->update(['public_link_enabled' => true]);
+        return $this->getPublicUrl();
+    }
+
+    /**
+     * Disable public link access for this interview.
+     */
+    public function disablePublicLink(): void
+    {
+        $this->update(['public_link_enabled' => false]);
+    }
+
+    /**
+     * Check if public link is accessible.
+     */
+    public function isPubliclyAccessible(): bool
+    {
+        return $this->public_link_enabled && !empty($this->public_token) && $this->status === 'active';
+    }
 }
+

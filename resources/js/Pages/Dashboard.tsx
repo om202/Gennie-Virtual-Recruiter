@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-import { Plus, Play, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2 } from 'lucide-react'
+import { Plus, Play, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Link2, Check } from 'lucide-react'
 
 import {
     AlertDialog,
@@ -50,6 +50,8 @@ interface Interview {
     created_at: string
     updated_at: string
     job_description_relation?: JobDescription
+    public_token?: string | null
+    public_link_enabled?: boolean
 }
 
 interface DashboardProps {
@@ -71,6 +73,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
+    const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
     const handleOpenSchedule = (interviewId?: string) => {
         if (interviewId) {
             router.visit(`/schedules/create?interview_id=${interviewId}`)
@@ -94,6 +97,31 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
             setInterviewToDelete(null)
         } catch (error) {
             console.error("Failed to delete interview:", error)
+        }
+    }
+
+    const handleCopyLink = async (interview: Interview) => {
+        try {
+            // Call API to enable public link and get URL
+            const res = await window.axios.post(`/interviews/${interview.id}/enable-public-link`)
+            const publicUrl = res.data.url
+
+            // Copy to clipboard
+            await navigator.clipboard.writeText(publicUrl)
+
+            // Show feedback
+            setCopiedLinkId(interview.id)
+            setTimeout(() => setCopiedLinkId(null), 2000)
+
+            // Update local state
+            setInterviews(interviews.map(i =>
+                i.id === interview.id
+                    ? { ...i, public_token: res.data.token, public_link_enabled: true }
+                    : i
+            ))
+        } catch (error) {
+            console.error("Failed to copy link:", error)
+            alert('Failed to generate public link. Please try again.')
         }
     }
 
@@ -187,6 +215,20 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                 <CardDescription>{interview.company_name}</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    onClick={() => handleCopyLink(interview)}
+                                                    title="Copy Public Link"
+                                                    disabled={!interview.job_description_id}
+                                                >
+                                                    {copiedLinkId === interview.id ? (
+                                                        <Check className="h-4 w-4 text-green-600" />
+                                                    ) : (
+                                                        <Link2 className="h-4 w-4" />
+                                                    )}
+                                                </Button>
                                                 <Link href={`/interviews/${interview.id}/edit`}>
                                                     <Button
                                                         variant="ghost"

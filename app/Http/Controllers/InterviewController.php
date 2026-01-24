@@ -285,4 +285,21 @@ class InterviewController extends Controller
             'sessions' => $sessions,
         ]);
     }
+
+    /**
+     * Enable public link for an interview.
+     */
+    public function enablePublicLink(Interview $interview)
+    {
+        $this->authorize('update', $interview);
+
+        $url = $interview->enablePublicLink();
+
+        return response()->json([
+            'success' => true,
+            'url' => $url,
+            'token' => $interview->public_token,
+        ]);
+    }
 }
+

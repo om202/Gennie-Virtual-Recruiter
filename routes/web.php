@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\JobDescriptionController;
+use App\Http\Controllers\PublicInterviewController;
 use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
@@ -15,6 +16,11 @@ Route::get('/', [VoiceClientController::class, 'landing']);
 // Public Try Gennie Demo (no login required)
 Route::get('/try-gennie', fn() => Inertia::render('TryGennie'))->name('try-gennie');
 Route::get('/try-gennie/{session}', fn($session) => Inertia::render('TryGennieResult', ['sessionId' => $session]))->name('try-gennie.result');
+
+// Public Interview Access (Magic Links - no login required)
+Route::get('/i/{token}', [PublicInterviewController::class, 'showInterview'])->name('public.interview');
+Route::get('/s/{token}', [PublicInterviewController::class, 'showScheduledInterview'])->name('public.scheduled');
+Route::post('/public/start/{token}', [PublicInterviewController::class, 'startSession'])->name('public.start');
 
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
@@ -49,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
     Route::get('/interviews/{interview}/logs', [InterviewController::class, 'logs'])->name('interviews.logs');
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
+    Route::post('/interviews/{interview}/enable-public-link', [InterviewController::class, 'enablePublicLink'])->name('interviews.enable-public-link');
 
     // Job Description Management
     Route::get('/job-descriptions', [JobDescriptionController::class, 'index'])->name('job-descriptions.index');
