@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import DashboardNavigation from '@/components/DashboardNavigation'
-import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History } from 'lucide-react'
+import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History, AlertCircle } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,8 +23,17 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+interface JobDescription {
+    id: string
+    title: string
+    company_name: string
+    location: string | null
+    remote_type: 'onsite' | 'hybrid' | 'remote'
+}
+
 interface Interview {
     id: string
+    job_description_id: string | null
     job_title: string
     company_name: string
     job_description: string | null
@@ -36,6 +45,7 @@ interface Interview {
     last_session_at: string | null
     created_at: string
     updated_at: string
+    job_description_relation?: JobDescription
 }
 
 interface DashboardProps {
@@ -219,6 +229,17 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                             </div>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
+                                            {/* Legacy Interview Warning */}
+                                            {!interview.job_description_id && (
+                                                <div className="flex items-center gap-2 text-sm bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200 px-3 py-2 rounded-md">
+                                                    <AlertCircle className="h-4 w-4 shrink-0" />
+                                                    <span>No JD linked</span>
+                                                    <Link href={`/interviews/${interview.id}/edit`} className="ml-auto text-xs underline underline-offset-2 hover:no-underline">
+                                                        Link Now
+                                                    </Link>
+                                                </div>
+                                            )}
+
                                             {/* Tags */}
                                             <div className="flex flex-wrap gap-2">
                                                 <Badge variant="outline" className={getTypeColor(interview.interview_type)}>
@@ -246,7 +267,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                             <Button
                                                 className="w-full"
                                                 onClick={() => handleStartInterview(interview)}
-                                                disabled={interview.status === 'archived'}
+                                                disabled={interview.status === 'archived' || !interview.job_description_id}
                                             >
                                                 <Play className="h-4 w-4 mr-2" />
                                                 Start Interview

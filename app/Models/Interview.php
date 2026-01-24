@@ -13,6 +13,7 @@ class Interview extends Model
 
     protected $fillable = [
         'user_id',
+        'job_description_id',
         'job_title',
         'job_description',
         'candidate_resume',
@@ -48,6 +49,14 @@ class Interview extends Model
     }
 
     /**
+     * Get the job description for this interview.
+     */
+    public function jobDescription(): BelongsTo
+    {
+        return $this->belongsTo(JobDescription::class);
+    }
+
+    /**
      * Get all sessions for this interview.
      */
     public function sessions(): HasMany
@@ -56,10 +65,22 @@ class Interview extends Model
     }
 
     /**
-     * Check if the interview has a job description.
+     * Check if the interview has a linked job description.
+     */
+    public function hasLinkedJobDescription(): bool
+    {
+        return !empty($this->job_description_id);
+    }
+
+    /**
+     * Check if the interview has a job description (legacy or linked).
      */
     public function hasJobDescription(): bool
     {
+        // Check linked JD first, then fall back to legacy embedded JD
+        if ($this->hasLinkedJobDescription() && $this->jobDescription) {
+            return !empty($this->jobDescription->description);
+        }
         return !empty($this->job_description);
     }
 
@@ -78,7 +99,19 @@ class Interview extends Model
     {
         $context = '';
 
-        if ($this->hasJobDescription()) {
+        // Use linked JD if available, otherwise use legacy embedded JD
+        if ($this->hasLinkedJobDescription() && $this->jobDescription) {
+            $jd = $this->jobDescription;
+            $context .= "**Job Description:**\n";
+            $context .= "Title: {$jd->title}\n";
+            $context .= "Company: {$jd->company_name}\n";
+            if ($jd->location) {
+                $context .= "Location: {$jd->location} ({$jd->remote_type})\n";
+            }
+            if ($jd->description) {
+                $context .= "\n{$jd->description}\n\n";
+            }
+        } elseif (!empty($this->job_description)) {
             $context .= "**Job Description:**\n{$this->job_description}\n\n";
         }
 

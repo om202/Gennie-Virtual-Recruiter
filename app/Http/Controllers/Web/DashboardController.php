@@ -22,6 +22,7 @@ class DashboardController extends Controller
                 'user' => $user,
             ],
             'interviews' => $user->interviews()
+                ->with('jobDescription:id,title,company_name,location,remote_type')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
         ]);

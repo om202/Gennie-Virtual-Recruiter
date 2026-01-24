@@ -37,10 +37,7 @@ class InterviewController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'job_title' => 'required|string|max:255',
-            'job_description' => 'nullable|string|max:100000',
-            'candidate_resume' => 'nullable|string|max:100000',
-            'company_name' => 'nullable|string|max:255',
+            'job_description_id' => 'required|uuid|exists:job_descriptions,id',
             'duration_minutes' => 'nullable|integer|in:15,30,45,60',
             'interview_type' => 'nullable|in:screening,technical,behavioral,final',
             'difficulty_level' => 'nullable|in:entry,mid,senior,executive',
@@ -54,13 +51,19 @@ class InterviewController extends Controller
             'required_questions' => 'nullable|array',
         ]);
 
-        // Default company name to user's company
-        if (empty($validated['company_name'])) {
-            $validated['company_name'] = Auth::user()->company_name ?? 'Company';
+        // Load the job description for denormalized fields
+        $jobDescription = \App\Models\JobDescription::findOrFail($validated['job_description_id']);
+
+        // Verify ownership
+        if ($jobDescription->user_id !== Auth::id()) {
+            abort(403, 'You do not own this job description.');
         }
 
-        // Set status based on whether JD is provided
-        $validated['status'] = !empty($validated['job_description']) ? 'active' : 'draft';
+        // Set derived fields from JD
+        $validated['job_title'] = $jobDescription->title;
+        $validated['company_name'] = $jobDescription->company_name;
+        $validated['job_description'] = $jobDescription->description;
+        $validated['status'] = 'active';
 
         // Prepare STT Config
         $sttConfig = [
@@ -82,7 +85,7 @@ class InterviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'interview' => $interview,
+            'interview' => $interview->load('jobDescription'),
         ]);
     }
 
@@ -119,6 +122,7 @@ class InterviewController extends Controller
         $this->authorize('update', $interview);
 
         $validated = $request->validate([
+            'job_description_id' => 'nullable|uuid|exists:job_descriptions,id',
             'job_title' => 'sometimes|string|max:255',
             'job_description' => 'nullable|string|max:100000',
             'candidate_resume' => 'nullable|string|max:100000',
@@ -136,6 +140,17 @@ class InterviewController extends Controller
             'keywords' => 'nullable|array',
             'required_questions' => 'nullable|array',
         ]);
+
+        // If linking a new JD, update denormalized fields
+        if (isset($validated['job_description_id'])) {
+            $jobDescription = \App\Models\JobDescription::findOrFail($validated['job_description_id']);
+            if ($jobDescription->user_id !== Auth::id()) {
+                abort(403, 'You do not own this job description.');
+            }
+            $validated['job_title'] = $jobDescription->title;
+            $validated['company_name'] = $jobDescription->company_name;
+            $validated['job_description'] = $jobDescription->description;
+        }
 
         // Handle metadata updates
         $metadata = $interview->metadata ?? [];

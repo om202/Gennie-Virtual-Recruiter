@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\JobDescriptionController;
 use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
@@ -48,6 +49,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interviews/{interview}/start', [InterviewController::class, 'startSession'])->name('interviews.start');
     Route::get('/interviews/{interview}/logs', [InterviewController::class, 'logs'])->name('interviews.logs');
     Route::get('/interviews/{interview}/sessions', [InterviewController::class, 'getSessions'])->name('interviews.sessions');
+
+    // Job Description Management
+    Route::get('/job-descriptions', [JobDescriptionController::class, 'index'])->name('job-descriptions.index');
+    Route::get('/job-descriptions/create', [JobDescriptionController::class, 'create'])->name('job-descriptions.create');
+    Route::post('/job-descriptions', [JobDescriptionController::class, 'store'])->name('job-descriptions.store');
+    Route::get('/job-descriptions/list', [JobDescriptionController::class, 'list'])->name('job-descriptions.list');
+    Route::get('/job-descriptions/{jobDescription}/edit', [JobDescriptionController::class, 'edit'])->name('job-descriptions.edit');
+    Route::put('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'update'])->name('job-descriptions.update');
+    Route::delete('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'destroy'])->name('job-descriptions.destroy');
+
     // Candidate Management
     Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');
     Route::get('/candidates/{candidate}/resume', [CandidateController::class, 'downloadResume'])->name('candidates.download');
