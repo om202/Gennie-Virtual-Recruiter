@@ -3,13 +3,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Briefcase, MapPin, Building2, Users, MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2 } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -178,29 +172,15 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                                     {job.company_name}
                                                 </CardDescription>
                                             </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                                                        <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <Link href={`/job-descriptions/${job.id}/edit`}>
-                                                        <DropdownMenuItem>
-                                                            <Pencil className="h-4 w-4 mr-2" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                    </Link>
-                                                    <DropdownMenuItem
-                                                        className="text-destructive focus:text-destructive"
-                                                        onClick={() => confirmDelete(job)}
-                                                        disabled={job.interviews_count > 0}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 mr-2" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                                                onClick={() => confirmDelete(job)}
+                                                disabled={job.interviews_count > 0}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
@@ -232,6 +212,14 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                             <Users className="h-3 w-3" />
                                             <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''} using this JD</span>
                                         </div>
+
+                                        {/* Edit Button */}
+                                        <Link href={`/job-descriptions/${job.id}/edit`} className="block">
+                                            <Button variant="outline" size="sm" className="w-full">
+                                                <Pencil className="h-4 w-4 mr-2" />
+                                                Edit
+                                            </Button>
+                                        </Link>
                                     </CardContent>
                                 </Card>
                             ))}

@@ -225,7 +225,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">
+                        <h1 className="text-3xl font-bold tracking-tight">
                             {isFiltered ? 'Interview Logs' : 'All Interview Logs'}
                         </h1>
                         <p className="text-muted-foreground">
@@ -268,7 +268,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                                     )}
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium truncate">{int.job_title}</div>
+                                                        <div className="text-sm font-bold truncate">{int.job_title}</div>
                                                         <div className="text-xs text-muted-foreground">{int.sessions.length} sessions</div>
                                                     </div>
                                                 </div>
@@ -284,14 +284,14 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                 key={session.id}
                                                                 onClick={() => setSelectedSessionId(session.id)}
                                                                 className={cn(
-                                                                    "rounded-lg p-3 cursor-pointer transition-colors",
+                                                                    "rounded-lg p-3 cursor-pointer transition-all border",
                                                                     isSelected
-                                                                        ? "bg-accent"
-                                                                        : "hover:bg-accent/50"
+                                                                        ? "border-border"
+                                                                        : "border-transparent hover:bg-accent/50"
                                                                 )}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                                                    <time className="text-sm text-foreground">
+                                                                    <time className={cn("text-sm", isSelected ? "text-primary" : "text-muted-foreground")}>
                                                                         {sessionDate.toLocaleDateString([], {
                                                                             month: 'short',
                                                                             day: 'numeric'
@@ -314,8 +314,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
                                                                 {session.progress_state?.completed_questions && (
                                                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                                        <CheckCircle className="h-3.5 w-3.5 text-green-600" />
-                                                                        <span>
+                                                                        <CheckCircle className={cn("h-3.5 w-3.5", isSelected ? "text-primary" : "text-muted-foreground")} />
+                                                                        <span className={cn(isSelected ? "text-primary" : "text-muted-foreground")}>
                                                                             {session.progress_state.completed_questions.length} questions answered
                                                                         </span>
                                                                     </div>
@@ -513,12 +513,11 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                         {/* Messages Card */}
                                         <Card>
-                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardHeader className="pb-2">
                                                 <CardTitle className="text-sm font-medium">Messages</CardTitle>
-                                                <MessageSquare className="h-4 w-4 text-muted-foreground" />
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold">{totalMessages}</div>
+                                                <div className="text-2xl font-bold text-muted-foreground">{totalMessages}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     Total exchanges
                                                 </p>
@@ -527,12 +526,11 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
                                         {/* Candidate Words Card */}
                                         <Card>
-                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardHeader className="pb-2">
                                                 <CardTitle className="text-sm font-medium">Candidate Words</CardTitle>
-                                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold text-primary">{candidateWords}</div>
+                                                <div className="text-2xl font-bold text-muted-foreground">{candidateWords}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     {candidatePercentage}% of conversation
                                                 </p>
@@ -541,12 +539,11 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
 
                                         {/* Gennie Words Card */}
                                         <Card>
-                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardHeader className="pb-2">
                                                 <CardTitle className="text-sm font-medium">Gennie Words</CardTitle>
-                                                <MessageSquare className="h-4 w-4 text-muted-foreground" />
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold">{agentWords}</div>
+                                                <div className="text-2xl font-bold text-muted-foreground">{agentWords}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     {agentPercentage}% of conversation
                                                 </p>
@@ -556,12 +553,11 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                         {/* Duration Card */}
                                         {durationText && (
                                             <Card>
-                                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardHeader className="pb-2">
                                                     <CardTitle className="text-sm font-medium">Duration</CardTitle>
-                                                    <Clock className="h-4 w-4 text-muted-foreground" />
                                                 </CardHeader>
                                                 <CardContent>
-                                                    <div className="text-2xl font-bold">{durationText}</div>
+                                                    <div className="text-2xl font-bold text-muted-foreground">{durationText}</div>
                                                     <p className="text-xs text-muted-foreground mt-1">
                                                         Interview length
                                                     </p>
@@ -674,7 +670,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                         </Button>
                                     )}
                                 </CardHeader>
-                                <div className="p-6 bg-slate-50/50 min-h-[400px]">
+                                <div className="p-6 bg-primary/5 min-h-[400px] max-h-[600px] overflow-y-auto" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--primary) / 0.08) 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                                     {!selectedSessionId ? (
                                         <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground">
                                             <MessageSquare className="h-10 w-10 mb-2 opacity-20" />

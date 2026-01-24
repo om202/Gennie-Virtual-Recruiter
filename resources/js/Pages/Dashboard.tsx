@@ -4,13 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-import { Plus, Play, Clock, Briefcase, Calendar, MoreVertical, Pencil, Trash2, History, AlertCircle } from 'lucide-react'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Plus, Play, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2 } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -122,9 +116,9 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Interviews</h1>
                         <p className="text-muted-foreground">
-                            Welcome back, {auth.user.name}. Manage your interviews here.
+                            Create and manage your interview configurations.
                         </p>
                     </div>
                 </div>
@@ -139,8 +133,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                     <div className="space-y-6">
                         {/* Actions Bar - Only show when there are interviews */}
                         {interviews.length > 0 && (
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-xl font-semibold">Your Interviews</h2>
+                            <div className="flex justify-end items-center">
                                 <Link href="/interviews/create" className={buttonVariants()}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     Create Interview
@@ -175,36 +168,14 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                     </CardTitle>
                                                     <CardDescription>{interview.company_name}</CardDescription>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <Link href={`/interviews/${interview.id}/logs`}>
-                                                                <DropdownMenuItem>
-                                                                    <History className="h-4 w-4 mr-2" />
-                                                                    View Logs
-                                                                </DropdownMenuItem>
-                                                            </Link>
-                                                            <Link href={`/interviews/${interview.id}/edit`}>
-                                                                <DropdownMenuItem>
-                                                                    <Pencil className="h-4 w-4 mr-2" />
-                                                                    Edit
-                                                                </DropdownMenuItem>
-                                                            </Link>
-                                                            <DropdownMenuItem
-                                                                className="text-destructive focus:text-destructive"
-                                                                onClick={() => confirmDelete(interview)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => confirmDelete(interview)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
                                             </div>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
@@ -243,14 +214,30 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                             </div>
 
                                             {/* Actions */}
-                                            <Button
-                                                className="w-full"
-                                                onClick={() => handleStartInterview(interview)}
-                                                disabled={interview.status === 'archived' || !interview.job_description_id}
-                                            >
-                                                <Play className="h-4 w-4 mr-2" />
-                                                Start Interview
-                                            </Button>
+                                            <div className="space-y-2">
+                                                <Button
+                                                    className="w-full"
+                                                    onClick={() => handleStartInterview(interview)}
+                                                    disabled={interview.status === 'archived' || !interview.job_description_id}
+                                                >
+                                                    <Play className="h-4 w-4 mr-2" />
+                                                    Start Interview
+                                                </Button>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Link href={`/interviews/${interview.id}/logs`}>
+                                                        <Button variant="outline" size="sm" className="w-full">
+                                                            <History className="h-4 w-4 mr-2" />
+                                                            View Logs
+                                                        </Button>
+                                                    </Link>
+                                                    <Link href={`/interviews/${interview.id}/edit`}>
+                                                        <Button variant="outline" size="sm" className="w-full">
+                                                            <Pencil className="h-4 w-4 mr-2" />
+                                                            Edit
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}

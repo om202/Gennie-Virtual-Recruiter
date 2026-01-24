@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import ViewCandidateDialog from './Components/ViewCandidateDialog';
 
 interface WorkHistory {
@@ -79,16 +88,24 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         router.get('/candidates', { search }, { preserveState: true });
     };
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this candidate?')) {
-            router.delete(`/candidates/${id}`);
-        }
+    const confirmDelete = (candidate: Candidate) => {
+        setCandidateToDelete(candidate);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDelete = () => {
+        if (!candidateToDelete) return;
+        router.delete(`/candidates/${candidateToDelete.id}`);
+        setDeleteDialogOpen(false);
+        setCandidateToDelete(null);
     };
 
     const handleView = (candidate: Candidate) => {
@@ -173,90 +190,89 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Contact</TableHead>
-                                    <TableHead className="hidden md:table-cell">Location</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {candidates.data.map((candidate) => (
-                                    <TableRow key={candidate.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{candidate.name}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {candidates.data.map((candidate) => (
+                            <Card key={candidate.id} className="hover:shadow-md transition-shadow">
+                                <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1 flex-1 min-w-0">
+                                            <CardTitle className="text-lg leading-tight truncate">
+                                                {candidate.name}
+                                            </CardTitle>
                                             {getSubtitle(candidate) && (
-                                                <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs" title={getSubtitle(candidate) || undefined}>
+                                                <CardDescription className="line-clamp-2">
                                                     {getSubtitle(candidate)}
-                                                </div>
+                                                </CardDescription>
                                             )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col text-sm gap-1">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Mail className="h-3 w-3 text-muted-foreground" />
-                                                    {candidate.email}
-                                                </div>
-                                                {candidate.phone && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <PhoneIcon className="h-3 w-3 text-muted-foreground" />
-                                                        {candidate.phone}
-                                                    </div>
-                                                )}
-                                                {candidate.linkedin_url && (
-                                                    <a href={candidate.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-blue-600 hover:underline">
-                                                        <Linkedin className="h-3 w-3" />
-                                                        LinkedIn
-                                                    </a>
-                                                )}
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                                            onClick={() => confirmDelete(candidate)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Contact Information */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                            <span className="truncate">{candidate.email}</span>
+                                        </div>
+                                        {candidate.phone && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <PhoneIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                                <span>{candidate.phone}</span>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            {getLocation(candidate) && (
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {getLocation(candidate)}
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleView(candidate)}
-                                                >
-                                                    <Eye className="h-4 w-4 mr-2" />
-                                                    View
-                                                </Button>
-                                                <Link href={`/candidates/${candidate.id}/edit`}>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <Pencil className="h-4 w-4 mr-2" />
-                                                        Edit
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(candidate.id)}
-                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <Trash2 className="h-4 w-4 mr-2" />
-                                                    Delete
-                                                </Button>
+                                        )}
+                                        {getLocation(candidate) && (
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                                <span className="truncate">{getLocation(candidate)}</span>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Card>
+                                        )}
+                                        {candidate.linkedin_url && (
+                                            <a
+                                                href={candidate.linkedin_url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                            >
+                                                <Linkedin className="h-3.5 w-3.5 shrink-0" />
+                                                <span>LinkedIn Profile</span>
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full"
+                                            onClick={() => handleView(candidate)}
+                                        >
+                                            <Eye className="h-4 w-4 mr-2" />
+                                            View
+                                        </Button>
+                                        <Link href={`/candidates/${candidate.id}/edit`}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                            >
+                                                <Pencil className="h-4 w-4 mr-2" />
+                                                Edit
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 )}
 
                 {/* View Candidate Dialog */}
@@ -265,6 +281,28 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                     open={dialogOpen}
                     onOpenChange={setDialogOpen}
                 />
+
+                {/* Delete Confirmation Dialog */}
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete the candidate "{candidateToDelete?.name}".
+                                This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleDelete}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     );

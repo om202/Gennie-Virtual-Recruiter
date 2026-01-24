@@ -55,15 +55,18 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
         const errorResult = result as { error?: string; reason?: string } | null;
         const errorMessage = errorResult?.error || 'Analysis Generation Failed';
         const errorReason = errorResult?.reason;
+        const isInsufficientData = errorMessage.includes('Insufficient') || errorMessage.includes('insufficient');
 
         return (
             <Card>
                 <CardContent className="flex items-center justify-between py-6 px-6">
                     <div className="flex items-center gap-4">
-                        {/* Alert Icon */}
-                        <div className="flex items-center justify-center h-16 w-16">
-                            <AlertCircle className="h-10 w-10 text-orange-500" />
-                        </div>
+                        {/* Alert Icon - only show for non-insufficient data errors */}
+                        {!isInsufficientData && (
+                            <div className="flex items-center justify-center h-16 w-16">
+                                <AlertCircle className="h-10 w-10 text-orange-500" />
+                            </div>
+                        )}
 
                         {/* Error Message */}
                         <div className="space-y-2">
