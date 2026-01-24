@@ -54,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/job-descriptions', [JobDescriptionController::class, 'index'])->name('job-descriptions.index');
     Route::get('/job-descriptions/create', [JobDescriptionController::class, 'create'])->name('job-descriptions.create');
     Route::post('/job-descriptions', [JobDescriptionController::class, 'store'])->name('job-descriptions.store');
+    Route::post('/job-descriptions/parse', [JobDescriptionController::class, 'parseJobDescription'])->name('job-descriptions.parse');
     Route::get('/job-descriptions/list', [JobDescriptionController::class, 'list'])->name('job-descriptions.list');
     Route::get('/job-descriptions/{jobDescription}/edit', [JobDescriptionController::class, 'edit'])->name('job-descriptions.edit');
     Route::put('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'update'])->name('job-descriptions.update');

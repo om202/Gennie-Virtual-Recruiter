@@ -3,11 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobDescription;
+use App\Services\JobDescriptionParserService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class JobDescriptionController extends Controller
 {
+    public function __construct(
+        private JobDescriptionParserService $parser
+    ) {
+    }
+
+    /**
+     * Parse an uploaded JD file and extract structured data.
+     */
+    public function parseJobDescription(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $text = $this->parser->extractText($file);
+            $data = $this->parser->extractStructuredData($text);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+                'raw_text' => $text,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Display a listing of job descriptions.
      */

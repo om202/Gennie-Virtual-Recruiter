@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Upload, X, CheckCircle } from 'lucide-react'
+import { toast } from '@/components/ui/sonner'
 
 interface JobDescription {
     id?: string
@@ -75,20 +76,47 @@ export function JobDescriptionForm({
             const uploadData = new FormData()
             uploadData.append('file', file)
 
-            const res = await fetch('/api/documents/parse', {
-                method: 'POST',
-                body: uploadData,
+            const response = await window.axios.post('/job-descriptions/parse', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             })
 
-            const data = await res.json()
-            if (data.success) {
-                setFormData(prev => ({ ...prev, description: data.text }))
-                setJdFilename(data.filename)
+            if (response.data.status === 'success') {
+                const extracted = response.data.data
+
+                // Auto-fill all structured form fields from AI extraction
+                setFormData(prev => ({
+                    ...prev,
+                    title: extracted.title?.trim() || prev.title,
+                    company_name: extracted.company_name?.trim() || prev.company_name,
+                    description: extracted.description?.trim() || response.data.raw_text || prev.description,
+                    location: extracted.location?.trim() || prev.location,
+                    remote_type: extracted.remote_type || prev.remote_type,
+                    salary_min: extracted.salary_min?.toString() || prev.salary_min,
+                    salary_max: extracted.salary_max?.toString() || prev.salary_max,
+                    salary_currency: extracted.salary_currency || prev.salary_currency,
+                    salary_period: extracted.salary_period || prev.salary_period,
+                    experience_years_min: extracted.experience_years_min?.toString() || prev.experience_years_min,
+                    experience_years_max: extracted.experience_years_max?.toString() || prev.experience_years_max,
+                    education_level: extracted.education_level?.trim() || prev.education_level,
+                    skills: Array.isArray(extracted.skills) ? extracted.skills.join(', ') : prev.skills,
+                    employment_type: extracted.employment_type || prev.employment_type,
+                    benefits: extracted.benefits?.trim() || prev.benefits,
+                }))
+
+                setJdFilename(file.name)
+                toast.success('Job description parsed successfully', {
+                    description: `Extracted data from ${file.name}. Please review the auto-filled fields.`,
+                })
             } else {
-                console.error('Failed to parse JD:', data.error)
+                toast.error('Failed to parse job description', {
+                    description: response.data.message || 'Please try again or enter details manually.',
+                })
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload failed:', error)
+            toast.error('Upload failed', {
+                description: error?.response?.data?.message || error?.message || 'Please try again or enter details manually.',
+            })
         } finally {
             setIsLoadingJD(false)
         }
