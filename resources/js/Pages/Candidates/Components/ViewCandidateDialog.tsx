@@ -171,33 +171,6 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                     </div>
                                 )}
 
-                                {/* Location (derived from city+state) */}
-                                {getLocation(candidate) && (
-                                    <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
-                                        <a
-                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getLocation(candidate)!)}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="flex items-center gap-2 text-sm flex-1 hover:text-primary"
-                                        >
-                                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                            <span>{getLocation(candidate)}</span>
-                                        </a>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8"
-                                            onClick={() => handleCopy(getLocation(candidate)!, 'location')}
-                                        >
-                                            {copiedField === 'location' ? (
-                                                <Check className="h-4 w-4 text-green-600" />
-                                            ) : (
-                                                <Copy className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                )}
-
                                 {/* Full Address (street address + city, state, zip) */}
                                 {fullAddress && (
                                     <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
