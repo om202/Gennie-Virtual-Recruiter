@@ -99,7 +99,7 @@ export function ScheduleForm({ schedule, interviewId, candidates, interviews, on
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Job Description</Label>
+                        <Label>Interview</Label>
                         {interviewId ? (
                             <div className="p-2 border rounded-md bg-muted/50 text-sm font-medium">
                                 {selectedInterview?.job_title || 'Unknown Interview'}
