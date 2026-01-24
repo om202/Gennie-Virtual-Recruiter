@@ -16,7 +16,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+
 
 interface JobDescription {
     id: string
@@ -26,19 +27,7 @@ interface JobDescription {
     remote_type: 'onsite' | 'hybrid' | 'remote'
 }
 
-interface ScheduledInterview {
-    id: string
-    interview: {
-        job_title: string
-    }
-    candidate: {
-        name: string
-        email: string
-    }
-    scheduled_at: string
-    status: string
-    meeting_link: string | null
-}
+
 
 interface Candidate {
     id: string
@@ -74,11 +63,10 @@ interface DashboardProps {
         }
     }
     interviews: Interview[]
-    scheduledInterviews: ScheduledInterview[]
     candidates: Candidate[]
 }
 
-export default function Dashboard({ auth, interviews: initialInterviews, scheduledInterviews, candidates }: DashboardProps) {
+export default function Dashboard({ auth, interviews: initialInterviews, candidates }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
@@ -160,198 +148,132 @@ export default function Dashboard({ auth, interviews: initialInterviews, schedul
                         sessionId={activeSessionId}
                         onClose={handleCloseInterview}
                     />
-                ) : (
-                    <Tabs defaultValue="interviews" className="space-y-4">
-                        <TabsList>
-                            <TabsTrigger value="interviews">Interviews</TabsTrigger>
-                            <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-                        </TabsList>
+                ) : (<>
+                    {/* Actions Bar - Only show when there are interviews */}
+                    {interviews.length > 0 && (
+                        <div className="flex justify-end items-center gap-2">
+                            <Link href="/interviews/create" className={buttonVariants()}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create Interview
+                            </Link>
+                        </div>
+                    )}
 
-                        <TabsContent value="interviews" className="space-y-6">
-                            {/* Actions Bar - Only show when there are interviews */}
-                            {interviews.length > 0 && (
-                                <div className="flex justify-end items-center gap-2">
-                                    <Link href="/interviews/create" className={buttonVariants()}>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Create Interview
-                                    </Link>
-                                </div>
-                            )}
-
-                            {/* Interview Grid */}
-                            {interviews.length === 0 ? (
-                                <Card className="border-dashed">
-                                    <CardContent className="flex flex-col items-center justify-center py-16">
-                                        <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                                        <h3 className="text-lg font-medium mb-2">No interviews yet</h3>
-                                        <p className="text-muted-foreground text-center mb-4">
-                                            Create your first interview to get started with Gennie.
-                                        </p>
-                                        <Link href="/interviews/create" className={buttonVariants()}>
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Create Your First Interview
-                                        </Link>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {interviews.map((interview) => (
-                                        <Card key={interview.id} className="hover:shadow-md transition-shadow">
-                                            <CardHeader className="pb-2">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="space-y-1">
-                                                        <CardTitle className="text-lg leading-tight flex items-center justify-between gap-2">
-                                                            <span>{interview.job_title}</span>
-                                                        </CardTitle>
-                                                        <CardDescription>{interview.company_name}</CardDescription>
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                            onClick={() => handleOpenSchedule(interview.id)}
-                                                            title="Schedule Interview"
-                                                        >
-                                                            <Calendar className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                            onClick={() => confirmDelete(interview)}
-                                                            title="Delete Interview"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4">
-                                                {/* Legacy Interview Warning */}
-                                                {!interview.job_description_id && (
-                                                    <div className="flex items-center gap-2 text-sm bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200 px-3 py-2 rounded-md">
-                                                        <AlertCircle className="h-4 w-4 shrink-0" />
-                                                        <span>No JD linked</span>
-                                                        <Link href={`/interviews/${interview.id}/edit`} className="ml-auto text-xs underline underline-offset-2 hover:no-underline">
-                                                            Link Now
-                                                        </Link>
-                                                    </div>
-                                                )}
-
-                                                {/* Tags */}
-                                                <div className="flex flex-wrap gap-2">
-                                                    <Badge variant="outline" className={getTypeColor(interview.interview_type)}>
-                                                        {interview.interview_type}
-                                                    </Badge>
-                                                    <Badge variant="outline">
-                                                        <Clock className="h-3 w-3 mr-1" />
-                                                        {interview.duration_minutes}m
-                                                    </Badge>
-                                                    <Badge variant="outline">
-                                                        {interview.difficulty_level}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* Stats */}
-                                                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                                    <div className="flex items-center gap-1">
-                                                        <Calendar className="h-3 w-3" />
-                                                        <span>{interview.total_sessions} sessions</span>
-                                                    </div>
-                                                    <span>Last: {formatDate(interview.last_session_at)}</span>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="space-y-2">
-                                                    <Button
-                                                        className="w-full"
-                                                        onClick={() => handleStartInterview(interview)}
-                                                        disabled={interview.status === 'archived' || !interview.job_description_id}
-                                                    >
-                                                        <Play className="h-4 w-4 mr-2" />
-                                                        Start Interview
-                                                    </Button>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <Link href={`/interviews/${interview.id}/logs`}>
-                                                            <Button variant="outline" size="sm" className="w-full">
-                                                                <History className="h-4 w-4 mr-2" />
-                                                                View Logs
-                                                            </Button>
-                                                        </Link>
-                                                        <Link href={`/interviews/${interview.id}/edit`}>
-                                                            <Button variant="outline" size="sm" className="w-full">
-                                                                <Pencil className="h-4 w-4 mr-2" />
-                                                                Edit
-                                                            </Button>
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </TabsContent>
-
-                        <TabsContent value="scheduled">
-                            <div className="flex justify-end items-center mb-6">
-                                <Button onClick={() => handleOpenSchedule()}>
-                                    <Calendar className="h-4 w-4 mr-2" />
-                                    Schedule New
-                                </Button>
-                            </div>
-
-                            {scheduledInterviews.length === 0 ? (
-                                <Card className="border-dashed">
-                                    <CardContent className="flex flex-col items-center justify-center py-16">
-                                        <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                                        <h3 className="text-lg font-medium mb-2">No scheduled interviews</h3>
-                                        <p className="text-muted-foreground text-center mb-4">
-                                            Schedule interviews to appear here.
-                                        </p>
-                                        <Button onClick={() => handleOpenSchedule()}>
-                                            Schedule Your First Interview
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Upcoming Schedules</CardTitle>
-                                        <CardDescription>All your scheduled interviews.</CardDescription>
+                    {/* Interview Grid */}
+                    {interviews.length === 0 ? (
+                        <Card className="border-dashed">
+                            <CardContent className="flex flex-col items-center justify-center py-16">
+                                <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium mb-2">No interviews yet</h3>
+                                <p className="text-muted-foreground text-center mb-4">
+                                    Create your first interview to get started with Gennie.
+                                </p>
+                                <Link href="/interviews/create" className={buttonVariants()}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Create Your First Interview
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {interviews.map((interview) => (
+                                <Card key={interview.id} className="hover:shadow-md transition-shadow">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <CardTitle className="text-lg leading-tight flex items-center justify-between gap-2">
+                                                    <span>{interview.job_title}</span>
+                                                </CardTitle>
+                                                <CardDescription>{interview.company_name}</CardDescription>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    onClick={() => handleOpenSchedule(interview.id)}
+                                                    title="Schedule Interview"
+                                                >
+                                                    <Calendar className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => confirmDelete(interview)}
+                                                    title="Delete Interview"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-4">
-                                            {scheduledInterviews.map((schedule) => (
-                                                <div key={schedule.id} className="flex items-center justify-between border-b last:border-0 pb-4 last:pb-0">
-                                                    <div className="space-y-1">
-                                                        <p className="font-medium">{schedule.candidate.name}</p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {schedule.interview.job_title} • {formatDate(schedule.scheduled_at)}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant={schedule.status === 'scheduled' ? 'default' : 'secondary'}>
-                                                            {schedule.status}
-                                                        </Badge>
-                                                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
-                                                            if (confirm('Cancel this interview?')) {
-                                                                router.delete(`/schedules/${schedule.id}`)
-                                                            }
-                                                        }}>
-                                                            Cancel
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                    <CardContent className="space-y-4">
+                                        {/* Legacy Interview Warning */}
+                                        {!interview.job_description_id && (
+                                            <div className="flex items-center gap-2 text-sm bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200 px-3 py-2 rounded-md">
+                                                <AlertCircle className="h-4 w-4 shrink-0" />
+                                                <span>No JD linked</span>
+                                                <Link href={`/interviews/${interview.id}/edit`} className="ml-auto text-xs underline underline-offset-2 hover:no-underline">
+                                                    Link Now
+                                                </Link>
+                                            </div>
+                                        )}
+
+                                        {/* Tags */}
+                                        <div className="flex flex-wrap gap-2">
+                                            <Badge variant="outline" className={getTypeColor(interview.interview_type)}>
+                                                {interview.interview_type}
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                <Clock className="h-3 w-3 mr-1" />
+                                                {interview.duration_minutes}m
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                {interview.difficulty_level}
+                                            </Badge>
+                                        </div>
+
+                                        {/* Stats */}
+                                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                                <Calendar className="h-3 w-3" />
+                                                <span>{interview.total_sessions} sessions</span>
+                                            </div>
+                                            <span>Last: {formatDate(interview.last_session_at)}</span>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="space-y-2">
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => handleStartInterview(interview)}
+                                                disabled={interview.status === 'archived' || !interview.job_description_id}
+                                            >
+                                                <Play className="h-4 w-4 mr-2" />
+                                                Start Interview
+                                            </Button>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Link href={`/interviews/${interview.id}/logs`}>
+                                                    <Button variant="outline" size="sm" className="w-full">
+                                                        <History className="h-4 w-4 mr-2" />
+                                                        View Logs
+                                                    </Button>
+                                                </Link>
+                                                <Link href={`/interviews/${interview.id}/edit`}>
+                                                    <Button variant="outline" size="sm" className="w-full">
+                                                        <Pencil className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
-                            )}
-                        </TabsContent>
-                    </Tabs>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </>)}
             </div>
 
             {/* Delete Confirmation Alert */}

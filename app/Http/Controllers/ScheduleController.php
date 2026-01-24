@@ -11,6 +11,33 @@ use Illuminate\Support\Facades\DB;
 class ScheduleController extends Controller
 {
     /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $user = auth()->user();
+
+        return Inertia::render('Schedules/Index', [
+            'activeTab' => 'schedules',
+            'scheduledInterviews' => \App\Models\ScheduledInterview::whereHas('interview', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+                ->with(['interview:id,job_title,company_name', 'candidate:id,name,email'])
+                ->where('scheduled_at', '>=', now())
+                ->orderBy('scheduled_at', 'asc')
+                ->get(),
+            'candidates' => $user->candidates()
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get(),
+            'interviews' => $user->interviews()
+                ->select('id', 'job_title')
+                ->orderBy('updated_at', 'desc')
+                ->get(),
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

@@ -26,13 +26,6 @@ class DashboardController extends Controller
                 ->with('jobDescription:id,title,company_name,location,remote_type')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
-            'scheduledInterviews' => \App\Models\ScheduledInterview::whereHas('interview', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-                ->with(['interview:id,job_title', 'candidate:id,name,email'])
-                ->where('scheduled_at', '>=', now())
-                ->orderBy('scheduled_at', 'asc')
-                ->get(),
             'candidates' => $user->candidates()
                 ->select('id', 'name', 'email')
                 ->orderBy('name')

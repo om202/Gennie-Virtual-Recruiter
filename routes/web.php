@@ -66,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('candidates', CandidateController::class);
 
     // Interview Scheduling
+    Route::get('/schedules', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('schedules.index');
     Route::post('/schedules', [\App\Http\Controllers\ScheduleController::class, 'store'])->name('schedules.store');
     Route::delete('/schedules/{scheduledInterview}', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('schedules.destroy');
 });

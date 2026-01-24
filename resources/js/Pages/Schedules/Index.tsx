@@ -1,0 +1,149 @@
+import { Head, router, Link } from '@inertiajs/react'
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Calendar, Trash2, Plus } from 'lucide-react'
+import { ScheduleInterviewDialog } from '@/components/ScheduleInterviewDialog'
+
+interface ScheduledInterview {
+    id: string
+    interview: {
+        job_title: string
+        company_name: string
+    }
+    candidate: {
+        id: string
+        name: string
+        email: string
+    }
+    scheduled_at: string
+    status: string
+    meeting_link: string | null
+}
+
+interface Candidate {
+    id: string
+    name: string
+    email: string
+}
+
+interface Interview {
+    id: string
+    job_title: string
+}
+
+interface IndexProps {
+    auth: any
+    scheduledInterviews: ScheduledInterview[]
+    candidates: Candidate[]
+    interviews: Interview[]
+}
+
+export default function SchedulesIndex({ auth, scheduledInterviews, candidates, interviews }: IndexProps) {
+    const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+    const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null)
+
+    const handleOpenSchedule = () => {
+        setSelectedInterviewId(null)
+        setScheduleDialogOpen(true)
+    }
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return 'Never'
+        return new Date(dateString).toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        })
+    }
+
+    return (
+        <div className="min-h-screen bg-muted/50">
+            <Head title="Schedules - Gennie AI Recruiter" />
+
+            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Schedules</h1>
+                        <p className="text-muted-foreground">
+                            Manage your upcoming interviews.
+                        </p>
+                    </div>
+                    <Button onClick={() => handleOpenSchedule()}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Schedule New
+                    </Button>
+                </div>
+
+                {/* Main Content */}
+                <div className="space-y-6">
+                    {scheduledInterviews.length === 0 ? (
+                        <Card className="border-dashed">
+                            <CardContent className="flex flex-col items-center justify-center py-16">
+                                <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium mb-2">No scheduled interviews</h3>
+                                <p className="text-muted-foreground text-center mb-4">
+                                    Schedule interviews to appear here.
+                                </p>
+                                <Button onClick={() => handleOpenSchedule()}>
+                                    Schedule Your First Interview
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4">
+                            {/* Group by date logic could go here, for now simple list */}
+                            <Card>
+                                <CardContent className="p-0">
+                                    {scheduledInterviews.map((schedule, i) => (
+                                        <div key={schedule.id} className={`flex flex-col md:flex-row md:items-center justify-between p-6 gap-4 hover:bg-muted/50 transition-colors ${i !== scheduledInterviews.length - 1 ? 'border-b' : ''}`}>
+                                            <div className="flex items-start gap-4">
+                                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+                                                    <Calendar className="h-6 w-6" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="font-semibold leading-none tracking-tight">{schedule.candidate.name}</h3>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Applying for <span className="font-medium text-foreground">{schedule.interview.job_title}</span>
+                                                    </p>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Badge variant="outline">{schedule.status}</Badge>
+                                                        <span>•</span>
+                                                        <span>{formatDate(schedule.scheduled_at)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 self-end md:self-center">
+                                                <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
+                                                    if (confirm('Cancel this interview?')) {
+                                                        router.delete(`/schedules/${schedule.id}`)
+                                                    }
+                                                }}>
+                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <ScheduleInterviewDialog
+                open={scheduleDialogOpen}
+                onOpenChange={setScheduleDialogOpen}
+                interviewId={selectedInterviewId}
+                candidates={candidates}
+                interviews={interviews}
+            />
+        </div>
+    )
+}

@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar } from 'lucide-react';
 
-type NavigationTab = 'interviews' | 'job-descriptions' | 'logs' | 'candidates';
+type NavigationTab = 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
 
 interface SidebarProps {
     activeTab: NavigationTab;
@@ -35,6 +35,12 @@ export default function Sidebar({ activeTab }: SidebarProps) {
             href: '/candidates',
             icon: Users,
             tab: 'candidates' as NavigationTab,
+        },
+        {
+            name: 'Schedule',
+            href: '/schedules',
+            icon: Calendar,
+            tab: 'schedules' as NavigationTab,
         },
     ];
 
