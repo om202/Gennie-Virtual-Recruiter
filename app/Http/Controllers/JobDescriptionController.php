@@ -52,6 +52,7 @@ class JobDescriptionController extends Controller
             ->get();
 
         return Inertia::render('JobDescriptions/Index', [
+            'activeTab' => 'job-descriptions',
             'jobDescriptions' => $jobDescriptions,
             'auth' => [
                 'user' => $request->user(),

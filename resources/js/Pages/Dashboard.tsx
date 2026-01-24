@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
-import DashboardNavigation from '@/components/DashboardNavigation'
 import { Plus, Play, Clock, Briefcase, Calendar, MoreVertical, Pencil, Trash2, History, AlertCircle } from 'lucide-react'
 import {
     DropdownMenu,
@@ -119,10 +118,7 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
         <div className="min-h-screen bg-muted/50">
             <Head title="Dashboard - Gennie AI Recruiter" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
-                {/* Navigation Tabs */}
-                <DashboardNavigation activeTab="interviews" />
-
+            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>

@@ -239,6 +239,7 @@ class InterviewController extends Controller
             ->get();
 
         return Inertia::render('InterviewLogs', [
+            'activeTab' => 'logs',
             'interviews' => $interviews,
             'interview' => null, // No specific interview filter
         ]);
@@ -261,6 +262,7 @@ class InterviewController extends Controller
         $interview->setRelation('sessions', $sessions);
 
         return Inertia::render('InterviewLogs', [
+            'activeTab' => 'logs',
             'interviews' => collect([$interview]),
             'interview' => $interview, // Specific interview filter
         ]);

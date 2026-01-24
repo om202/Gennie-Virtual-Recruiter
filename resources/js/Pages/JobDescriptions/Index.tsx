@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import DashboardNavigation from '@/components/DashboardNavigation'
 import { Plus, Briefcase, MapPin, Building2, Users, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -123,9 +122,7 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Job Descriptions - Gennie AI Recruiter" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
-                <DashboardNavigation activeTab="job-descriptions" />
-
+            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>

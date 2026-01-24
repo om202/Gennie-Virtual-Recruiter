@@ -18,6 +18,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         return Inertia::render('Dashboard', [
+            'activeTab' => 'interviews',
             'auth' => [
                 'user' => $user,
             ],

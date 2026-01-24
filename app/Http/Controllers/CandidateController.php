@@ -33,6 +33,7 @@ class CandidateController extends Controller
         $candidates = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('Candidates/Index', [
+            'activeTab' => 'candidates',
             'candidates' => $candidates,
             'filters' => $request->only(['search']),
         ]);
