@@ -1,10 +1,9 @@
 import { Head, router, Link } from '@inertiajs/react'
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Trash2, Plus } from 'lucide-react'
-import { ScheduleInterviewDialog } from '@/components/ScheduleInterviewDialog'
+
 
 interface ScheduledInterview {
     id: string
@@ -40,14 +39,8 @@ interface IndexProps {
     interviews: Interview[]
 }
 
-export default function SchedulesIndex({ auth, scheduledInterviews, candidates, interviews }: IndexProps) {
-    const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-    const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null)
+export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
 
-    const handleOpenSchedule = () => {
-        setSelectedInterviewId(null)
-        setScheduleDialogOpen(true)
-    }
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never'
@@ -73,10 +66,12 @@ export default function SchedulesIndex({ auth, scheduledInterviews, candidates, 
                             Manage your upcoming interviews.
                         </p>
                     </div>
-                    <Button onClick={() => handleOpenSchedule()}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Schedule New
-                    </Button>
+                    <Link href="/schedules/create">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Schedule New
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Main Content */}
@@ -89,9 +84,11 @@ export default function SchedulesIndex({ auth, scheduledInterviews, candidates, 
                                 <p className="text-muted-foreground text-center mb-4">
                                     Schedule interviews to appear here.
                                 </p>
-                                <Button onClick={() => handleOpenSchedule()}>
-                                    Schedule Your First Interview
-                                </Button>
+                                <Link href="/schedules/create">
+                                    <Button>
+                                        Schedule Your First Interview
+                                    </Button>
+                                </Link>
                             </CardContent>
                         </Card>
                     ) : (
@@ -137,13 +134,7 @@ export default function SchedulesIndex({ auth, scheduledInterviews, candidates, 
                 </div>
             </div>
 
-            <ScheduleInterviewDialog
-                open={scheduleDialogOpen}
-                onOpenChange={setScheduleDialogOpen}
-                interviewId={selectedInterviewId}
-                candidates={candidates}
-                interviews={interviews}
-            />
+
         </div>
     )
 }

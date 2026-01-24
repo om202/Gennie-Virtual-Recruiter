@@ -38,6 +38,33 @@ class ScheduleController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request)
+    {
+        $user = auth()->user();
+        $interviewId = $request->query('interview_id');
+
+        return Inertia::render('ScheduleInterview', [
+            'candidates' => $user->candidates()
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get(),
+            'interviews' => $user->interviews()
+                ->select('id', 'job_title')
+                ->where('status', 'active')
+                ->orderBy('updated_at', 'desc')
+                ->get(),
+            'interview' => $interviewId
+                ? Interview::where('id', $interviewId)
+                    ->where('user_id', $user->id)
+                    ->select('id', 'job_title')
+                    ->first()
+                : null,
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

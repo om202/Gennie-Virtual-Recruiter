@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import { Plus, Play, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2 } from 'lucide-react'
-import { ScheduleInterviewDialog } from '@/components/ScheduleInterviewDialog'
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -66,17 +66,17 @@ interface DashboardProps {
     candidates: Candidate[]
 }
 
-export default function Dashboard({ auth, interviews: initialInterviews, candidates }: DashboardProps) {
+export default function Dashboard({ auth, interviews: initialInterviews }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
-    const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-    const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null)
-
     const handleOpenSchedule = (interviewId?: string) => {
-        setSelectedInterviewId(interviewId || null)
-        setScheduleDialogOpen(true)
+        if (interviewId) {
+            router.visit(`/schedules/create?interview_id=${interviewId}`)
+        } else {
+            router.visit('/schedules/create')
+        }
     }
 
     const confirmDelete = (interview: Interview) => {
@@ -298,13 +298,7 @@ export default function Dashboard({ auth, interviews: initialInterviews, candida
                 </AlertDialogContent>
             </AlertDialog>
 
-            <ScheduleInterviewDialog
-                open={scheduleDialogOpen}
-                onOpenChange={setScheduleDialogOpen}
-                interviewId={selectedInterviewId}
-                candidates={candidates}
-                interviews={interviews}
-            />
+
         </div>
     )
 }
