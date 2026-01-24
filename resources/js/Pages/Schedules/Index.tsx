@@ -1,8 +1,20 @@
 import { Head, router, Link } from '@inertiajs/react'
+import { useState } from 'react'
+import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Plus, Pencil, Trash2 } from 'lucide-react'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 
 interface ScheduledInterview {
@@ -40,6 +52,20 @@ interface IndexProps {
 }
 
 export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+    const [scheduleToDelete, setScheduleToDelete] = useState<ScheduledInterview | null>(null)
+
+    const confirmDelete = (schedule: ScheduledInterview) => {
+        setScheduleToDelete(schedule)
+        setDeleteConfirmationOpen(true)
+    }
+
+    const handleDelete = () => {
+        if (!scheduleToDelete) return
+        router.delete(`/schedules/${scheduleToDelete.id}`)
+        setDeleteConfirmationOpen(false)
+        setScheduleToDelete(null)
+    }
 
 
     const formatDate = (dateString: string | null) => {
@@ -66,12 +92,14 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                             Manage your upcoming interviews.
                         </p>
                     </div>
-                    <Link href="/schedules/create">
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Schedule New
-                        </Button>
-                    </Link>
+                    {scheduledInterviews.length > 0 && (
+                        <Link href="/schedules/create">
+                            <Button>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Schedule New
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* Main Content */}
@@ -130,11 +158,7 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                    onClick={() => {
-                                                        if (confirm('Cancel this interview?')) {
-                                                            router.delete(`/schedules/${schedule.id}`)
-                                                        }
-                                                    }}
+                                                    onClick={() => confirmDelete(schedule)}
                                                     title="Cancel Interview"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -149,6 +173,28 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                 </div>
             </div>
 
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel this interview?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will cancel the scheduled interview for {scheduleToDelete?.candidate.name} on{' '}
+                            {scheduleToDelete?.scheduled_at && format(new Date(scheduleToDelete.scheduled_at), "PPP 'at' p")}.
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Schedule</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Cancel Interview
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
         </div>
     )
