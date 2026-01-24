@@ -18,8 +18,8 @@ Route::get('/try-gennie', fn() => Inertia::render('TryGennie'))->name('try-genni
 Route::get('/try-gennie/{session}', fn($session) => Inertia::render('TryGennieResult', ['sessionId' => $session]))->name('try-gennie.result');
 
 // Public Interview Access (Magic Links - no login required)
-Route::get('/i/{token}', [PublicInterviewController::class, 'showInterview'])->name('public.interview');
-Route::get('/s/{token}', [PublicInterviewController::class, 'showScheduledInterview'])->name('public.scheduled');
+Route::get('/i/{company}/{job}/{token}', [PublicInterviewController::class, 'showInterview'])->name('public.interview');
+Route::get('/s/{company}/{job}/{token}', [PublicInterviewController::class, 'showScheduledInterview'])->name('public.scheduled');
 Route::post('/public/start/{token}', [PublicInterviewController::class, 'startSession'])->name('public.start');
 
 // Guest Routes (redirect to dashboard if already authenticated)

@@ -204,7 +204,11 @@ class Interview extends Model
         if (!$this->public_token) {
             return null;
         }
-        return url("/i/{$this->public_token}");
+
+        $companySlug = Str::slug($this->company_name ?: 'company');
+        $jobSlug = Str::slug($this->job_title ?: 'interview');
+
+        return url("/i/{$companySlug}/{$jobSlug}/{$this->public_token}");
     }
 
     /**

@@ -50,7 +50,11 @@ class ScheduledInterview extends Model
      */
     public function getPublicUrl(): string
     {
-        return url("/s/{$this->public_token}");
+        $interview = $this->interview;
+        $companySlug = Str::slug($interview?->company_name ?: 'company');
+        $jobSlug = Str::slug($interview?->job_title ?: 'interview');
+
+        return url("/s/{$companySlug}/{$jobSlug}/{$this->public_token}");
     }
 
     /**

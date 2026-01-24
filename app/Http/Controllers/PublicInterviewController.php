@@ -13,8 +13,9 @@ class PublicInterviewController extends Controller
 {
     /**
      * Show public interview page for generic interview links.
+     * Company and job slugs are for SEO-friendly URLs, lookup is done by token only.
      */
-    public function showInterview(string $token)
+    public function showInterview(string $company, string $job, string $token)
     {
         $interview = Interview::where('public_token', $token)
             ->where('public_link_enabled', true)
@@ -46,8 +47,9 @@ class PublicInterviewController extends Controller
 
     /**
      * Show public interview page for scheduled interview links.
+     * Company and job slugs are for SEO-friendly URLs, lookup is done by token only.
      */
-    public function showScheduledInterview(string $token)
+    public function showScheduledInterview(string $company, string $job, string $token)
     {
         $schedule = ScheduledInterview::where('public_token', $token)
             ->with(['interview', 'candidate:id,name,email'])
