@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { GennieInterface } from '@/components/GennieInterface'
 import DashboardNavigation from '@/components/DashboardNavigation'
-import { Plus, Phone, Play, Clock, Briefcase, Calendar, Settings, MoreVertical, Pencil, Trash2, History, AlertCircle } from 'lucide-react'
+import { Plus, Play, Clock, Briefcase, Calendar, MoreVertical, Pencil, Trash2, History, AlertCircle } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -130,23 +130,6 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                         <p className="text-muted-foreground">
                             Welcome back, {auth.user.name}. Manage your interviews here.
                         </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {/* User Info */}
-                        <div className="flex items-center gap-3">
-                            <div className="text-right">
-                                <div className="font-medium text-sm">{auth.user.company_name}</div>
-                                <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                                    <Phone className="h-3 w-3" />
-                                    {auth.user.phone}
-                                </div>
-                            </div>
-                            <Link href="/profile">
-                                <Button variant="ghost" size="icon" className="h-9 w-9">
-                                    <Settings className="h-5 w-5" />
-                                </Button>
-                            </Link>
-                        </div>
                     </div>
                 </div>
 
