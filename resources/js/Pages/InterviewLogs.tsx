@@ -38,11 +38,16 @@ interface Session {
     created_at: string
     metadata: any
     progress_state: any
-    analysis_status: 'pending' | 'processing' | 'completed' | 'failed'
     analysis_result: any
     channel?: 'web' | 'phone'
     twilio_data?: TwilioData
     interview_id?: string
+    candidate_id?: string
+    candidate?: {
+        id: string
+        name: string
+        email: string
+    }
 }
 
 
@@ -291,17 +296,22 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                                                                 )}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                                                    <time className={cn("text-sm", isSelected ? "text-primary" : "text-muted-foreground")}>
-                                                                        {sessionDate.toLocaleDateString([], {
-                                                                            month: 'short',
-                                                                            day: 'numeric'
-                                                                        })}
-                                                                        {' '}
-                                                                        {sessionDate.toLocaleTimeString([], {
-                                                                            hour: '2-digit',
-                                                                            minute: '2-digit'
-                                                                        })}
-                                                                    </time>
+                                                                    <div className="flex flex-col gap-0.5">
+                                                                        <span className={cn("text-xs font-semibold", isSelected ? "text-primary" : "text-foreground")}>
+                                                                            {session.candidate ? session.candidate.name : 'Unknown User'}
+                                                                        </span>
+                                                                        <time className={cn("text-xs", isSelected ? "text-muted-foreground/80" : "text-muted-foreground")}>
+                                                                            {sessionDate.toLocaleDateString([], {
+                                                                                month: 'short',
+                                                                                day: 'numeric'
+                                                                            })}
+                                                                            {' '}
+                                                                            {sessionDate.toLocaleTimeString([], {
+                                                                                hour: '2-digit',
+                                                                                minute: '2-digit'
+                                                                            })}
+                                                                        </time>
+                                                                    </div>
                                                                     {/* Channel Badge */}
                                                                     <Badge variant="outline" className="text-xs gap-1">
                                                                         {session.channel === 'phone' ? (
@@ -741,25 +751,28 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                             </Card>
                         </div>
                     </div>
-                )}
-            </div>
+                )
+                }
+            </div >
 
             {/* Assessment Report Dialog */}
-            {selectedSessionId && (() => {
-                const session = allSessions.find(s => s.id === selectedSessionId);
-                const sessionInterview = interviews.find(i => i.id === session?.interview_id);
+            {
+                selectedSessionId && (() => {
+                    const session = allSessions.find(s => s.id === selectedSessionId);
+                    const sessionInterview = interviews.find(i => i.id === session?.interview_id);
 
-                if (!session || !sessionInterview) return null;
+                    if (!session || !sessionInterview) return null;
 
-                return (
-                    <AssessmentReportDialog
-                        open={assessmentDialogOpen}
-                        onClose={() => setAssessmentDialogOpen(false)}
-                        interview={sessionInterview}
-                        session={session}
-                    />
-                );
-            })()}
+                    return (
+                        <AssessmentReportDialog
+                            open={assessmentDialogOpen}
+                            onClose={() => setAssessmentDialogOpen(false)}
+                            interview={sessionInterview}
+                            session={session}
+                        />
+                    );
+                })()
+            }
 
 
             {/* Delete Session Confirmation Dialog */}
@@ -782,6 +795,6 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </div >
     )
 }

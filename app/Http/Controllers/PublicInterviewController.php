@@ -117,6 +117,44 @@ class PublicInterviewController extends Controller
             $interview = $schedule->interview;
             $candidateId = $schedule->candidate_id;
             $scheduleId = $schedule->id;
+        } else {
+            // Generic Interview Link - Check for candidate info
+            if ($request->has('email')) {
+                // Check self preview
+                $isSelfPreview = Auth::check() && Auth::id() === $interview->user_id;
+
+                if (!$isSelfPreview) {
+                    $request->validate([
+                        'name' => 'required|string|max:255',
+                        'email' => 'required|email|max:255',
+                        'phone' => 'nullable|string|max:50',
+                    ]);
+
+                    // Find existing candidate
+                    $candidate = \App\Models\Candidate::where('email', $request->email)
+                        ->where('user_id', $interview->user_id)
+                        ->first();
+
+                    if ($candidate) {
+                        // Update existing candidate
+                        $updateData = ['name' => $request->name];
+                        if ($request->filled('phone')) {
+                            $updateData['phone'] = $request->phone;
+                        }
+                        $candidate->update($updateData);
+                    } else {
+                        // Create new candidate
+                        $candidate = \App\Models\Candidate::create([
+                            'email' => $request->email,
+                            'user_id' => $interview->user_id,
+                            'name' => $request->name,
+                            'phone' => $request->phone,
+                        ]);
+                    }
+
+                    $candidateId = $candidate->id;
+                }
+            }
         }
 
         // Check if current user is the interview owner (self-preview)

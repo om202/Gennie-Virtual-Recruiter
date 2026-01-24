@@ -205,8 +205,9 @@ class InterviewController extends Controller
             ->with([
                 'sessions' => function ($query) {
                     $query->has('logs')
+                        ->with('candidate:id,name,email,phone')
                         ->orderBy('created_at', 'desc')
-                        ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'analysis_status', 'analysis_result', 'channel', 'twilio_data');
+                        ->select('id', 'interview_id', 'candidate_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'analysis_status', 'analysis_result', 'channel', 'twilio_data');
                 }
             ])
             ->orderBy('updated_at', 'desc')
@@ -228,8 +229,9 @@ class InterviewController extends Controller
 
         $sessions = $interview->sessions()
             ->has('logs')
+            ->with('candidate:id,name,email,phone')
             ->orderBy('created_at', 'desc')
-            ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'channel', 'twilio_data', 'analysis_status', 'analysis_result')
+            ->select('id', 'interview_id', 'candidate_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'channel', 'twilio_data', 'analysis_status', 'analysis_result')
             ->get();
 
         // Load sessions relationship for consistency
@@ -251,7 +253,8 @@ class InterviewController extends Controller
 
         $sessions = $interview->sessions()
             ->orderBy('created_at', 'desc')
-            ->select('id', 'interview_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'channel', 'twilio_data')
+            ->with('candidate:id,name,email,phone')
+            ->select('id', 'interview_id', 'candidate_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'channel', 'twilio_data')
             ->get();
 
         return response()->json([
