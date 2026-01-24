@@ -49,7 +49,7 @@ export function MarkdownEditor({
 
             {isPreview ? (
                 <div
-                    className="rounded-md border bg-muted/30 px-4 py-3 prose prose-sm dark:prose-invert max-w-none"
+                    className="rounded-md border bg-muted/30 px-4 py-3 prose dark:prose-invert max-w-none"
                     style={{ minHeight }}
                 >
                     {value ? (
@@ -64,7 +64,7 @@ export function MarkdownEditor({
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
                     style={{ minHeight }}
-                    className="font-mono text-sm"
+                    className="font-mono"
                 />
             )}
         </div>
@@ -80,29 +80,32 @@ export function MarkdownViewer({ content, className }: MarkdownViewerProps) {
     if (!content) return null
 
     return (
-        <div className={cn('prose prose-sm dark:prose-invert max-w-none', className)}>
+        <div className={cn('prose dark:prose-invert max-w-none', className)}>
             <ReactMarkdown>{content}</ReactMarkdown>
         </div>
     )
 }
 
 // Default candidate instructions template
-export const DEFAULT_CANDIDATE_INSTRUCTIONS = `## Welcome to Your Interview
+export const DEFAULT_CANDIDATE_INSTRUCTIONS = `## Welcome to Your AI Interview
 
-Thank you for taking the time to complete this interview. Here's what to expect:
+You are about to have a conversation with an AI Recruiter. This is a real-time voice interview designed to understand your experience and qualifications just like a human recruiter would.
 
-### What You'll Need
-- A quiet environment with minimal background noise
-- Stable internet connection
-- A working microphone
+### Tips for a Smooth Conversation
+- **Wait for the turn**: The AI may have a brief pause before responding. Please wait until it has completely finished speaking before you start your answer.
+- **Speak Clearly**: Ensure you speak at a moderate pace and clarity. This helps the AI transcribe and understand your answers accurately.
+- **No need to rush**: It is perfectly okay to take a few seconds to gather your thoughts before answering.
+- **Interruption Handling**: If the AI interrupts you by mistake, simply continue your thought or say "Let me finish..." and proceed.
 
-### Tips for Success
-- **Speak naturally** - Take your time and answer thoughtfully
-- **Be specific** - Use concrete examples from your experience
-- **Ask for clarification** - It's okay to ask if you need a question repeated
+### How to Stand Out
+- **Be Specific**: Use the **STAR Method** (Situation, Task, Action, Result) to structure your behavioral answers.
+- **Focus on 'I'**: When describing team projects, clearly articulate **your** specific role and contributions.
+- **Context Matters**: Provide brief context for technical terms or acronyms specific to your past organizations.
+- **Ask Questions**: You can ask the AI clarifying questions if a prompt is ambiguous.
 
-### Technical Notes
-- The interview will automatically end after the allotted time
-- If you experience technical issues, try refreshing the page
+### Technical Setup
+- **Quiet Environment**: Background noise can confuse the AI. Please find a quiet room.
+- **Stable Internet**: A strong connection ensures the conversation flows naturally without lag.
+- **Microphone Check**: Ensure your microphone is not muted and is picking up your voice clearly.
 
-Good luck! We look forward to learning more about you.`
+The interview will conclude automatically when the time is up. Relax, be yourself, and good luck!`

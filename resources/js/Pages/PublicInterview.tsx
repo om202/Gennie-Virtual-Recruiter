@@ -4,7 +4,7 @@ import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
-import { Globe, Phone, Briefcase, Clock, User, Loader2, Eye, ArrowLeft, Pencil, Copy, Check } from 'lucide-react'
+import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Pencil, Copy, Check } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { MarkdownViewer, DEFAULT_CANDIDATE_INSTRUCTIONS } from "@/components/MarkdownEditor"
 
 interface Interview {
@@ -240,32 +241,42 @@ export default function PublicInterview({ interview, candidate, token, error, is
                     </div>
                 )}
 
-                {/* Header */}
-                <div className="w-full max-w-6xl mx-auto mb-6">
-                    <div className="text-center space-y-4">
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                            <span className="text-primary">{interview.company_name}</span>
-                        </h1>
-                        <div className="flex flex-wrap items-center justify-center gap-4 text-muted-foreground">
-                            <span className="flex items-center gap-2">
-                                <Briefcase className="h-4 w-4" />
+                <div className="w-full max-w-4xl mx-auto mb-8 px-4 text-center pt-8 sm:pt-12">
+                    {candidate && (
+                        <div className="mb-6 flex justify-center">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
+                                    {candidate.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span>
+                                    Hi, <span className="font-medium text-foreground">{candidate.name}</span>
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="text-muted-foreground font-medium text-lg">
+                                {interview.company_name}
+                            </div>
+                            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
                                 {interview.job_title}
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                {interview.duration_minutes} min
-                            </span>
-                            <span className="capitalize flex items-center gap-2">
+                            </h1>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                                 {interview.interview_type} Interview
-                            </span>
+                            </p>
                         </div>
 
-                        {candidate && (
-                            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 inline-flex items-center gap-2">
-                                <User className="h-4 w-4 text-primary" />
-                                <span>Welcome, <strong>{candidate.name}</strong></span>
-                            </div>
-                        )}
+                        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                            <Badge variant="secondary" className="px-3 py-1 text-sm font-normal">
+                                <Clock className="h-3.5 w-3.5 mr-1.5 opacity-70" />
+                                {interview.duration_minutes} min
+                            </Badge>
+                            <Badge variant="outline" className="px-3 py-1 text-sm font-normal capitalize">
+                                {interview.difficulty_level}
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
