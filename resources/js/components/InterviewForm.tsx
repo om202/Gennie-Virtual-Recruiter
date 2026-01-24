@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -445,15 +444,14 @@ export function InterviewForm({
                                 <Sparkles className="h-3 w-3 text-primary" />
                                 <span className="text-xs text-muted-foreground font-normal">(Auto-filled based on type)</span>
                             </Label>
-                            <Textarea
-                                id="custom_instructions"
-                                placeholder="Custom instructions will auto-populate when you select interview type and difficulty..."
-                                className="min-h-[200px] font-mono text-sm"
+                            <MarkdownEditor
                                 value={formData.custom_instructions}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, custom_instructions: e.target.value })
+                                onChange={(value) => {
+                                    setFormData({ ...formData, custom_instructions: value })
                                     setManuallyEdited(true)
                                 }}
+                                placeholder="Custom instructions will auto-populate when you select interview type and difficulty..."
+                                minHeight="200px"
                             />
                         </div>
                     </div>

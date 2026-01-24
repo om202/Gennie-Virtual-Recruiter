@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
     Select,
     SelectContent,
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2, Upload, X, CheckCircle } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
+import { MarkdownEditor } from '@/components/MarkdownEditor'
 
 interface JobDescription {
     id?: string
@@ -236,15 +236,14 @@ export function JobDescriptionForm({
                         )}
 
                         <div className="relative">
-                            <Textarea
-                                id="description"
-                                placeholder="Paste the job description here or upload a file..."
-                                className="min-h-[150px] font-normal"
+                            <MarkdownEditor
                                 value={formData.description}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, description: e.target.value })
+                                onChange={(value) => {
+                                    setFormData({ ...formData, description: value })
                                     if (jdFilename) setJdFilename(null)
                                 }}
+                                placeholder="Paste the job description here or upload a file..."
+                                minHeight="200px"
                             />
                             {isLoadingJD && (
                                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center backdrop-blur-[1px] rounded-md">
@@ -448,12 +447,11 @@ export function JobDescriptionForm({
                 <CardContent>
                     <div className="space-y-2">
                         <Label htmlFor="benefits">Benefits & Perks</Label>
-                        <Textarea
-                            id="benefits"
-                            placeholder="Health insurance, 401k, remote work options..."
-                            className="min-h-[100px]"
+                        <MarkdownEditor
                             value={formData.benefits}
-                            onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
+                            onChange={(value) => setFormData({ ...formData, benefits: value })}
+                            placeholder="Health insurance, 401k, remote work options..."
+                            minHeight="120px"
                         />
                     </div>
                 </CardContent>

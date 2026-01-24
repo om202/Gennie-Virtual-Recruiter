@@ -18,7 +18,7 @@ export function MarkdownEditor({
     onChange,
     placeholder,
     className,
-    minHeight = '120px',
+    minHeight = '250px',
 }: MarkdownEditorProps) {
     const [isPreview, setIsPreview] = useState(false)
 
