@@ -48,12 +48,6 @@ interface Candidate {
     certificates: Certificate[];
 }
 
-// Helper to derive location from city+state
-const getLocation = (candidate: Candidate): string | null => {
-    const parts = [candidate.city, candidate.state].filter(Boolean);
-    return parts.length > 0 ? parts.join(', ') : null;
-};
-
 interface ViewCandidateDialogProps {
     candidate: Candidate | null;
     open: boolean;
@@ -171,7 +165,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                     </div>
                                 )}
 
-                                {/* Full Address (street address + city, state, zip) */}
+                                {/* Address */}
                                 {fullAddress && (
                                     <div className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors">
                                         <a
