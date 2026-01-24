@@ -18,6 +18,8 @@ interface Candidate {
 interface Interview {
     id: string
     job_title: string
+    interview_type?: string
+    company_name?: string
 }
 
 interface Schedule {
@@ -116,6 +118,8 @@ export function ScheduleForm({ schedule, interviewId, candidates, interviews, on
                                     {interviews.map((interview) => (
                                         <SelectItem key={interview.id} value={interview.id}>
                                             {interview.job_title}
+                                            {interview.interview_type && ` - ${interview.interview_type.charAt(0).toUpperCase() + interview.interview_type.slice(1)} Round`}
+                                            {interview.company_name && ` - ${interview.company_name}`}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

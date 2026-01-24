@@ -31,7 +31,7 @@ class ScheduleController extends Controller
                 ->orderBy('name')
                 ->get(),
             'interviews' => $user->interviews()
-                ->select('id', 'job_title')
+                ->select('id', 'job_title', 'interview_type', 'company_name')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
         ]);
@@ -51,7 +51,7 @@ class ScheduleController extends Controller
                 ->orderBy('name')
                 ->get(),
             'interviews' => $user->interviews()
-                ->select('id', 'job_title')
+                ->select('id', 'job_title', 'interview_type', 'company_name')
                 ->where('status', 'active')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
@@ -83,7 +83,7 @@ class ScheduleController extends Controller
                 ->orderBy('name')
                 ->get(),
             'interviews' => $user->interviews()
-                ->select('id', 'job_title')
+                ->select('id', 'job_title', 'interview_type', 'company_name')
                 ->where('status', 'active')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
