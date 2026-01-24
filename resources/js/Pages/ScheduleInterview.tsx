@@ -14,13 +14,25 @@ interface Interview {
     job_title: string
 }
 
+interface Schedule {
+    id: string
+    interview_id: string
+    candidate_id: string
+    scheduled_at: string
+    interview: Interview
+    candidate: Candidate
+}
+
 interface ScheduleInterviewProps {
     candidates: Candidate[]
     interviews: Interview[]
     interview?: Interview | null
+    schedule?: Schedule | null
 }
 
-export default function ScheduleInterview({ candidates, interviews, interview }: ScheduleInterviewProps) {
+export default function ScheduleInterview({ candidates, interviews, interview, schedule }: ScheduleInterviewProps) {
+    const isEditing = !!schedule
+
     const handleSuccess = () => {
         router.visit('/schedules', {
             preserveState: false,
@@ -34,7 +46,7 @@ export default function ScheduleInterview({ candidates, interviews, interview }:
 
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title="Schedule Interview" />
+            <Head title={isEditing ? 'Edit Schedule' : 'Schedule Interview'} />
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Back Button */}
@@ -50,15 +62,19 @@ export default function ScheduleInterview({ candidates, interviews, interview }:
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">
-                        Schedule Interview
+                        {isEditing ? 'Edit Schedule' : 'Schedule Interview'}
                     </h1>
                     <p className="text-muted-foreground">
-                        Set up a time for a candidate to take an interview.
+                        {isEditing
+                            ? 'Update the interview schedule details.'
+                            : 'Set up a time for a candidate to take an interview.'
+                        }
                     </p>
                 </div>
 
                 <ScheduleForm
-                    interviewId={interview?.id}
+                    schedule={schedule}
+                    interviewId={interview?.id || schedule?.interview_id}
                     candidates={candidates}
                     interviews={interviews}
                     onSuccess={handleSuccess}

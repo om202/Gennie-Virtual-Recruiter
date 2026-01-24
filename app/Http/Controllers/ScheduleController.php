@@ -65,6 +65,32 @@ class ScheduleController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Request $request, ScheduledInterview $schedule)
+    {
+        $user = auth()->user();
+
+        // Authorization check
+        if ($schedule->interview->user_id !== $user->id) {
+            abort(403);
+        }
+
+        return Inertia::render('ScheduleInterview', [
+            'schedule' => $schedule->load(['interview:id,job_title', 'candidate:id,name,email']),
+            'candidates' => $user->candidates()
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get(),
+            'interviews' => $user->interviews()
+                ->select('id', 'job_title')
+                ->where('status', 'active')
+                ->orderBy('updated_at', 'desc')
+                ->get(),
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -85,6 +111,33 @@ class ScheduleController extends Controller
         // TODO: Send email notification
 
         return redirect()->back()->with('success', 'Interview scheduled successfully.');
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, ScheduledInterview $schedule)
+    {
+        // Authorization check
+        if ($schedule->interview->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'interview_id' => 'required|exists:interviews,id',
+            'candidate_id' => 'required|exists:candidates,id',
+            'scheduled_at' => 'required|date|after:now',
+        ]);
+
+        $schedule->update([
+            'interview_id' => $validated['interview_id'],
+            'candidate_id' => $validated['candidate_id'],
+            'scheduled_at' => $validated['scheduled_at'],
+        ]);
+
+        // TODO: Send email notification
+
+        return redirect()->route('schedules.index')->with('success', 'Interview schedule updated successfully.');
     }
 
     /**

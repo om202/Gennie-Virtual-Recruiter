@@ -20,7 +20,15 @@ interface Interview {
     job_title: string
 }
 
+interface Schedule {
+    id: string
+    interview_id: string
+    candidate_id: string
+    scheduled_at: string
+}
+
 interface ScheduleFormProps {
+    schedule?: Schedule | null
     interviewId?: string | null
     candidates: Candidate[]
     interviews: Interview[]
@@ -28,12 +36,20 @@ interface ScheduleFormProps {
     onCancel: () => void
 }
 
-export function ScheduleForm({ interviewId, candidates, interviews, onSuccess, onCancel }: ScheduleFormProps) {
-    const { data, setData, post, processing, errors, reset, transform } = useForm({
-        interview_id: interviewId || '',
-        candidate_id: '',
-        date: undefined as Date | undefined,
-        time: '09:00',
+export function ScheduleForm({ schedule, interviewId, candidates, interviews, onSuccess, onCancel }: ScheduleFormProps) {
+    const isEditing = !!schedule
+
+    // Parse schedule date/time if editing
+    const scheduledDate = schedule?.scheduled_at ? new Date(schedule.scheduled_at) : undefined
+    const scheduledTime = scheduledDate
+        ? `${scheduledDate.getHours().toString().padStart(2, '0')}:${scheduledDate.getMinutes().toString().padStart(2, '0')}`
+        : '09:00'
+
+    const { data, setData, post, put, processing, errors, reset, transform } = useForm({
+        interview_id: schedule?.interview_id || interviewId || '',
+        candidate_id: schedule?.candidate_id || '',
+        date: scheduledDate,
+        time: scheduledTime,
     })
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -52,12 +68,20 @@ export function ScheduleForm({ interviewId, candidates, interviews, onSuccess, o
             }
         })
 
-        post('/schedules', {
-            onSuccess: () => {
-                reset()
-                onSuccess()
-            },
-        })
+        if (isEditing && schedule) {
+            put(`/schedules/${schedule.id}`, {
+                onSuccess: () => {
+                    onSuccess()
+                },
+            })
+        } else {
+            post('/schedules', {
+                onSuccess: () => {
+                    reset()
+                    onSuccess()
+                },
+            })
+        }
     }
 
     // Filter interviews if an ID is pre-selected

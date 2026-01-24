@@ -2,7 +2,7 @@ import { Head, router, Link } from '@inertiajs/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Trash2, Plus } from 'lucide-react'
+import { Calendar, Plus, Pencil, Trash2 } from 'lucide-react'
 
 
 interface ScheduledInterview {
@@ -115,14 +115,29 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2 self-end md:self-center">
-                                                <Button variant="ghost" size="sm" className="text-destructive" onClick={() => {
-                                                    if (confirm('Cancel this interview?')) {
-                                                        router.delete(`/schedules/${schedule.id}`)
-                                                    }
-                                                }}>
-                                                    <Trash2 className="h-4 w-4 mr-2" />
-                                                    Cancel
+                                            <div className="flex items-center gap-1 self-end md:self-center">
+                                                <Link href={`/schedules/${schedule.id}/edit`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                        title="Edit Schedule"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => {
+                                                        if (confirm('Cancel this interview?')) {
+                                                            router.delete(`/schedules/${schedule.id}`)
+                                                        }
+                                                    }}
+                                                    title="Cancel Interview"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </div>
