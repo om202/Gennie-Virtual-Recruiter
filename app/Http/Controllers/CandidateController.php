@@ -300,4 +300,42 @@ class CandidateController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Display all interview sessions for a specific candidate.
+     */
+    public function sessions(Candidate $candidate)
+    {
+        if ($candidate->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $sessions = \App\Models\InterviewSession::where('candidate_id', $candidate->id)
+            ->with(['interview:id,job_title,company_name'])
+            ->latest()
+            ->get()
+            ->map(function ($session) {
+                return [
+                    'id' => $session->id,
+                    'status' => $session->status,
+                    'channel' => $session->channel,
+                    'created_at' => $session->created_at,
+                    'analysis_status' => $session->analysis_status,
+                    'interview' => $session->interview ? [
+                        'id' => $session->interview->id,
+                        'job_title' => $session->interview->job_title,
+                        'company_name' => $session->interview->company_name,
+                    ] : null,
+                ];
+            });
+
+        return Inertia::render('Candidates/CandidateSessions', [
+            'candidate' => [
+                'id' => $candidate->id,
+                'name' => $candidate->name,
+                'email' => $candidate->email,
+            ],
+            'sessions' => $sessions,
+        ]);
+    }
 }

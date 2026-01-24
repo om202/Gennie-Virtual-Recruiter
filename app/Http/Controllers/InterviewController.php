@@ -199,24 +199,46 @@ class InterviewController extends Controller
     /**
      * Display all logs across all interviews for the user
      */
-    public function allLogs()
+    public function allLogs(Request $request)
     {
+        $candidateId = $request->query('candidate');
+
         $interviews = Auth::user()->interviews()
             ->with([
-                'sessions' => function ($query) {
+                'sessions' => function ($query) use ($candidateId) {
                     $query->has('logs')
                         ->with('candidate:id,name,email,phone')
                         ->orderBy('created_at', 'desc')
                         ->select('id', 'interview_id', 'candidate_id', 'status', 'created_at', 'updated_at', 'metadata', 'progress_state', 'analysis_status', 'analysis_result', 'channel', 'twilio_data');
+
+                    if ($candidateId) {
+                        $query->where('candidate_id', $candidateId);
+                    }
                 }
             ])
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        // If filtering by candidate, remove interviews with no matching sessions
+        if ($candidateId) {
+            $interviews = $interviews->filter(fn($i) => $i->sessions->isNotEmpty())->values();
+        }
+
+        // Get candidate name for display if filtering
+        $candidateName = null;
+        if ($candidateId) {
+            $candidate = \App\Models\Candidate::where('id', $candidateId)
+                ->where('user_id', Auth::id())
+                ->first();
+            $candidateName = $candidate?->name;
+        }
+
         return Inertia::render('InterviewLogs', [
             'activeTab' => 'logs',
             'interviews' => $interviews,
             'interview' => null, // No specific interview filter
+            'candidateFilter' => $candidateId,
+            'candidateName' => $candidateName,
         ]);
     }
 

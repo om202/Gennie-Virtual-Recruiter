@@ -39,6 +39,7 @@ interface Session {
     metadata: any
     progress_state: any
     analysis_result: any
+    analysis_status?: string
     channel?: 'web' | 'phone'
     twilio_data?: TwilioData
     interview_id?: string
@@ -74,9 +75,11 @@ interface InterviewLogsProps {
     }
     interviews: Interview[]
     interview: Interview | null // null means show all interviews
+    candidateFilter?: string | null
+    candidateName?: string | null
 }
 
-export default function InterviewLogs({ auth: _auth, interviews, interview }: InterviewLogsProps) {
+export default function InterviewLogs({ auth: _auth, interviews, interview, candidateFilter, candidateName }: InterviewLogsProps) {
     const isFiltered = interview !== null
     const [expandedInterview, setExpandedInterview] = useState<string | null>(
         isFiltered ? interview.id : null
@@ -231,15 +234,28 @@ export default function InterviewLogs({ auth: _auth, interviews, interview }: In
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">
-                            {isFiltered ? 'Interview Logs' : 'All Interview Logs'}
+                            {candidateName
+                                ? `Interviews for ${candidateName}`
+                                : isFiltered
+                                    ? 'Interview Logs'
+                                    : 'All Interview Logs'}
                         </h1>
                         <p className="text-muted-foreground">
-                            {isFiltered
-                                ? `For ${interview.job_title} • ${interview.company_name}`
-                                : 'View session history across all your interviews'
+                            {candidateName
+                                ? `Showing all interview sessions for this candidate`
+                                : isFiltered
+                                    ? `For ${interview.job_title} • ${interview.company_name}`
+                                    : 'View session history across all your interviews'
                             }
                         </p>
                     </div>
+                    {candidateFilter && (
+                        <Link href="/interviews/logs">
+                            <Button variant="outline" size="sm">
+                                Clear Filter
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 {allSessions.length === 0 ? (

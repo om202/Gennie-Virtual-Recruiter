@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil } from 'lucide-react';
+import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -261,15 +261,27 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                        onClick={() => handleView(candidate)}
-                                    >
-                                        <Eye className="h-4 w-4 mr-2" />
-                                        View
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1"
+                                            onClick={() => handleView(candidate)}
+                                        >
+                                            <Eye className="h-4 w-4 mr-2" />
+                                            View
+                                        </Button>
+                                        <Link href={`/interviews/logs?candidate=${candidate.id}`} className="flex-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                            >
+                                                <ClipboardList className="h-4 w-4 mr-2" />
+                                                Interviews
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}
