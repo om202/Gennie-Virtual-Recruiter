@@ -64,4 +64,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');
     Route::get('/candidates/{candidate}/resume', [CandidateController::class, 'downloadResume'])->name('candidates.download');
     Route::resource('candidates', CandidateController::class);
+
+    // Interview Scheduling
+    Route::post('/schedules', [\App\Http\Controllers\ScheduleController::class, 'store'])->name('schedules.store');
+    Route::delete('/schedules/{scheduledInterview}', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('schedules.destroy');
 });

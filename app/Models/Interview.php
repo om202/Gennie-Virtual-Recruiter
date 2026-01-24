@@ -65,6 +65,14 @@ class Interview extends Model
     }
 
     /**
+     * Get all scheduled interviews for this template.
+     */
+    public function scheduledInterviews(): HasMany
+    {
+        return $this->hasMany(ScheduledInterview::class);
+    }
+
+    /**
      * Check if the interview has a linked job description.
      */
     public function hasLinkedJobDescription(): bool

@@ -53,4 +53,9 @@ class Candidate extends Model
     {
         return $this->hasMany(InterviewSession::class);
     }
+
+    public function scheduledInterviews(): HasMany
+    {
+        return $this->hasMany(ScheduledInterview::class);
+    }
 }
