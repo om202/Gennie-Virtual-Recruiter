@@ -187,15 +187,16 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                 <CardDescription>{interview.company_name}</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    onClick={() => handleOpenSchedule(interview.id)}
-                                                    title="Schedule Interview"
-                                                >
-                                                    <Calendar className="h-4 w-4" />
-                                                </Button>
+                                                <Link href={`/interviews/${interview.id}/edit`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                        title="Edit Interview"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -254,16 +255,19 @@ export default function Dashboard({ auth, interviews: initialInterviews }: Dashb
                                                 Start Interview
                                             </Button>
                                             <div className="grid grid-cols-2 gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="w-full"
+                                                    onClick={() => handleOpenSchedule(interview.id)}
+                                                >
+                                                    <Calendar className="h-4 w-4 mr-2" />
+                                                    Schedule
+                                                </Button>
                                                 <Link href={`/interviews/${interview.id}/logs`}>
                                                     <Button variant="outline" size="sm" className="w-full">
                                                         <History className="h-4 w-4 mr-2" />
                                                         View Logs
-                                                    </Button>
-                                                </Link>
-                                                <Link href={`/interviews/${interview.id}/edit`}>
-                                                    <Button variant="outline" size="sm" className="w-full">
-                                                        <Pencil className="h-4 w-4 mr-2" />
-                                                        Edit
                                                     </Button>
                                                 </Link>
                                             </div>

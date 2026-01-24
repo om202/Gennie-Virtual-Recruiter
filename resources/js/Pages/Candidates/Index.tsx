@@ -205,14 +205,27 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                                 </CardDescription>
                                             )}
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                                            onClick={() => confirmDelete(candidate)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        <div className="flex items-center gap-1">
+                                            <Link href={`/candidates/${candidate.id}/edit`}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
+                                                    title="Edit Candidate"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                                                onClick={() => confirmDelete(candidate)}
+                                                title="Delete Candidate"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -248,27 +261,15 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="w-full"
-                                            onClick={() => handleView(candidate)}
-                                        >
-                                            <Eye className="h-4 w-4 mr-2" />
-                                            View
-                                        </Button>
-                                        <Link href={`/candidates/${candidate.id}/edit`}>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full"
-                                            >
-                                                <Pencil className="h-4 w-4 mr-2" />
-                                                Edit
-                                            </Button>
-                                        </Link>
-                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full"
+                                        onClick={() => handleView(candidate)}
+                                    >
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        View
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}

@@ -172,15 +172,28 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                                     {job.company_name}
                                                 </CardDescription>
                                             </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                                                onClick={() => confirmDelete(job)}
-                                                disabled={job.interviews_count > 0}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <Link href={`/job-descriptions/${job.id}/edit`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
+                                                        title="Edit Job Description"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                                                    onClick={() => confirmDelete(job)}
+                                                    disabled={job.interviews_count > 0}
+                                                    title="Delete Job Description"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
@@ -213,13 +226,7 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                             <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''} using this JD</span>
                                         </div>
 
-                                        {/* Edit Button */}
-                                        <Link href={`/job-descriptions/${job.id}/edit`} className="block">
-                                            <Button variant="outline" size="sm" className="w-full">
-                                                <Pencil className="h-4 w-4 mr-2" />
-                                                Edit
-                                            </Button>
-                                        </Link>
+
                                     </CardContent>
                                 </Card>
                             ))}
