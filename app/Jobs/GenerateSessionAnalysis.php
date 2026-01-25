@@ -4,15 +4,36 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class GenerateSessionAnalysis implements ShouldQueue
 {
     use Queueable;
 
     /**
-     * Create a new job instance.
+     * The session to analyze.
      */
     protected $session;
+
+    /**
+     * Job timeout in seconds (3 minutes for AI processing).
+     */
+    public $timeout = 180;
+
+    /**
+     * Maximum number of attempts.
+     */
+    public $tries = 3;
+
+    /**
+     * Exponential backoff delays in seconds (30s, 60s, 120s).
+     */
+    public $backoff = [30, 60, 120];
+
+    /**
+     * Maximum exceptions before marking as failed.
+     */
+    public $maxExceptions = 2;
 
     /**
      * Create a new job instance.
@@ -20,6 +41,27 @@ class GenerateSessionAnalysis implements ShouldQueue
     public function __construct(\App\Models\InterviewSession $session)
     {
         $this->session = $session;
+    }
+
+    /**
+     * Handle job failure after all retries exhausted.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('GenerateSessionAnalysis job failed permanently', [
+            'session_id' => $this->session->id,
+            'error' => $exception->getMessage(),
+            'attempts' => $this->attempts(),
+        ]);
+
+        $this->session->update([
+            'analysis_status' => 'failed',
+            'analysis_result' => [
+                'error' => 'Analysis failed after ' . $this->attempts() . ' attempts',
+                'reason' => $exception->getMessage(),
+                'failed_at' => now()->toIso8601String(),
+            ],
+        ]);
     }
 
     /**
