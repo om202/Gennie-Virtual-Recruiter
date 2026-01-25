@@ -41,7 +41,8 @@ export default function Layout({ children }: PropsWithChildren) {
             )}
             <main
                 className={cn(
-                    "transition-all duration-300 ease-in-out pb-16 md:pb-0",
+                    "pb-16 md:pb-0",
+                    activeTab && "transition-all duration-300 ease-in-out",
                     activeTab ? (isCollapsed ? "md:pl-16" : "md:pl-60") : ""
                 )}
             >
