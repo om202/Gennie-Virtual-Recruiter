@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
+        // Make API routes stateful (share web session) for Inertia AJAX calls
+        $middleware->statefulApi();
+
         // Exclude public interview endpoints from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'public/start/*',
