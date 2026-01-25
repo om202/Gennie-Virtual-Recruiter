@@ -856,18 +856,26 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
 
             {/* Assessment Report Dialog */}
             {
-                selectedSessionId && (() => {
-                    const session = allSessions.find(s => s.id === selectedSessionId);
+                selectedSessionId && assessmentDialogOpen && (() => {
+                    const session = getActiveSession();
                     const sessionInterview = interviews.find(i => i.id === session?.interview_id);
+                    const localAnalysis = sessionAnalysis[selectedSessionId];
 
                     if (!session || !sessionInterview) return null;
+
+                    // Merge session with latest SSE analysis result
+                    const mergedSession = {
+                        ...session,
+                        analysis_status: localAnalysis?.status || session.analysis_status,
+                        analysis_result: localAnalysis?.result || session.analysis_result,
+                    };
 
                     return (
                         <AssessmentReportDialog
                             open={assessmentDialogOpen}
                             onClose={() => setAssessmentDialogOpen(false)}
                             interview={sessionInterview}
-                            session={session as any}
+                            session={mergedSession as any}
                         />
                     );
                 })()
