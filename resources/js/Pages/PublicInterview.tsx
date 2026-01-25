@@ -57,6 +57,8 @@ export default function PublicInterview({ interview, candidate, token, error, is
     const [hasEnded, setHasEnded] = useState(false)
     const [interviewData, setInterviewData] = useState<{ job_description?: string } | null>(null)
     const [urlCopied, setUrlCopied] = useState(false)
+    const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'error'>('idle')
+    const [callError, setCallError] = useState<string | null>(null)
 
     const handleCopyUrl = async () => {
         await navigator.clipboard.writeText(window.location.href)
@@ -186,9 +188,13 @@ export default function PublicInterview({ interview, candidate, token, error, is
             return
         }
 
-        /* ... existing call submit logic ... */
-        // We need to bypass the generic check or handle it if we want phone calls to also collect info
-        // For now assuming existing logic where createSession uses current state
+        // For generic interviews, require candidate info
+        if (type === 'interview' && !isSelfPreview) {
+            if (!candidateName.trim() || !candidateEmail.trim()) {
+                alert('Please provide your Name and Email to proceed.')
+                return
+            }
+        }
 
         let newSessionId: string;
         try {
@@ -200,6 +206,8 @@ export default function PublicInterview({ interview, candidate, token, error, is
 
         setIsPhoneDialogOpen(false)
         setIsCalling(true)
+        setCallStatus('calling')
+        setCallError(null)
         try {
             const res = await fetch('/api/twilio/call', {
                 method: 'POST',
@@ -211,13 +219,15 @@ export default function PublicInterview({ interview, candidate, token, error, is
             })
             const data = await res.json()
             if (data.success) {
-                alert('Calling your phone... The interview will begin when you answer.')
+                // Call initiated successfully - UI will show calling state
             } else {
-                alert('Failed to initiate call: ' + (data.error || 'Unknown error'))
+                setCallStatus('error')
+                setCallError(data.error || 'Failed to initiate call')
             }
         } catch (error) {
             console.error(error)
-            alert('Error initiating call')
+            setCallStatus('error')
+            setCallError('Error initiating call. Please try again.')
         } finally {
             setIsCalling(false)
         }
@@ -305,7 +315,49 @@ export default function PublicInterview({ interview, candidate, token, error, is
                         </div>
                     </div>
 
-                    {hasEnded ? (
+                    {callStatus === 'calling' ? (
+                        /* Call in Progress State */
+                        <Card className="w-full max-w-md mx-auto text-center p-8">
+                            <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                <Phone className="h-8 w-8" />
+                            </div>
+                            <h2 className="text-2xl font-bold mb-2">Calling You Now...</h2>
+                            <p className="text-muted-foreground mb-4">
+                                Please answer your phone when it rings.<br />
+                                The interview will begin once you pick up.
+                            </p>
+                            <p className="text-sm text-muted-foreground font-mono">
+                                {phoneNumber}
+                            </p>
+                            <Button
+                                onClick={() => {
+                                    setCallStatus('idle')
+                                    window.location.reload()
+                                }}
+                                variant="outline"
+                                className="mt-6"
+                            >
+                                Cancel & Start Over
+                            </Button>
+                        </Card>
+                    ) : callStatus === 'error' ? (
+                        /* Call Error State */
+                        <Card className="w-full max-w-md mx-auto text-center p-8">
+                            <div className="h-16 w-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Phone className="h-8 w-8" />
+                            </div>
+                            <h2 className="text-2xl font-bold mb-2">Call Failed</h2>
+                            <p className="text-muted-foreground mb-6">
+                                {callError || 'Something went wrong. Please try again.'}
+                            </p>
+                            <Button onClick={() => {
+                                setCallStatus('idle')
+                                setIsPhoneDialogOpen(true)
+                            }}>
+                                Try Again
+                            </Button>
+                        </Card>
+                    ) : hasEnded ? (
                         /* Ended State */
                         <Card className="w-full max-w-md mx-auto text-center p-8">
                             <div className="h-16 w-16 bg-green-500/10 text-green-700 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -472,22 +524,45 @@ export default function PublicInterview({ interview, candidate, token, error, is
             <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Enter your phone number</DialogTitle>
+                        <DialogTitle>Call Me for Interview</DialogTitle>
                         <DialogDescription>
                             We'll call you to conduct the interview over the phone.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="phone" className="text-right">
-                                Phone
-                            </Label>
+                    <div className="space-y-4 py-4">
+                        {/* Show candidate info fields for generic interviews (not scheduled, not self-preview) */}
+                        {type === 'interview' && !isSelfPreview && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone-name">Full Name <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="phone-name"
+                                        placeholder="Jane Doe"
+                                        value={candidateName}
+                                        onChange={(e) => setCandidateName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone-email">Email Address <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="phone-email"
+                                        type="email"
+                                        placeholder="jane@example.com"
+                                        value={candidateEmail}
+                                        onChange={(e) => setCandidateEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="phone-number">Phone Number <span className="text-destructive">*</span></Label>
                             <Input
-                                id="phone"
+                                id="phone-number"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 placeholder="+1234567890"
-                                className="col-span-3"
                             />
                         </div>
                     </div>

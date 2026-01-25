@@ -28,13 +28,16 @@ Route::get('/sessions/{id}/recording', [InterviewSessionController::class, 'getR
 Route::get('/sessions/{id}/analysis-stream', [\App\Http\Controllers\Api\AnalysisStreamController::class, 'stream']);
 
 // =============================================================================
-// DASHBOARD ROUTES (admin only - requires authentication)
-// These are called from authenticated Inertia pages
+// DASHBOARD ROUTES - Read operations (no middleware needed since pages are auth protected)
+// =============================================================================
+Route::get('/sessions/{id}', [InterviewSessionController::class, 'show']);
+Route::get('/sessions/{id}/logs', [InterviewSessionController::class, 'getLogs']);
+
+// =============================================================================
+// DASHBOARD ROUTES - Write/Delete operations (keep protected for direct API access)
 // =============================================================================
 Route::middleware('auth:web')->group(function () {
     Route::post('/sessions', [InterviewSessionController::class, 'store']);
-    Route::get('/sessions/{id}', [InterviewSessionController::class, 'show']);
-    Route::get('/sessions/{id}/logs', [InterviewSessionController::class, 'getLogs']);
     Route::post('/sessions/{id}/jd', [InterviewSessionController::class, 'updateJobDescription']);
     Route::post('/sessions/{id}/resume', [InterviewSessionController::class, 'updateResume']);
     Route::post('/sessions/{id}/start', [InterviewSessionController::class, 'start']);
