@@ -60,7 +60,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#a3e635\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" \"npx tsx relay-server.ts\" --names=server,queue,logs,vite,relay"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#a3e635\" \"php artisan serve\" \"for i in {1..16}; do php artisan queue:work --tries=3 --sleep=1 --max-jobs=100 & done; wait\" \"php artisan pail --timeout=0\" \"npm run dev\" \"npx tsx relay-server.ts\" --names=server,queue,logs,vite,relay"
         ]
     },
     "extra": {

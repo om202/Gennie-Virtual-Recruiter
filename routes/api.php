@@ -41,3 +41,6 @@ Route::post('/twilio/recording-status', [\App\Http\Controllers\Api\TwilioControl
 // Recording playback (handles both Web and Twilio)
 Route::post('/sessions/{id}/upload-recording', [InterviewSessionController::class, 'uploadRecording']);
 Route::get('/sessions/{id}/recording', [InterviewSessionController::class, 'getRecording']);
+
+// SSE Stream for real-time analysis status updates
+Route::get('/sessions/{id}/analysis-stream', [\App\Http\Controllers\Api\AnalysisStreamController::class, 'stream']);

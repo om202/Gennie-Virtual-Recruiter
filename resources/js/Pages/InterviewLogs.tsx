@@ -123,33 +123,56 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
         }
     }, [selectedSessionId])
 
-    // Poll for analysis completion
+    // SSE for real-time analysis status updates (replaces polling)
     useEffect(() => {
         if (!analyzingSession) return;
 
-        const pollInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/sessions/${analyzingSession}`);
-                const data = await res.json();
-                if (data.success && data.session) {
-                    const { analysis_status, analysis_result } = data.session;
+        const eventSource = new EventSource(`/api/sessions/${analyzingSession}/analysis-stream`);
 
-                    if (analysis_status === 'completed' || analysis_status === 'failed') {
-                        setSessionAnalysis(prev => ({
-                            ...prev,
-                            [analyzingSession]: { status: analysis_status, result: analysis_result }
-                        }));
-                        setAnalyzingSession(null);
-                        // Also update session details
-                        setSessionDetails(prev => ({ ...prev, [analyzingSession]: data.session }))
-                    }
-                }
-            } catch (e) {
-                console.error('Polling error:', e);
+        eventSource.addEventListener('status', (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.status === 'completed' || data.status === 'failed') {
+                setSessionAnalysis(prev => ({
+                    ...prev,
+                    [analyzingSession]: { status: data.status, result: data.result }
+                }));
+                setAnalyzingSession(null);
+                // Also update session details with fresh data
+                fetch(`/api/sessions/${analyzingSession}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            setSessionDetails(prev => ({ ...prev, [analyzingSession]: data.session }));
+                        }
+                    });
+            } else {
+                setSessionAnalysis(prev => ({
+                    ...prev,
+                    [analyzingSession]: { status: data.status, result: data.result }
+                }));
             }
-        }, 2000); // Poll every 2 seconds
+        });
 
-        return () => clearInterval(pollInterval);
+        eventSource.addEventListener('done', () => {
+            eventSource.close();
+        });
+
+        eventSource.addEventListener('error', () => {
+            // SSE auto-reconnects, but if closed, clean up
+            if (eventSource.readyState === EventSource.CLOSED) {
+                setAnalyzingSession(null);
+            }
+        });
+
+        eventSource.addEventListener('timeout', () => {
+            eventSource.close();
+            setAnalyzingSession(null);
+        });
+
+        return () => {
+            eventSource.close();
+        };
     }, [analyzingSession]);
 
     const fetchSessionData = async (sessionId: string) => {
