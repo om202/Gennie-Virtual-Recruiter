@@ -133,6 +133,9 @@ wss.on("connection", async (ws, req) => {
     let sessionContext: SessionContext | null = null;
     // Session ID will be extracted from Twilio's start event custom parameters
     let sessionId: string | null = null;
+    // Time-aware pacing
+    let interviewStartTime: number | null = null;
+    let timeInjectionInterval: NodeJS.Timeout | null = null;
 
     // Helper to fetch session context once we have the session ID
     const fetchSessionContext = async (sid: string) => {
@@ -257,6 +260,39 @@ wss.on("connection", async (ws, req) => {
             deepgram!.send(audio as any);
         }
         audioBuffer = [];
+
+        // Start time-aware pacing: inject time updates periodically
+        const durationMinutes = interviewConfig.durationMinutes || 15;
+        interviewStartTime = Date.now();
+
+        // Calculate injection interval: every 25% of interview or every 3 mins, whichever is smaller
+        const injectionIntervalMs = Math.min(durationMinutes * 60 * 1000 * 0.25, 3 * 60 * 1000);
+
+        timeInjectionInterval = setInterval(() => {
+            if (!deepgram || !deepgramReady || !interviewStartTime) return;
+
+            const elapsedMs = Date.now() - interviewStartTime;
+            const elapsedMinutes = Math.floor(elapsedMs / 60000);
+            const remainingMinutes = Math.max(0, durationMinutes - elapsedMinutes);
+
+            // Build time context prompt addition
+            let timeUpdate = `\n\n[TIME UPDATE: ${elapsedMinutes} minutes elapsed, approximately ${remainingMinutes} minutes remaining.]`;
+
+            if (remainingMinutes <= 2) {
+                timeUpdate += ` URGENT: Time is almost up! Wrap up with final questions and conclude the interview.`;
+            } else if (remainingMinutes <= 5) {
+                timeUpdate += ` Start preparing to wrap up. Ask any final essential questions.`;
+            } else if (elapsedMinutes < 2) {
+                timeUpdate += ` Interview just started. Take time to build rapport.`;
+            } else {
+                // Calculate pacing guidance
+                const progressPercent = Math.round((elapsedMinutes / durationMinutes) * 100);
+                timeUpdate += ` Progress: ${progressPercent}%. Pace your questions to use the full interview time.`;
+            }
+
+            console.log('⏱️ Injecting time context:', timeUpdate);
+            deepgram!.updatePrompt(timeUpdate);
+        }, injectionIntervalMs);
     });
 
     // Also try string 'open' as fallback
@@ -267,6 +303,11 @@ wss.on("connection", async (ws, req) => {
     deepgram.on(AgentEvents.Close, () => {
         console.log("Deepgram Connection Closed");
         deepgramReady = false;
+        // Clean up time injection interval
+        if (timeInjectionInterval) {
+            clearInterval(timeInjectionInterval);
+            timeInjectionInterval = null;
+        }
     });
 
     deepgram.on(AgentEvents.Error, (error: any) => {

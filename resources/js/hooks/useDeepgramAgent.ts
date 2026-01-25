@@ -38,6 +38,10 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     const recordingChunksRef = useRef<Blob[]>([])
     const recordingDestRef = useRef<MediaStreamAudioDestinationNode | null>(null)
 
+    // Time-aware pacing refs
+    const interviewStartTimeRef = useRef<number | null>(null)
+    const timeInjectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
     // Keep configRef up to date
     configRef.current = config
 
@@ -347,6 +351,39 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 setStatusText('Gennie is listening...')
                 setSpeakingState('listening')
                 startMicrophone()
+
+                // Start time-aware pacing: inject time updates periodically
+                const durationMinutes = currentConfig?.durationMinutes || 15
+                interviewStartTimeRef.current = Date.now()
+
+                // Calculate injection interval: every 25% of interview or every 3 mins, whichever is smaller
+                const injectionIntervalMs = Math.min(durationMinutes * 60 * 1000 * 0.25, 3 * 60 * 1000)
+
+                timeInjectionIntervalRef.current = setInterval(() => {
+                    if (!connectionRef.current || !interviewStartTimeRef.current) return
+
+                    const elapsedMs = Date.now() - interviewStartTimeRef.current
+                    const elapsedMinutes = Math.floor(elapsedMs / 60000)
+                    const remainingMinutes = Math.max(0, durationMinutes - elapsedMinutes)
+
+                    // Build time context prompt addition
+                    let timeUpdate = `\n\n[TIME UPDATE: ${elapsedMinutes} minutes elapsed, approximately ${remainingMinutes} minutes remaining.]`
+
+                    if (remainingMinutes <= 2) {
+                        timeUpdate += ` URGENT: Time is almost up! Wrap up with final questions and conclude the interview.`
+                    } else if (remainingMinutes <= 5) {
+                        timeUpdate += ` Start preparing to wrap up. Ask any final essential questions.`
+                    } else if (elapsedMinutes < 2) {
+                        timeUpdate += ` Interview just started. Take time to build rapport.`
+                    } else {
+                        // Calculate pacing guidance
+                        const progressPercent = Math.round((elapsedMinutes / durationMinutes) * 100)
+                        timeUpdate += ` Progress: ${progressPercent}%. Pace your questions to use the full interview time.`
+                    }
+
+                    console.log('⏱️ Injecting time context:', timeUpdate)
+                    connectionRef.current.updatePrompt(timeUpdate)
+                }, injectionIntervalMs)
             })
 
             connection.on(AgentEvents.Close, () => {
@@ -557,6 +594,12 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     const stopConversation = useCallback(async () => {
         console.log('Stopping conversation...')
 
+        // Clean up time injection interval
+        if (timeInjectionIntervalRef.current) {
+            clearInterval(timeInjectionIntervalRef.current)
+            timeInjectionIntervalRef.current = null
+        }
+
         // Stop and upload recording
         await stopAndUploadRecording()
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -622,6 +665,10 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     // Cleanup on unmount
     useEffect(() => {
         return () => {
+            // Clean up time injection interval
+            if (timeInjectionIntervalRef.current) {
+                clearInterval(timeInjectionIntervalRef.current)
+            }
             if (connectionRef.current) {
                 try {
                     connectionRef.current.disconnect()

@@ -1,11 +1,11 @@
 import { Head, Link } from '@inertiajs/react'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Copy, Check } from 'lucide-react'
+import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Copy, Check, Timer } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -59,6 +59,10 @@ export default function PublicInterview({ interview, candidate, token, error, is
     const [urlCopied, setUrlCopied] = useState(false)
     const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'error'>('idle')
     const [callError, setCallError] = useState<string | null>(null)
+
+    // Interview timer state
+    const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     const handleCopyUrl = async () => {
         await navigator.clipboard.writeText(window.location.href)
@@ -181,6 +185,36 @@ export default function PublicInterview({ interview, candidate, token, error, is
             setHasEnded(true)
         }
     }, [connectionState, sessionId, transcript.length, hasEnded])
+
+    // Start timer when interview begins
+    useEffect(() => {
+        if (isConnected && interview && timeRemaining === null) {
+            // Initialize timer with interview duration in seconds
+            setTimeRemaining(interview.duration_minutes * 60)
+        }
+    }, [isConnected, interview, timeRemaining])
+
+    // Countdown timer
+    useEffect(() => {
+        if (isConnected && timeRemaining !== null && timeRemaining > 0) {
+            timerIntervalRef.current = setInterval(() => {
+                setTimeRemaining(prev => (prev !== null && prev > 0) ? prev - 1 : 0)
+            }, 1000)
+        }
+
+        return () => {
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current)
+            }
+        }
+    }, [isConnected, timeRemaining !== null])
+
+    // Format time as MM:SS
+    const formatTime = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
 
     const handleCallSubmit = async () => {
         if (!phoneNumber) {
@@ -444,6 +478,20 @@ export default function PublicInterview({ interview, candidate, token, error, is
                         <div className="w-full max-w-4xl flex flex-col lg:flex-row gap-8 items-center lg:items-start">
                             {/* Voice Visualizer */}
                             <div className="w-full lg:w-2/5 text-center space-y-8">
+                                {/* Interview Timer */}
+                                {timeRemaining !== null && (
+                                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-lg ${timeRemaining <= 120
+                                        ? 'bg-destructive/10 text-destructive animate-pulse'
+                                        : timeRemaining <= 300
+                                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                            : 'bg-muted text-muted-foreground'
+                                        }`}>
+                                        <Timer className="h-5 w-5" />
+                                        <span>{formatTime(timeRemaining)}</span>
+                                        <span className="text-sm font-normal">remaining</span>
+                                    </div>
+                                )}
+
                                 <VoiceVisualizer speakingState={speakingState} />
 
                                 <div className="flex gap-3 justify-center">
