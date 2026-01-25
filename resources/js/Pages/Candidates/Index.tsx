@@ -225,7 +225,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {displayedCandidates.map((candidate) => (
-                            <Card key={candidate.id} className="hover:shadow-md transition-shadow">
+                            <Card key={candidate.id} className="hover:shadow-md transition-shadow flex flex-col">
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1 flex-1 min-w-0">
@@ -261,9 +261,9 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="flex-1 flex flex-col">
                                     {/* Contact Information */}
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 flex-1">
                                         <div className="flex items-center gap-2 text-sm">
                                             <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                             <span className="truncate">{candidate.email}</span>
@@ -293,8 +293,8 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                         )}
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-2">
+                                    {/* Action Buttons - Pushed to bottom */}
+                                    <div className="flex gap-2 mt-4">
                                         <Link href={`/candidates/${candidate.id}`} className="flex-1">
                                             <Button
                                                 variant="outline"

@@ -400,7 +400,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
                                 </Button>
                                 <Button
                                     onClick={() => setIsPhoneDialogOpen(true)}
-                                    variant="outline"
+                                    variant="outlinePrimary"
                                     size="lg"
                                     disabled={isCalling || isLoading}
                                     className="flex-1 hover:scale-[1.02] active:scale-[0.98]"

@@ -15,11 +15,6 @@ class VoiceClientController extends Controller
         return Inertia::render('Landing');
     }
 
-    public function index()
-    {
-        return Inertia::render('Gennie');
-    }
-
     /**
      * Generate an ephemeral API key for the browser.
      * In production, use strict scopes.

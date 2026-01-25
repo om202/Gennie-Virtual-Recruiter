@@ -287,12 +287,13 @@ export default function Dashboard({ interviews: initialInterviews }: DashboardPr
                                         {/* Actions */}
                                         <div className="space-y-2">
                                             <Button
+                                                variant="outlinePrimary"
                                                 className="w-full"
                                                 onClick={() => handleStartInterview(interview)}
                                                 disabled={interview.status === 'archived' || !interview.job_description_id}
                                             >
                                                 <Eye className="h-4 w-4 mr-2" />
-                                                Preview
+                                                Preview Interview
                                             </Button>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <Button
