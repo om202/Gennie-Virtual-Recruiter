@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2 } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
+import { CustomAudioPlayer } from '@/components/CustomAudioPlayer'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -476,7 +477,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge
-                                                    variant={session.status === 'completed' ? 'default' : 'secondary'}
+                                                    variant={session.status === 'completed' ? 'outline' : 'secondary'}
                                                     className="text-sm"
                                                 >
                                                     {session.status}
@@ -745,11 +746,10 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <audio controls className="w-full h-10">
-                                                        <source src={`/api/sessions/${session.id}/recording`} type="audio/webm" />
-                                                        <source src={`/api/sessions/${session.id}/recording`} type="audio/mpeg" />
-                                                        Your browser does not support the audio element.
-                                                    </audio>
+                                                    <CustomAudioPlayer
+                                                        src={`/api/sessions/${session.id}/recording`}
+                                                        className="w-full"
+                                                    />
                                                 </div>
                                             )}
                                         </CardContent>

@@ -133,10 +133,54 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                                 </CardDescription>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <div className={`flex flex-col items-center justify-center h-20 w-20 rounded-full border-4 ${getScoreRingColor(result.score)} bg-background`}>
-                                    <span className="font-bold text-2xl">{result.score}</span>
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Score</span>
-                                </div>
+                                {(() => {
+                                    const size = 80;
+                                    const strokeWidth = 6;
+                                    const radius = (size - strokeWidth) / 2;
+                                    const circumference = 2 * Math.PI * radius;
+                                    const percentage = result.score;
+                                    const offset = circumference - (percentage / 100) * circumference;
+                                    const strokeColor = result.score >= 80 ? 'stroke-green-500' : result.score >= 60 ? 'stroke-yellow-500' : 'stroke-destructive';
+
+                                    return (
+                                        <svg width={size} height={size} className="transform -rotate-90">
+                                            {/* Background circle */}
+                                            <circle
+                                                cx={size / 2}
+                                                cy={size / 2}
+                                                r={radius}
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth={strokeWidth}
+                                                className="text-secondary"
+                                            />
+                                            {/* Progress circle */}
+                                            <circle
+                                                cx={size / 2}
+                                                cy={size / 2}
+                                                r={radius}
+                                                fill="none"
+                                                strokeWidth={strokeWidth}
+                                                strokeDasharray={circumference}
+                                                strokeDashoffset={offset}
+                                                strokeLinecap="round"
+                                                className={strokeColor}
+                                            />
+                                            {/* Score text */}
+                                            <text
+                                                x="50%"
+                                                y="50%"
+                                                dominantBaseline="middle"
+                                                textAnchor="middle"
+                                                transform={`rotate(90 ${size / 2} ${size / 2})`}
+                                                className="font-bold fill-current"
+                                                style={{ fontSize: '24px' }}
+                                            >
+                                                {result.score}
+                                            </text>
+                                        </svg>
+                                    );
+                                })()}
                                 <Badge className={`text-xs ${getRecommendationStyle(result.recommendation)}`}>
                                     {result.recommendation}
                                 </Badge>
@@ -330,9 +374,56 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
         )}>
             <CardContent className="flex items-center justify-between py-6 px-6">
                 <div className="flex items-center gap-4">
-                    {/* Score Circle */}
-                    <div className={`flex items-center justify-center h-16 w-16 rounded-full border-4 ${getScoreRingColor(result.score)} bg-background`}>
-                        <span className="font-bold text-xl">{result.score}</span>
+                    {/* Score Circle with Progress */}
+                    <div className="flex-shrink-0">
+                        {(() => {
+                            const size = 64;
+                            const strokeWidth = 6;
+                            const radius = (size - strokeWidth) / 2;
+                            const circumference = 2 * Math.PI * radius;
+                            const percentage = result.score;
+                            const offset = circumference - (percentage / 100) * circumference;
+                            const strokeColor = result.score >= 80 ? 'stroke-green-500' : result.score >= 60 ? 'stroke-yellow-500' : 'stroke-destructive';
+
+                            return (
+                                <svg width={size} height={size} className="transform -rotate-90">
+                                    {/* Background circle */}
+                                    <circle
+                                        cx={size / 2}
+                                        cy={size / 2}
+                                        r={radius}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={strokeWidth}
+                                        className="text-secondary"
+                                    />
+                                    {/* Progress circle */}
+                                    <circle
+                                        cx={size / 2}
+                                        cy={size / 2}
+                                        r={radius}
+                                        fill="none"
+                                        strokeWidth={strokeWidth}
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={offset}
+                                        strokeLinecap="round"
+                                        className={strokeColor}
+                                    />
+                                    {/* Score text */}
+                                    <text
+                                        x="50%"
+                                        y="50%"
+                                        dominantBaseline="middle"
+                                        textAnchor="middle"
+                                        transform={`rotate(90 ${size / 2} ${size / 2})`}
+                                        className="font-bold fill-current"
+                                        style={{ fontSize: '20px' }}
+                                    >
+                                        {result.score}
+                                    </text>
+                                </svg>
+                            );
+                        })()}
                     </div>
 
                     {/* Recommendation & Summary Preview */}
