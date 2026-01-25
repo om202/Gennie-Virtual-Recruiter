@@ -35,7 +35,7 @@ interface EditJobDescriptionProps {
 export default function EditJobDescription({ jobDescription }: EditJobDescriptionProps) {
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title={`Edit ${jobDescription.title} - Gennie Talent`} />
+            <Head title={`Edit ${jobDescription.title}`} />
 
             <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
                 {/* Back Button */}

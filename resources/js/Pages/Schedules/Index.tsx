@@ -81,7 +81,7 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
 
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title="Schedules - Gennie Talent" />
+            <Head title="Schedules" />
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}

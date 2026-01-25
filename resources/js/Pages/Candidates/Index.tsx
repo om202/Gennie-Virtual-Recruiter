@@ -132,7 +132,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
 
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title="Candidates - Gennie Talent" />
+            <Head title="Candidates" />
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
