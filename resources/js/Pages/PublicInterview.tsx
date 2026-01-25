@@ -266,7 +266,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
                                             </>
                                         )}
                                     </Button>
-                                    <Link href="/interviews">
+                                    <Link href="/dashboard">
                                         <Button variant="outline" size="sm">
                                             <ArrowLeft className="h-4 w-4 mr-2" />
                                             Back to Dashboard
@@ -277,16 +277,6 @@ export default function PublicInterview({ interview, candidate, token, error, is
                         </div>
                     </div>
                 )}
-
-                {/* Header */}
-                <header className="flex items-center justify-between mb-8 max-w-6xl mx-auto w-full">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                            <Globe className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <span className="font-bold text-lg">{interview.company_name}</span>
-                    </div>
-                </header>
 
                 <main className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full space-y-8">
                     {/* Header Info */}
@@ -308,11 +298,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
                         <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground pt-2">
                             <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
-                                <span>~{interview.duration_minutes} Minutes</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                <span>Online Now</span>
+                                <span>~{interview.duration_minutes} Minutes • {interview.company_name}</span>
                             </div>
                         </div>
                     </div>
