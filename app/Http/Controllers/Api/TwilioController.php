@@ -12,11 +12,33 @@ class TwilioController extends Controller
 {
     /**
      * Initiate an outbound call via Twilio.
+     * Requires a valid session_id to prevent abuse.
      */
     public function startCall(Request $request)
     {
-        $to = $request->input('phone') ?? '+17204870145';
+        $to = $request->input('phone');
         $sessionId = $request->input('session_id');
+
+        // Session ID is required to prevent abuse
+        if (!$sessionId) {
+            return response()->json(['error' => 'Session ID is required'], 400);
+        }
+
+        // Validate the session exists and is active
+        $session = InterviewSession::find($sessionId);
+        if (!$session) {
+            return response()->json(['error' => 'Invalid session'], 404);
+        }
+
+        // Prevent duplicate calls to the same session
+        if ($session->channel === 'phone' && !empty($session->call_sid)) {
+            return response()->json(['error' => 'Call already initiated for this session'], 400);
+        }
+
+        // Validate phone number
+        if (!$to || !preg_match('/^\+?[1-9]\d{6,14}$/', $to)) {
+            return response()->json(['error' => 'Invalid phone number format'], 400);
+        }
 
         $sid = env('TWILIO_ACCOUNT_SID');
         $token = env('TWILIO_ACCOUNT_AUTH_TOKEN');
@@ -24,17 +46,14 @@ class TwilioController extends Controller
         $relayUrl = env('RELAY_SERVER_URL'); // Ngrok public URL
 
         if (!$sid || !$token || !$from) {
-            return response()->json(['error' => 'Twilio credentials or From number not configured'], 500);
+            return response()->json(['error' => 'Twilio credentials not configured'], 500);
         }
 
         try {
             $client = new Client($sid, $token);
 
             // Build TwiML URL with session ID
-            $twimlUrl = $relayUrl . '/twilio/voice';
-            if ($sessionId) {
-                $twimlUrl .= '?session=' . urlencode($sessionId);
-            }
+            $twimlUrl = $relayUrl . '/twilio/voice?session=' . urlencode($sessionId);
 
             // Create call with recording and status callbacks
             $call = $client->calls->create(
@@ -57,21 +76,16 @@ class TwilioController extends Controller
             );
 
             // Update the session to mark it as a phone interview
-            if ($sessionId) {
-                $session = InterviewSession::find($sessionId);
-                if ($session) {
-                    $session->update([
-                        'channel' => 'phone',
-                        'call_sid' => $call->sid,
-                        'twilio_data' => [
-                            'status' => 'initiated',
-                            'to' => $to,
-                            'from' => $from,
-                            'initiated_at' => now()->toIso8601String(),
-                        ],
-                    ]);
-                }
-            }
+            $session->update([
+                'channel' => 'phone',
+                'call_sid' => $call->sid,
+                'twilio_data' => [
+                    'status' => 'initiated',
+                    'to' => $to,
+                    'from' => $from,
+                    'initiated_at' => now()->toIso8601String(),
+                ],
+            ]);
 
             return response()->json([
                 'success' => true,

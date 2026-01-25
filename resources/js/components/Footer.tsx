@@ -23,7 +23,7 @@ export default function Footer() {
                         <h3 className="font-semibold text-sm">Product</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li>
-                                <Link href="/gennie" className="hover:text-foreground transition-colors">
+                                <Link href="/try-gennie" className="hover:text-foreground transition-colors">
                                     Try Gennie
                                 </Link>
                             </li>

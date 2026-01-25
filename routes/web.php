@@ -13,9 +13,8 @@ use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
 
-// Public Try Gennie Demo (no login required)
-Route::get('/try-gennie', fn() => Inertia::render('TryGennie'))->name('try-gennie');
-Route::get('/try-gennie/{session}', fn($session) => Inertia::render('TryGennieResult', ['sessionId' => $session]))->name('try-gennie.result');
+// Public Try Gennie Demo - redirect to demo interview
+Route::get('/try-gennie', fn() => redirect('/i/acme-inc/senior-react-developer/uuSTjzPMSZsncAKQyiJyWsEbpptDLrmm'))->name('try-gennie');
 
 // Public Interview Access (Magic Links - no login required)
 Route::get('/i/{company}/{job}/{token}', [PublicInterviewController::class, 'showInterview'])->name('public.interview');
