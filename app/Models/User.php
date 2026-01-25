@@ -26,6 +26,25 @@ class User extends Authenticatable
         'company_name',
         'phone',
         'is_onboarded',
+        // Company Settings
+        'company_logo',
+        'company_description',
+        'company_industry',
+        'company_website',
+        // Interview Preferences
+        'default_voice_id',
+        'default_interview_duration',
+        'default_greeting_message',
+        'timezone',
+        // Notification Settings
+        'notify_interview_completed',
+        'notify_high_score',
+        'high_score_threshold',
+        'notification_frequency',
+        'notify_scheduled_reminders',
+        // Branding
+        'brand_color',
+        'thank_you_message',
     ];
 
     /**
@@ -49,6 +68,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_onboarded' => 'boolean',
+            'notify_interview_completed' => 'boolean',
+            'notify_high_score' => 'boolean',
+            'notify_scheduled_reminders' => 'boolean',
+            'default_interview_duration' => 'integer',
+            'high_score_threshold' => 'integer',
         ];
     }
 

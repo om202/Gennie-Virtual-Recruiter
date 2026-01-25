@@ -9,6 +9,7 @@ use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\PublicInterviewController;
+use App\Http\Controllers\ProfileController;
 use Inertia\Inertia;
 
 Route::get('/', [VoiceClientController::class, 'landing']);
@@ -40,7 +41,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/profile', fn() => Inertia::render('Profile', ['auth' => ['user' => Auth::user()]]))->name('profile');
+
+    // Profile Settings
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile/account', [ProfileController::class, 'updateAccount'])->name('profile.account');
+    Route::put('/profile/company', [ProfileController::class, 'updateCompany'])->name('profile.company');
+    Route::post('/profile/logo', [ProfileController::class, 'uploadLogo'])->name('profile.logo');
+    Route::put('/profile/interview-preferences', [ProfileController::class, 'updateInterviewPreferences'])->name('profile.interview-preferences');
+    Route::put('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications');
+    Route::put('/profile/branding', [ProfileController::class, 'updateBranding'])->name('profile.branding');
 
     // Interview Management
     Route::get('/interviews', [InterviewController::class, 'index'])->name('interviews.index');

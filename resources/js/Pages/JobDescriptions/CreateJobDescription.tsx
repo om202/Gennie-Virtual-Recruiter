@@ -21,7 +21,7 @@ export default function CreateJobDescription({ defaultCompanyName }: CreateJobDe
         <div className="min-h-screen bg-muted/50">
             <Head title="Create Job Description" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
                     <Link href="/job-descriptions">
