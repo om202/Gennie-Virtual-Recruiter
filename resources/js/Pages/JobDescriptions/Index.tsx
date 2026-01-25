@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye, Globe } from 'lucide-react'
+import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye, Globe, ToggleLeft, ToggleRight } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -307,16 +307,14 @@ ${job.company_name} Hiring Team`
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {jobDescriptions.map((job) => (
-                                <Card key={job.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-start">
-                                            <div className="space-y-1">
-                                                <CardTitle className="text-lg leading-tight flex items-center justify-between gap-2">
-                                                    <span>{job.title}</span>
-                                                </CardTitle>
-                                                <CardDescription>{job.company_name}</CardDescription>
+                                <Card key={job.id} className={`hover:shadow-md transition-shadow flex flex-col ${highlightedJobId === job.id ? 'ring-2 ring-primary' : ''}`}>
+                                    <CardHeader>
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <CardTitle className="text-lg truncate">{job.title}</CardTitle>
+                                                <CardDescription className="truncate">{job.company_name}</CardDescription>
                                             </div>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-1 shrink-0">
                                                 <Link href={`/job-descriptions/${job.id}/edit`}>
                                                     <Button
                                                         variant="ghost"
@@ -340,7 +338,7 @@ ${job.company_name} Hiring Team`
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="flex-1 space-y-4">
                                         {/* Location */}
                                         {job.location && (
                                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -387,31 +385,58 @@ ${job.company_name} Hiring Team`
                                                 {formatDate(job.created_at)}
                                             </span>
                                         </div>
+                                    </CardContent>
 
-                                        {/* Actions - matching Interview cards layout */}
-                                        <div className="space-y-2">
+                                    {/* Actions at bottom */}
+                                    <CardContent className="pt-0 space-y-2">
+                                        <div className="flex gap-2">
                                             <Button
-                                                variant="outlinePrimary"
-                                                className="w-full"
+                                                variant={job.public_link_enabled ? "outlinePrimary" : "outline"}
+                                                className="flex-1"
                                                 onClick={() => handleOpenShareDialog(job)}
+                                                disabled={!job.public_link_enabled}
                                             >
                                                 <Link2 className="h-4 w-4 mr-2" />
-                                                Share Application Link
+                                                {job.public_link_enabled ? 'Share Link' : 'Private'}
                                             </Button>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Link href={`/job-descriptions/${job.id}/applications`}>
-                                                    <Button variant="outline" size="sm" className="w-full">
-                                                        <FileText className="h-4 w-4 mr-2" />
-                                                        Applications
-                                                    </Button>
-                                                </Link>
-                                                <Link href={`/interviews/create?job_description_id=${job.id}`}>
-                                                    <Button variant="outline" size="sm" className="w-full">
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        Interview
-                                                    </Button>
-                                                </Link>
-                                            </div>
+                                            <Button
+                                                variant={job.public_link_enabled ? "outline" : "ghost"}
+                                                size="icon"
+                                                className={job.public_link_enabled ? "text-green-600" : "text-muted-foreground"}
+                                                title={job.public_link_enabled ? "Public - visible on careers page" : "Private - hidden from careers page"}
+                                                onClick={async () => {
+                                                    try {
+                                                        await window.axios.post(`/job-descriptions/${job.id}/toggle-public`);
+                                                        setJobDescriptions(prev => prev.map(j =>
+                                                            j.id === job.id
+                                                                ? { ...j, public_link_enabled: !j.public_link_enabled }
+                                                                : j
+                                                        ));
+                                                    } catch (error) {
+                                                        console.error('Failed to toggle public status:', error);
+                                                    }
+                                                }}
+                                            >
+                                                {job.public_link_enabled ? (
+                                                    <ToggleRight className="h-5 w-5" />
+                                                ) : (
+                                                    <ToggleLeft className="h-5 w-5" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Link href={`/job-descriptions/${job.id}/applications`}>
+                                                <Button variant="outline" size="sm" className="w-full">
+                                                    <FileText className="h-4 w-4 mr-2" />
+                                                    Applications
+                                                </Button>
+                                            </Link>
+                                            <Link href={`/interviews/create?job_description_id=${job.id}`}>
+                                                <Button variant="outline" size="sm" className="w-full">
+                                                    <Plus className="h-4 w-4 mr-2" />
+                                                    Interview
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </CardContent>
                                 </Card>

@@ -83,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'update'])->name('job-descriptions.update');
     Route::delete('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'destroy'])->name('job-descriptions.destroy');
     Route::post('/job-descriptions/{jobDescription}/enable-public-link', [JobDescriptionController::class, 'enablePublicLink'])->name('job-descriptions.enable-public-link');
+    Route::post('/job-descriptions/{jobDescription}/toggle-public', [JobDescriptionController::class, 'togglePublic'])->name('job-descriptions.toggle-public');
     Route::get('/job-descriptions/{jobDescription}/applications', [JobDescriptionController::class, 'applications'])->name('job-descriptions.applications');
 
     // Careers Page Management

@@ -261,6 +261,22 @@ class JobDescriptionController extends Controller
     }
 
     /**
+     * Toggle public visibility for a job description.
+     */
+    public function togglePublic(Request $request, JobDescription $jobDescription)
+    {
+        $this->authorize('update', $jobDescription);
+
+        $jobDescription->public_link_enabled = !$jobDescription->public_link_enabled;
+        $jobDescription->save();
+
+        return response()->json([
+            'success' => true,
+            'public_link_enabled' => $jobDescription->public_link_enabled,
+        ]);
+    }
+
+    /**
      * Display applications for a job description.
      */
     public function applications(Request $request, JobDescription $jobDescription)
