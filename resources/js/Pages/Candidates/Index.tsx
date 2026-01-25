@@ -15,7 +15,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import ViewCandidateDialog from './Components/ViewCandidateDialog';
 
 interface WorkHistory {
     company: string;
@@ -87,8 +86,6 @@ const getSubtitle = (candidate: Candidate): string | null => {
 
 export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
-    const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [highlightedCandidateId, setHighlightedCandidateId] = useState<string | null>(null);
@@ -131,11 +128,6 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
         router.delete(`/candidates/${candidateToDelete.id}`);
         setDeleteDialogOpen(false);
         setCandidateToDelete(null);
-    };
-
-    const handleView = (candidate: Candidate) => {
-        setSelectedCandidate(candidate);
-        setDialogOpen(true);
     };
 
     return (
@@ -303,15 +295,16 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
 
                                     {/* Action Buttons */}
                                     <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex-1"
-                                            onClick={() => handleView(candidate)}
-                                        >
-                                            <Eye className="h-4 w-4 mr-2" />
-                                            View
-                                        </Button>
+                                        <Link href={`/candidates/${candidate.id}`} className="flex-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                            >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                View
+                                            </Button>
+                                        </Link>
                                         <Link href={`/interviews/logs?candidate=${candidate.id}`} className="flex-1">
                                             <Button
                                                 variant="outline"
@@ -328,13 +321,6 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                         ))}
                     </div>
                 )}
-
-                {/* View Candidate Dialog */}
-                <ViewCandidateDialog
-                    candidate={selectedCandidate}
-                    open={dialogOpen}
-                    onOpenChange={setDialogOpen}
-                />
 
                 {/* Delete Confirmation Dialog */}
                 <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

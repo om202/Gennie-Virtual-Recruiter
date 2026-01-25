@@ -402,156 +402,154 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
 
                         {/* AI Extracted Data Section */}
                         {candidate.ai_profile_data && (
-                            <>
-                                <Separator className="my-6" />
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="h-5 w-5 text-purple-500" />
-                                        <h3 className="text-lg font-semibold">AI Extracted Data</h3>
-                                        <Badge variant="secondary" className="text-xs">
-                                            From Interview
-                                        </Badge>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        This data was automatically extracted from interview conversations.
-                                        {candidate.ai_profile_data.extracted_at && (
-                                            <> Extracted on {new Date(candidate.ai_profile_data.extracted_at).toLocaleDateString()}.</>
-                                        )}
-                                    </p>
+                            <div className="bg-primary/5 rounded-[--radius] p-6 space-y-6 -mx-2">
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium text-primary">AI Extracted Data</span>
+                                    <Badge variant="secondary" className="text-xs font-normal">From Interview</Badge>
+                                </div>
 
-                                    {/* AI Skills */}
-                                    {candidate.ai_profile_data.skills && candidate.ai_profile_data.skills.length > 0 && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Sparkles className="h-3 w-3 text-purple-500" />
-                                                    Skills Mentioned
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {candidate.ai_profile_data.skills.map((skill, i) => (
-                                                        <Badge key={i} variant="outline" className="bg-white">
-                                                            {skill}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
+                                {/* AI Experience Summary */}
+                                {candidate.ai_profile_data.experience_summary && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Professional Summary</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                                {candidate.ai_profile_data.experience_summary}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                    {/* AI Experience Summary */}
-                                    {candidate.ai_profile_data.experience_summary && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Sparkles className="h-3 w-3 text-purple-500" />
-                                                    Experience Summary
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                                    {candidate.ai_profile_data.experience_summary}
-                                                </p>
-                                            </CardContent>
-                                        </Card>
-                                    )}
+                                {/* AI Skills */}
+                                {candidate.ai_profile_data.skills && candidate.ai_profile_data.skills.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Skills</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground">
+                                                {candidate.ai_profile_data.skills.join(', ')}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                    {/* AI Work History */}
-                                    {candidate.ai_profile_data.work_history && candidate.ai_profile_data.work_history.length > 0 && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Sparkles className="h-3 w-3 text-purple-500" />
-                                                    <Briefcase className="h-3 w-3" />
-                                                    Work Experience Mentioned
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-3">
-                                                {candidate.ai_profile_data.work_history.map((job, i) => (
-                                                    <div key={i} className="text-sm">
-                                                        <p className="font-medium">{job.title || 'Role'} at {job.company}</p>
+                                {/* AI Work History */}
+                                {candidate.ai_profile_data.work_history && candidate.ai_profile_data.work_history.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <Briefcase className="h-4 w-4" />
+                                                Work Experience
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {candidate.ai_profile_data.work_history.map((job, i) => (
+                                                <div key={i}>
+                                                    {i > 0 && <Separator className="my-4" />}
+                                                    <div className="space-y-2">
+                                                        <div>
+                                                            <h4 className="font-semibold">{job.title || 'Role'}</h4>
+                                                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                                                        </div>
                                                         {job.description && (
-                                                            <p className="text-muted-foreground text-xs mt-1">{job.description}</p>
+                                                            <p className="text-sm whitespace-pre-wrap">{job.description}</p>
                                                         )}
                                                     </div>
-                                                ))}
-                                            </CardContent>
-                                        </Card>
-                                    )}
+                                                </div>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                    {/* AI Education */}
-                                    {candidate.ai_profile_data.education && candidate.ai_profile_data.education.length > 0 && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Sparkles className="h-3 w-3 text-purple-500" />
-                                                    <GraduationCap className="h-3 w-3" />
-                                                    Education Mentioned
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-2">
-                                                {candidate.ai_profile_data.education.map((edu, i) => (
-                                                    <div key={i} className="text-sm">
-                                                        <p className="font-medium">{edu.degree} {edu.field && `in ${edu.field}`}</p>
-                                                        <p className="text-muted-foreground text-xs">{edu.institution}</p>
+                                {/* AI Education */}
+                                {candidate.ai_profile_data.education && candidate.ai_profile_data.education.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <GraduationCap className="h-4 w-4" />
+                                                Education
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {candidate.ai_profile_data.education.map((edu, i) => (
+                                                <div key={i}>
+                                                    {i > 0 && <Separator className="my-4" />}
+                                                    <div className="space-y-1">
+                                                        <h4 className="font-semibold">{edu.degree} {edu.field && `in ${edu.field}`}</h4>
+                                                        <p className="text-sm text-muted-foreground">{edu.institution}</p>
                                                     </div>
-                                                ))}
-                                            </CardContent>
-                                        </Card>
-                                    )}
-
-                                    {/* AI Certificates */}
-                                    {candidate.ai_profile_data.certificates && candidate.ai_profile_data.certificates.length > 0 && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Sparkles className="h-3 w-3 text-purple-500" />
-                                                    <Award className="h-3 w-3" />
-                                                    Certifications Mentioned
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {candidate.ai_profile_data.certificates.map((cert, i) => (
-                                                        <Badge key={i} variant="outline" className="bg-white">
-                                                            {cert.name}
-                                                        </Badge>
-                                                    ))}
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                    {/* AI Location & Other */}
-                                    {(candidate.ai_profile_data.city || candidate.ai_profile_data.salary_expectation || candidate.ai_profile_data.work_authorization) && (
-                                        <Card className="border-purple-200 bg-purple-50/30">
-                                            <CardContent className="pt-4">
-                                                <div className="flex flex-wrap gap-4 text-sm">
-                                                    {candidate.ai_profile_data.city && (
-                                                        <div className="flex items-center gap-2">
-                                                            <MapPin className="h-3 w-3 text-muted-foreground" />
-                                                            <span>{candidate.ai_profile_data.city}{candidate.ai_profile_data.state && `, ${candidate.ai_profile_data.state}`}</span>
-                                                        </div>
-                                                    )}
-                                                    {candidate.ai_profile_data.salary_expectation && (
-                                                        <div className="flex items-center gap-2">
-                                                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                                            <span>{candidate.ai_profile_data.salary_expectation}</span>
-                                                        </div>
-                                                    )}
-                                                    {candidate.ai_profile_data.work_authorization && (
-                                                        <div className="flex items-center gap-2">
-                                                            <FileCheck className="h-3 w-3 text-muted-foreground" />
-                                                            <span>{candidate.ai_profile_data.work_authorization}</span>
-                                                        </div>
-                                                    )}
+                                {/* AI Certificates */}
+                                {candidate.ai_profile_data.certificates && candidate.ai_profile_data.certificates.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <Award className="h-4 w-4" />
+                                                Certifications
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            {candidate.ai_profile_data.certificates.map((cert, i) => (
+                                                <div key={i} className="flex items-start gap-3">
+                                                    <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-sm">{cert.name}</p>
+                                                        {cert.issuer && (
+                                                            <p className="text-xs text-muted-foreground">{cert.issuer}</p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-                                </div>
-                            </>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* AI Other Info */}
+                                {(candidate.ai_profile_data.city || candidate.ai_profile_data.salary_expectation || candidate.ai_profile_data.work_authorization) && (
+                                    <Card>
+                                        <CardContent className="pt-6">
+                                            <div className="flex flex-wrap gap-6">
+                                                {candidate.ai_profile_data.work_authorization && (
+                                                    <div className="flex items-center gap-2">
+                                                        <FileCheck className="h-4 w-4 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="text-xs text-muted-foreground">Work Authorization</p>
+                                                            <p className="font-medium text-sm">{candidate.ai_profile_data.work_authorization}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {candidate.ai_profile_data.salary_expectation && (
+                                                    <div className="flex items-center gap-2">
+                                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="text-xs text-muted-foreground">Salary Expectation</p>
+                                                            <p className="font-medium text-sm">{candidate.ai_profile_data.salary_expectation}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {candidate.ai_profile_data.city && (
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="text-xs text-muted-foreground">Location</p>
+                                                            <p className="font-medium text-sm">{candidate.ai_profile_data.city}{candidate.ai_profile_data.state && `, ${candidate.ai_profile_data.state}`}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
                         )}
                     </div>
                 </ScrollArea>

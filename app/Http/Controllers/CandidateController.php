@@ -131,6 +131,17 @@ class CandidateController extends Controller
         return redirect()->back()->with('success', 'Candidate added successfully.');
     }
 
+    public function show(Candidate $candidate)
+    {
+        if ($candidate->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return Inertia::render('Candidates/Show', [
+            'candidate' => $candidate,
+        ]);
+    }
+
     public function edit(Candidate $candidate)
     {
         if ($candidate->user_id !== auth()->id()) {
