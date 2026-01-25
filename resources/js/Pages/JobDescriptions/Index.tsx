@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2 } from 'lucide-react'
+
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,7 +23,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog"
 
 interface JobDescription {
@@ -67,7 +68,8 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
     const [selectedJob, setSelectedJob] = useState<JobDescription | null>(null)
     const [publicUrl, setPublicUrl] = useState<string>('')
     const [isGeneratingLink, setIsGeneratingLink] = useState(false)
-    const [urlCopied, setUrlCopied] = useState(false)
+    const [copiedLink, setCopiedLink] = useState(false)
+    const [copiedEmail, setCopiedEmail] = useState(false)
 
     // Check for highlight query parameter on mount
     useEffect(() => {
@@ -75,7 +77,6 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         const highlightId = urlParams.get('highlight')
         if (highlightId) {
             setHighlightedJobId(highlightId)
-            // Filter to show only the highlighted JD
             const filtered = initialJobs.filter(j => j.id === highlightId)
             if (filtered.length > 0) {
                 setJobDescriptions(filtered)
@@ -86,7 +87,6 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
     const clearFilter = () => {
         setHighlightedJobId(null)
         setJobDescriptions(initialJobs)
-        // Update URL without the query param
         router.visit('/job-descriptions', { preserveState: true, replace: true })
     }
 
@@ -111,10 +111,11 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         }
     }
 
-    const handleShareClick = async (job: JobDescription) => {
+    const handleOpenShareDialog = async (job: JobDescription) => {
         setSelectedJob(job)
         setShareDialogOpen(true)
-        setUrlCopied(false)
+        setCopiedLink(false)
+        setCopiedEmail(false)
 
         // If already has a public link, construct URL
         if (job.public_token && job.public_link_enabled) {
@@ -128,7 +129,6 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                 const response = await window.axios.post(`/job-descriptions/${job.id}/enable-public-link`)
                 if (response.data.success) {
                     setPublicUrl(response.data.public_url)
-                    // Update local state
                     setJobDescriptions(prev => prev.map(j =>
                         j.id === job.id
                             ? { ...j, public_token: response.data.public_token, public_link_enabled: true }
@@ -143,10 +143,38 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         }
     }
 
-    const handleCopyUrl = async () => {
+    const handleCopyLink = async () => {
         await navigator.clipboard.writeText(publicUrl)
-        setUrlCopied(true)
-        setTimeout(() => setUrlCopied(false), 2000)
+        setCopiedLink(true)
+        setTimeout(() => setCopiedLink(false), 2000)
+    }
+
+    const generateEmailTemplate = (job: JobDescription, url: string) => {
+        return `Hi,
+
+We're excited to share an opportunity with you!
+
+Job Details:
+• Position: ${job.title}
+• Company: ${job.company_name}
+• Location: ${job.location || 'Not specified'} (${getRemoteTypeLabel(job.remote_type)})
+• Type: ${getEmploymentTypeLabel(job.employment_type)}
+
+Apply directly using this link:
+${url}
+
+We look forward to receiving your application!
+
+Best regards,
+${job.company_name} Hiring Team`
+    }
+
+    const handleCopyEmailTemplate = async () => {
+        if (!selectedJob) return
+        const template = generateEmailTemplate(selectedJob, publicUrl)
+        await navigator.clipboard.writeText(template)
+        setCopiedEmail(true)
+        setTimeout(() => setCopiedEmail(false), 2000)
     }
 
     const getRemoteTypeLabel = (type: string) => {
@@ -191,20 +219,11 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         return `Up to ${currency} ${job.salary_max?.toLocaleString()}${period}`
     }
 
-    const getEmailTemplate = () => {
-        if (!selectedJob) return ''
-        return `Hi,
-
-I wanted to share an exciting opportunity with you!
-
-We're hiring for the position of ${selectedJob.title} at ${selectedJob.company_name}.
-
-You can apply directly using this link:
-${publicUrl}
-
-Looking forward to receiving your application!
-
-Best regards`
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+        })
     }
 
     return (
@@ -232,7 +251,7 @@ Best regards`
                 </div>
 
                 {/* Main Content */}
-                <div className="space-y-6">
+                <>
                     {/* Filter Indicator */}
                     {highlightedJobId && (
                         <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
@@ -247,13 +266,6 @@ Best regards`
                                 Clear Filter
                             </Button>
                         </div>
-                    )}
-
-                    {/* Count Info - Only show when there are jobs and not filtered */}
-                    {jobDescriptions.length > 0 && !highlightedJobId && (
-                        <p className="text-sm text-muted-foreground">
-                            {jobDescriptions.length} job description{jobDescriptions.length !== 1 ? 's' : ''}
-                        </p>
                     )}
 
                     {/* Job Grid */}
@@ -277,30 +289,18 @@ Best regards`
                                 <Card key={job.id} className="hover:shadow-md transition-shadow">
                                     <CardHeader className="pb-2">
                                         <div className="flex justify-between items-start">
-                                            <div className="space-y-1 flex-1 min-w-0">
-                                                <CardTitle className="text-lg leading-tight truncate">
-                                                    {job.title}
+                                            <div className="space-y-1">
+                                                <CardTitle className="text-lg leading-tight flex items-center justify-between gap-2">
+                                                    <span>{job.title}</span>
                                                 </CardTitle>
-                                                <CardDescription className="flex items-center gap-1">
-                                                    <Building2 className="h-3 w-3" />
-                                                    {job.company_name}
-                                                </CardDescription>
+                                                <CardDescription>{job.company_name}</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
-                                                    onClick={() => handleShareClick(job)}
-                                                    title="Share Application Link"
-                                                >
-                                                    <Link2 className="h-4 w-4" />
-                                                </Button>
                                                 <Link href={`/job-descriptions/${job.id}/edit`}>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary"
                                                         title="Edit Job Description"
                                                     >
                                                         <Pencil className="h-4 w-4" />
@@ -309,7 +309,7 @@ Best regards`
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                                     onClick={() => confirmDelete(job)}
                                                     disabled={job.interviews_count > 0}
                                                     title="Delete Job Description"
@@ -319,7 +319,7 @@ Best regards`
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="space-y-3">
+                                    <CardContent className="space-y-4">
                                         {/* Location */}
                                         {job.location && (
                                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -328,7 +328,7 @@ Best regards`
                                             </div>
                                         )}
 
-                                        {/* Tags */}
+                                        {/* Tags - matching Interview cards styling */}
                                         <div className="flex flex-wrap gap-2">
                                             <Badge variant="outline" className={getRemoteTypeColor(job.remote_type)}>
                                                 {getRemoteTypeLabel(job.remote_type)}
@@ -336,35 +336,68 @@ Best regards`
                                             <Badge variant="outline">
                                                 {getEmploymentTypeLabel(job.employment_type)}
                                             </Badge>
+                                            {formatSalary(job) && (
+                                                <Badge variant="outline">
+                                                    <DollarSign className="h-3 w-3 mr-1" />
+                                                    {formatSalary(job)}
+                                                </Badge>
+                                            )}
                                         </div>
 
-                                        {/* Salary */}
-                                        {formatSalary(job) && (
-                                            <p className="text-sm font-medium">{formatSalary(job)}</p>
-                                        )}
-
-                                        {/* Stats */}
-                                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
-                                            <div className="flex items-center gap-1">
-                                                <Users className="h-3 w-3" />
-                                                <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''}</span>
+                                        {/* Stats - matching Interview cards styling */}
+                                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-1">
+                                                    <Users className="h-3 w-3" />
+                                                    <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''}</span>
+                                                </div>
+                                                {job.applications_count > 0 && (
+                                                    <Link
+                                                        href={`/job-descriptions/${job.id}/applications`}
+                                                        className="flex items-center gap-1 hover:text-primary"
+                                                    >
+                                                        <FileText className="h-3 w-3" />
+                                                        <span>{job.applications_count} app{job.applications_count !== 1 ? 's' : ''}</span>
+                                                    </Link>
+                                                )}
                                             </div>
-                                            {job.applications_count > 0 && (
-                                                <Link
-                                                    href={`/job-descriptions/${job.id}/applications`}
-                                                    className="flex items-center gap-1 hover:text-primary"
-                                                >
-                                                    <FileText className="h-3 w-3" />
-                                                    <span>{job.applications_count} application{job.applications_count !== 1 ? 's' : ''}</span>
+                                            <span className="flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
+                                                {formatDate(job.created_at)}
+                                            </span>
+                                        </div>
+
+                                        {/* Actions - matching Interview cards layout */}
+                                        <div className="space-y-2">
+                                            <Button
+                                                variant="outlinePrimary"
+                                                className="w-full"
+                                                onClick={() => handleOpenShareDialog(job)}
+                                            >
+                                                <Link2 className="h-4 w-4 mr-2" />
+                                                Share Application Link
+                                            </Button>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Link href={`/job-descriptions/${job.id}/applications`}>
+                                                    <Button variant="outline" size="sm" className="w-full">
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        Applications
+                                                    </Button>
                                                 </Link>
-                                            )}
+                                                <Link href="/interviews/create">
+                                                    <Button variant="outline" size="sm" className="w-full">
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Interview
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                             ))}
                         </div>
                     )}
-                </div>
+                </>
             </div>
 
             {/* Delete Confirmation Alert */}
@@ -389,20 +422,30 @@ Best regards`
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Share Link Dialog */}
+            {/* Share Link Dialog - matching Interview share dialog styling */}
             <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="sm:max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
+                        <DialogTitle className="flex items-center gap-2 text-primary">
                             <Link2 className="h-5 w-5" />
                             Share Application Link
                         </DialogTitle>
                         <DialogDescription>
-                            Share this link with candidates to receive applications for {selectedJob?.title}.
+                            Share this link with candidates to receive applications for this position.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-6">
+                        {/* Job Info - matching Interview dialog styling */}
+                        {selectedJob && (
+                            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                                <p className="font-semibold text-primary">{selectedJob.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedJob.company_name} • {selectedJob.location || 'Remote'} • {getEmploymentTypeLabel(selectedJob.employment_type)}
+                                </p>
+                            </div>
+                        )}
+
                         {isGeneratingLink ? (
                             <div className="flex items-center justify-center py-8">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -410,68 +453,87 @@ Best regards`
                             </div>
                         ) : (
                             <>
-                                {/* URL Input with Copy */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Application Link</label>
+                                {/* Copy Link Section */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm font-medium">Application Link</Label>
                                     <div className="flex gap-2">
-                                        <Input
-                                            value={publicUrl}
-                                            readOnly
-                                            className="font-mono text-sm"
-                                        />
+                                        <div className="flex-1 bg-muted rounded-md px-4 py-3 text-sm font-mono break-all border">
+                                            {publicUrl}
+                                        </div>
                                         <Button
-                                            onClick={handleCopyUrl}
-                                            variant="outline"
+                                            variant={copiedLink ? "outline" : "default"}
+                                            onClick={handleCopyLink}
                                             className="shrink-0"
                                         >
-                                            {urlCopied ? (
+                                            {copiedLink ? (
                                                 <>
-                                                    <Check className="h-4 w-4 mr-2 text-green-500" />
-                                                    Copied
+                                                    <Check className="h-4 w-4 mr-2 text-green-600" />
+                                                    Copied!
                                                 </>
                                             ) : (
                                                 <>
                                                     <Copy className="h-4 w-4 mr-2" />
-                                                    Copy
+                                                    Copy Link
                                                 </>
                                             )}
                                         </Button>
                                     </div>
                                 </div>
 
-                                {/* Email Template */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Email Template</label>
-                                    <div className="relative">
-                                        <textarea
-                                            value={getEmailTemplate()}
-                                            readOnly
-                                            className="w-full h-40 p-3 text-sm border rounded-md bg-muted/50 resize-none"
-                                        />
+                                {/* Email Template Section */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-sm font-medium flex items-center gap-2">
+                                            <Mail className="h-4 w-4 text-primary" />
+                                            Email Template
+                                        </Label>
                                         <Button
-                                            variant="ghost"
+                                            variant={copiedEmail ? "ghost" : "outlinePrimary"}
                                             size="sm"
-                                            className="absolute top-2 right-2"
-                                            onClick={async () => {
-                                                await navigator.clipboard.writeText(getEmailTemplate())
-                                            }}
+                                            onClick={handleCopyEmailTemplate}
                                         >
-                                            <Copy className="h-3 w-3" />
+                                            {copiedEmail ? (
+                                                <>
+                                                    <Check className="h-4 w-4 mr-2 text-green-600" />
+                                                    Copied!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy className="h-4 w-4 mr-2" />
+                                                    Copy Template
+                                                </>
+                                            )}
                                         </Button>
                                     </div>
+                                    <Textarea
+                                        readOnly
+                                        className="h-56 text-sm resize-none border-primary/20 focus-visible:ring-primary/30"
+                                        value={selectedJob ? generateEmailTemplate(selectedJob, publicUrl) : ''}
+                                    />
                                 </div>
+
+                                {/* Preview Section */}
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t" />
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-background px-2 text-muted-foreground">Or</span>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => window.open(publicUrl, '_blank')}
+                                    disabled={!publicUrl}
+                                >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Preview Application Page
+                                </Button>
                             </>
                         )}
                     </div>
-
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
-                            Close
-                        </Button>
-                        <Button onClick={() => window.open(publicUrl, '_blank')} disabled={!publicUrl}>
-                            Preview Link
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

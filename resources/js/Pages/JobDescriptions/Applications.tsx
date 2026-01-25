@@ -13,7 +13,9 @@ import {
     XCircle,
     Eye,
     MoreVertical,
-    Loader2
+    Loader2,
+    Briefcase,
+    Users
 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -108,7 +110,7 @@ export default function Applications({ jobDescription, applications: initialAppl
             <Head title={`Applications - ${jobDescription.title}`} />
 
             <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-8">
-                {/* Header */}
+                {/* Header - matching Interviews Index styling */}
                 <div className="space-y-4">
                     <Link
                         href="/job-descriptions"
@@ -118,10 +120,10 @@ export default function Applications({ jobDescription, applications: initialAppl
                         Back to Job Descriptions
                     </Link>
 
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-                                <FileText className="h-7 w-7 text-primary/80" />
+                                <Users className="h-7 w-7 text-primary/80" />
                                 Applications
                             </h1>
                             <p className="text-muted-foreground">
@@ -149,102 +151,104 @@ export default function Applications({ jobDescription, applications: initialAppl
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {applications.map((app) => (
                             <Card key={app.id} className="hover:shadow-md transition-shadow">
-                                <CardContent className="p-6">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        {/* Candidate Info */}
-                                        <div className="space-y-2 flex-1">
-                                            <div className="flex items-center gap-3">
-                                                <h3 className="text-lg font-semibold">{app.candidate.name}</h3>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={getStatusBadge(app)}
-                                                >
-                                                    {app.status_label}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                                <a
-                                                    href={`mailto:${app.candidate.email}`}
-                                                    className="flex items-center gap-1 hover:text-foreground"
-                                                >
-                                                    <Mail className="h-3 w-3" />
-                                                    {app.candidate.email}
-                                                </a>
-                                                {app.candidate.phone && (
-                                                    <a
-                                                        href={`tel:${app.candidate.phone}`}
-                                                        className="flex items-center gap-1 hover:text-foreground"
-                                                    >
-                                                        <Phone className="h-3 w-3" />
-                                                        {app.candidate.phone}
-                                                    </a>
-                                                )}
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    Applied {app.applied_at}
-                                                </span>
-                                            </div>
+                                <CardContent className="p-6 space-y-4">
+                                    {/* Header with Name and Status */}
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <h3 className="text-lg font-semibold">{app.candidate.name}</h3>
+                                            <Badge
+                                                variant="outline"
+                                                className={getStatusBadge(app)}
+                                            >
+                                                {app.status_label}
+                                            </Badge>
                                         </div>
-
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-2">
-                                            {app.cover_letter && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setCoverLetterDialog({ open: true, content: app.cover_letter })}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={updatingId === app.id}>
+                                                    {updatingId === app.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() => updateStatus(app.id, 'under_review')}
+                                                    disabled={app.status === 'under_review'}
                                                 >
-                                                    <Eye className="h-4 w-4 mr-1" />
-                                                    Cover Letter
-                                                </Button>
-                                            )}
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    Mark as Under Review
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => updateStatus(app.id, 'shortlisted')}
+                                                    disabled={app.status === 'shortlisted'}
+                                                >
+                                                    <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
+                                                    Shortlist
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    onClick={() => updateStatus(app.id, 'rejected')}
+                                                    disabled={app.status === 'rejected'}
+                                                    className="text-destructive"
+                                                >
+                                                    <XCircle className="h-4 w-4 mr-2" />
+                                                    Reject
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
 
-                                            <Link href={`/candidates/${app.candidate.id}`}>
-                                                <Button variant="outline" size="sm">
-                                                    View Profile
-                                                </Button>
-                                            </Link>
+                                    {/* Contact Info */}
+                                    <div className="space-y-1 text-sm text-muted-foreground">
+                                        <a
+                                            href={`mailto:${app.candidate.email}`}
+                                            className="flex items-center gap-1 hover:text-foreground"
+                                        >
+                                            <Mail className="h-3 w-3" />
+                                            {app.candidate.email}
+                                        </a>
+                                        {app.candidate.phone && (
+                                            <a
+                                                href={`tel:${app.candidate.phone}`}
+                                                className="flex items-center gap-1 hover:text-foreground"
+                                            >
+                                                <Phone className="h-3 w-3" />
+                                                {app.candidate.phone}
+                                            </a>
+                                        )}
+                                    </div>
 
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" disabled={updatingId === app.id}>
-                                                        {updatingId === app.id ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        onClick={() => updateStatus(app.id, 'under_review')}
-                                                        disabled={app.status === 'under_review'}
-                                                    >
-                                                        <Eye className="h-4 w-4 mr-2" />
-                                                        Mark as Under Review
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => updateStatus(app.id, 'shortlisted')}
-                                                        disabled={app.status === 'shortlisted'}
-                                                    >
-                                                        <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
-                                                        Shortlist
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => updateStatus(app.id, 'rejected')}
-                                                        disabled={app.status === 'rejected'}
-                                                        className="text-destructive"
-                                                    >
-                                                        <XCircle className="h-4 w-4 mr-2" />
-                                                        Reject
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
+                                    {/* Applied Date */}
+                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <Clock className="h-3 w-3" />
+                                        <span>Applied {app.applied_at}</span>
+                                    </div>
+
+                                    {/* Actions - matching Interview cards layout */}
+                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+                                        {app.cover_letter && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                                onClick={() => setCoverLetterDialog({ open: true, content: app.cover_letter })}
+                                            >
+                                                <FileText className="h-4 w-4 mr-2" />
+                                                Cover Letter
+                                            </Button>
+                                        )}
+                                        <Link href={`/candidates/${app.candidate.id}`} className={app.cover_letter ? '' : 'col-span-2'}>
+                                            <Button variant="outline" size="sm" className="w-full">
+                                                <Briefcase className="h-4 w-4 mr-2" />
+                                                View Profile
+                                            </Button>
+                                        </Link>
                                     </div>
                                 </CardContent>
                             </Card>
