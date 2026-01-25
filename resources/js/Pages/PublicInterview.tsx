@@ -243,6 +243,15 @@ export default function PublicInterview({ interview, candidate, token, error, is
             </Head>
 
             <div className="bg-muted/50 text-foreground min-h-screen flex flex-col p-4 pb-16">
+                {/* Powered by Gennie */}
+                <header className="w-full mt-6 mb-10">
+                    <a href="/" className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                        <span className="text-sm">Powered by</span>
+                        <img src="/gennie.png" alt="Gennie" className="h-6 w-6 object-contain" />
+                        <span className="font-semibold text-sm text-primary">Gennie Talent</span>
+                    </a>
+                </header>
+
                 {/* Self Preview Banner */}
                 {isSelfPreview && (
                     <div className="w-full max-w-6xl mx-auto mb-6">

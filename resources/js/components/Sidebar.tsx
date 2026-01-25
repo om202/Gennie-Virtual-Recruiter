@@ -14,7 +14,7 @@ import {
 type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
 
 interface SidebarProps {
-    activeTab: NavigationTab;
+    activeTab?: NavigationTab;
     isCollapsed: boolean;
     onToggle: () => void;
     user?: {

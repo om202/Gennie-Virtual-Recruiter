@@ -26,6 +26,9 @@ export default function Layout({ children }: PropsWithChildren) {
     const currentPath = typeof url === 'string' ? url : window.location.pathname;
     const isHomePage = currentPath === '/';
 
+    // Show sidebar for authenticated users on non-home pages
+    const showSidebar = user && !isHomePage;
+
     const [isCollapsed, setIsCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('sidebar-collapsed');
@@ -41,7 +44,7 @@ export default function Layout({ children }: PropsWithChildren) {
     return (
         <div className="min-h-screen bg-background">
             {isHomePage && <Header />}
-            {activeTab && (
+            {showSidebar && (
                 <Sidebar
                     activeTab={activeTab}
                     isCollapsed={isCollapsed}
@@ -52,8 +55,8 @@ export default function Layout({ children }: PropsWithChildren) {
             <main
                 className={cn(
                     "pb-16 md:pb-0",
-                    activeTab && "transition-all duration-300 ease-in-out",
-                    activeTab ? (isCollapsed ? "md:pl-20" : "md:pl-60") : ""
+                    showSidebar && "transition-all duration-300 ease-in-out",
+                    showSidebar ? (isCollapsed ? "md:pl-20" : "md:pl-60") : ""
                 )}
             >
                 {children}
