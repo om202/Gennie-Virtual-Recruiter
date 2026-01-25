@@ -10,7 +10,7 @@
         content="Gennie - AI-powered virtual recruiter for automated candidate screening, voice interviews, and intelligent hiring automation. Fair, efficient, and available 24/7.">
     <meta name="keywords"
         content="AI recruiter, AI recruitment, automated hiring, voice AI interviewing, candidate screening, AI-powered recruitment">
-    <link rel="icon" type="image/x-icon" href="/favicon_gennie.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
