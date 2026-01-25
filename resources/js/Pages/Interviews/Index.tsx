@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Copy, Check, Eye, Mic } from 'lucide-react'
+import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Eye, Mic, Link2, Copy, Check, Mail } from 'lucide-react'
 
 import {
     AlertDialog,
@@ -15,6 +15,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 
 
@@ -71,7 +81,13 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
-    const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
+
+    // Share dialog state
+    const [shareDialogOpen, setShareDialogOpen] = useState(false)
+    const [shareInterview, setShareInterview] = useState<Interview | null>(null)
+    const [shareUrl, setShareUrl] = useState<string>('')
+    const [copiedLink, setCopiedLink] = useState(false)
+    const [copiedEmail, setCopiedEmail] = useState(false)
     const handleOpenSchedule = (interviewId?: string) => {
         if (interviewId) {
             router.visit(`/schedules/create?interview_id=${interviewId}`)
@@ -98,18 +114,11 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
         }
     }
 
-    const handleCopyLink = async (interview: Interview) => {
+    const handleOpenShareDialog = async (interview: Interview) => {
         try {
             // Call API to enable public link and get URL
             const res = await window.axios.post(`/interviews/${interview.id}/enable-public-link`)
             const publicUrl = res.data.url
-
-            // Copy to clipboard
-            await navigator.clipboard.writeText(publicUrl)
-
-            // Show feedback
-            setCopiedLinkId(interview.id)
-            setTimeout(() => setCopiedLinkId(null), 2000)
 
             // Update local state
             setInterviews(interviews.map(i =>
@@ -117,10 +126,51 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
                     ? { ...i, public_token: res.data.token, public_link_enabled: true }
                     : i
             ))
+
+            // Open share dialog
+            setShareInterview(interview)
+            setShareUrl(publicUrl)
+            setShareDialogOpen(true)
+            setCopiedLink(false)
+            setCopiedEmail(false)
         } catch (error) {
-            console.error("Failed to copy link:", error)
+            console.error("Failed to generate link:", error)
             alert('Failed to generate public link. Please try again.')
         }
+    }
+
+    const handleCopyLink = async () => {
+        await navigator.clipboard.writeText(shareUrl)
+        setCopiedLink(true)
+        setTimeout(() => setCopiedLink(false), 2000)
+    }
+
+    const generateEmailTemplate = (interview: Interview, url: string) => {
+        return `Hi,
+
+You have been invited to complete an AI-powered screening interview for the ${interview.job_title} position at ${interview.company_name}.
+
+Interview Details:
+• Position: ${interview.job_title}
+• Company: ${interview.company_name}
+• Duration: ~${interview.duration_minutes} minutes
+• Type: ${interview.interview_type.charAt(0).toUpperCase() + interview.interview_type.slice(1)} Interview
+
+Please click the link below to start your interview:
+${url}
+
+Note: You can complete this interview at any time that works for you. Make sure you're in a quiet environment with a stable internet connection.
+
+Best regards,
+${interview.company_name} Hiring Team`
+    }
+
+    const handleCopyEmailTemplate = async () => {
+        if (!shareInterview) return
+        const template = generateEmailTemplate(shareInterview, shareUrl)
+        await navigator.clipboard.writeText(template)
+        setCopiedEmail(true)
+        setTimeout(() => setCopiedEmail(false), 2000)
     }
 
     const handleStartInterview = async (interview: Interview) => {
@@ -217,15 +267,10 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    onClick={() => handleCopyLink(interview)}
-                                                    title="Copy Public Link"
-                                                    disabled={!interview.job_description_id}
+                                                    onClick={() => handleOpenSchedule(interview.id)}
+                                                    title="Schedule Interview"
                                                 >
-                                                    {copiedLinkId === interview.id ? (
-                                                        <Check className="h-4 w-4 text-green-600" />
-                                                    ) : (
-                                                        <Copy className="h-4 w-4" />
-                                                    )}
+                                                    <Calendar className="h-4 w-4" />
                                                 </Button>
                                                 <Link href={`/interviews/${interview.id}/edit`}>
                                                     <Button
@@ -289,21 +334,22 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
                                             <Button
                                                 variant="outlinePrimary"
                                                 className="w-full"
-                                                onClick={() => handleStartInterview(interview)}
-                                                disabled={interview.status === 'archived' || !interview.job_description_id}
+                                                onClick={() => handleOpenShareDialog(interview)}
+                                                disabled={!interview.job_description_id}
                                             >
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                Preview Interview
+                                                <Link2 className="h-4 w-4 mr-2" />
+                                                Share Link
                                             </Button>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     className="w-full"
-                                                    onClick={() => handleOpenSchedule(interview.id)}
+                                                    onClick={() => handleStartInterview(interview)}
+                                                    disabled={interview.status === 'archived' || !interview.job_description_id}
                                                 >
-                                                    <Calendar className="h-4 w-4 mr-2" />
-                                                    Schedule
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    Preview
                                                 </Button>
                                                 <Link href={`/interviews/${interview.id}/logs`}>
                                                     <Button variant="outline" size="sm" className="w-full">
@@ -343,6 +389,113 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
                 </AlertDialogContent>
             </AlertDialog>
 
+            {/* Share Link Dialog */}
+            <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-primary">
+                            <Link2 className="h-5 w-5" />
+                            Share Interview Link
+                        </DialogTitle>
+                        <DialogDescription>
+                            Share this link with candidates to allow them to complete the interview.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-6">
+                        {/* Interview Info */}
+                        {shareInterview && (
+                            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                                <p className="font-semibold text-primary">{shareInterview.job_title}</p>
+                                <p className="text-sm text-muted-foreground">{shareInterview.company_name} • {shareInterview.duration_minutes} min</p>
+                            </div>
+                        )}
+
+                        {/* Copy Link Section */}
+                        <div className="space-y-3">
+                            <Label className="text-sm font-medium">Interview Link</Label>
+                            <div className="flex gap-2">
+                                <div className="flex-1 bg-muted rounded-md px-4 py-3 text-sm font-mono break-all border">
+                                    {shareUrl}
+                                </div>
+                                <Button
+                                    variant={copiedLink ? "outline" : "default"}
+                                    onClick={handleCopyLink}
+                                    className="shrink-0"
+                                >
+                                    {copiedLink ? (
+                                        <>
+                                            <Check className="h-4 w-4 mr-2 text-green-600" />
+                                            Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="h-4 w-4 mr-2" />
+                                            Copy Link
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Email Template Section */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm font-medium flex items-center gap-2">
+                                    <Mail className="h-4 w-4 text-primary" />
+                                    Email Template
+                                </Label>
+                                <Button
+                                    variant={copiedEmail ? "ghost" : "outlinePrimary"}
+                                    size="sm"
+                                    onClick={handleCopyEmailTemplate}
+                                >
+                                    {copiedEmail ? (
+                                        <>
+                                            <Check className="h-4 w-4 mr-2 text-green-600" />
+                                            Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="h-4 w-4 mr-2" />
+                                            Copy Template
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                            <Textarea
+                                readOnly
+                                className="h-56 text-sm resize-none border-primary/20 focus-visible:ring-primary/30"
+                                value={shareInterview ? generateEmailTemplate(shareInterview, shareUrl) : ''}
+                            />
+                        </div>
+
+                        {/* Schedule Section */}
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">Or</span>
+                            </div>
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => {
+                                setShareDialogOpen(false)
+                                if (shareInterview) {
+                                    handleOpenSchedule(shareInterview.id)
+                                }
+                            }}
+                        >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Schedule with a Candidate
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
         </div>
     )
