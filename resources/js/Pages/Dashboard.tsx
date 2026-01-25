@@ -139,10 +139,10 @@ export default function Dashboard({ interviews: initialInterviews }: DashboardPr
 
     const getTypeColor = (type: string) => {
         const colors: Record<string, string> = {
-            screening: 'bg-blue-100 text-blue-800',
-            technical: 'bg-purple-100 text-purple-800',
-            behavioral: 'bg-green-100 text-green-800',
-            final: 'bg-orange-100 text-orange-800',
+            screening: 'bg-primary/10 text-primary',
+            technical: 'bg-purple-500/10 text-purple-700',
+            behavioral: 'bg-green-500/10 text-green-700',
+            final: 'bg-orange-500/10 text-orange-700',
         }
         return colors[type] || 'bg-gray-100 text-gray-800'
     }

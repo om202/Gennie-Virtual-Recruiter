@@ -103,9 +103,9 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
 
     const getRemoteTypeColor = (type: string) => {
         const colors: Record<string, string> = {
-            onsite: 'bg-blue-100 text-blue-800',
-            hybrid: 'bg-purple-100 text-purple-800',
-            remote: 'bg-green-100 text-green-800',
+            onsite: 'bg-primary/10 text-primary',
+            hybrid: 'bg-purple-500/10 text-purple-700',
+            remote: 'bg-green-500/10 text-green-700',
         }
         return colors[type] || 'bg-gray-100 text-gray-800'
     }

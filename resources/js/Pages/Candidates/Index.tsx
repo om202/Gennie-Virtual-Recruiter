@@ -285,7 +285,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                                 href={candidate.linkedin_url}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                                className="flex items-center gap-2 text-sm text-primary hover:underline"
                                             >
                                                 <Linkedin className="h-3.5 w-3.5 shrink-0" />
                                                 <span>LinkedIn Profile</span>

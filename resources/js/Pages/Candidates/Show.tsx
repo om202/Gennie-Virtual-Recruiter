@@ -223,7 +223,7 @@ export default function Show({ candidate }: ShowProps) {
                                         href={candidate.linkedin_url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="flex items-center gap-2 text-sm flex-1 text-blue-600 hover:underline"
+                                        className="flex items-center gap-2 text-sm flex-1 text-primary hover:underline"
                                     >
                                         <Linkedin className="h-4 w-4 flex-shrink-0" />
                                         <span>LinkedIn Profile</span>

@@ -308,7 +308,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
                     {hasEnded ? (
                         /* Ended State */
                         <Card className="w-full max-w-md mx-auto text-center p-8">
-                            <div className="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <div className="h-16 w-16 bg-green-500/10 text-green-700 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <Check className="h-8 w-8" />
                             </div>
                             <h2 className="text-2xl font-bold mb-2">Interview Completed</h2>

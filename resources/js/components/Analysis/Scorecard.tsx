@@ -112,10 +112,10 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
         return "border-destructive"
     }
 
-    const getRecommendationVariant = (rec: string): "default" | "secondary" | "destructive" => {
-        if (rec === 'Strong Hire' || rec === 'Hire') return "default"
-        if (rec === 'Weak Hire') return "secondary"
-        return "destructive"
+    const getRecommendationStyle = (rec: string): string => {
+        if (rec === 'Strong Hire' || rec === 'Hire') return 'bg-primary/10 text-primary'
+        if (rec === 'Weak Hire') return 'bg-amber-500/10 text-amber-700'
+        return 'bg-red-500/10 text-red-700' // Reject
     }
 
     // Full mode - render content directly without dialog
@@ -137,7 +137,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                                     <span className="font-bold text-2xl">{result.score}</span>
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Score</span>
                                 </div>
-                                <Badge variant={getRecommendationVariant(result.recommendation)} className="text-xs">
+                                <Badge className={`text-xs ${getRecommendationStyle(result.recommendation)}`}>
                                     {result.recommendation}
                                 </Badge>
                             </div>
@@ -339,7 +339,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <h4 className="font-semibold">Interview Score</h4>
-                            <Badge variant={getRecommendationVariant(result.recommendation)}>
+                            <Badge className={getRecommendationStyle(result.recommendation)}>
                                 {result.recommendation}
                             </Badge>
                         </div>

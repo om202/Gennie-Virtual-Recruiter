@@ -226,7 +226,7 @@ export function JobDescriptionForm({
                         </div>
 
                         {jdFilename && (
-                            <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
+                            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-500/10 px-2 py-1 rounded w-fit">
                                 <CheckCircle className="h-3 w-3" />
                                 Imported from: {jdFilename}
                                 <button type="button" onClick={() => setJdFilename(null)} className="ml-2 hover:text-green-800">
