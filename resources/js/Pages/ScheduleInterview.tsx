@@ -61,7 +61,7 @@ export default function ScheduleInterview({ candidates, interviews, interview, s
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">
                         {isEditing ? 'Edit Schedule' : 'Schedule Interview'}
                     </h1>
                     <p className="text-muted-foreground">

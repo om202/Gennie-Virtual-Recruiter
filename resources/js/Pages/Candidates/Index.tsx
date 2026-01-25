@@ -138,7 +138,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Candidates</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-primary">Candidates</h1>
                         <p className="text-muted-foreground">
                             Manage your talent pool and view candidate profiles.
                         </p>

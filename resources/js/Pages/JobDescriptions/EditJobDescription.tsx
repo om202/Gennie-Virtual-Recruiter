@@ -50,7 +50,7 @@ export default function EditJobDescription({ jobDescription }: EditJobDescriptio
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">
                         Edit Job Description
                     </h1>
                     <p className="text-muted-foreground">

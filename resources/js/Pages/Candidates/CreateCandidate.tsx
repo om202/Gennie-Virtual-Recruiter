@@ -38,7 +38,7 @@ export default function CreateCandidate({ candidate }: CreateCandidateProps) {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">
                         {isEditing ? 'Edit Candidate' : 'Add Candidate'}
                     </h1>
                     <p className="text-muted-foreground">

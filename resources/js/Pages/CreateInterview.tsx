@@ -40,7 +40,7 @@ export default function CreateInterview({ auth }: CreateInterviewProps) {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Create Interview</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">Create Interview</h1>
                     <p className="text-muted-foreground">
                         Set up a new interview configuration.
                     </p>

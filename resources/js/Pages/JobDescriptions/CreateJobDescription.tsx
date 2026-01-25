@@ -34,7 +34,7 @@ export default function CreateJobDescription({ defaultCompanyName }: CreateJobDe
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">
                         Create Job Description
                     </h1>
                     <p className="text-muted-foreground">

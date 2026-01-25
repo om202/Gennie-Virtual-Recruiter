@@ -42,7 +42,7 @@ export default function EditInterview({ auth, interview }: EditInterviewProps) {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Edit Interview</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-primary">Edit Interview</h1>
                     <p className="text-muted-foreground">
                         Update configuration for {interview.job_title}
                     </p>

@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users, Calendar, PanelLeft, LayoutDashboard } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar, ChevronsLeft, ChevronsRight, LayoutDashboard } from 'lucide-react';
 
 type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
 
@@ -68,7 +68,11 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
                     className="absolute -right-3 top-4 bg-background border rounded-full p-1 hover:bg-muted transition-colors shadow-sm z-50 hidden md:block"
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
-                    <PanelLeft className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isCollapsed && "rotate-180")} />
+                    {isCollapsed ? (
+                        <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                        <ChevronsLeft className="h-4 w-4 text-muted-foreground" />
+                    )}
                 </button>
 
                 <div className="flex flex-col flex-grow overflow-y-auto h-full">

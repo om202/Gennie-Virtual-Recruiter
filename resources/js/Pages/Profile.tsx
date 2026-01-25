@@ -33,7 +33,7 @@ export default function Profile({ auth }: ProfileProps) {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-primary">Profile Settings</h1>
                     <p className="text-muted-foreground">
                         Manage your account and company information
                     </p>

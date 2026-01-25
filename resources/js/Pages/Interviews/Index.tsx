@@ -166,7 +166,7 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Interviews</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-primary">Interviews</h1>
                         <p className="text-muted-foreground">
                             Create and manage your interview configurations.
                         </p>
