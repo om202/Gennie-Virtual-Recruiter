@@ -37,7 +37,7 @@ export default function EditJobDescription({ jobDescription }: EditJobDescriptio
         <div className="min-h-screen bg-muted/50">
             <Head title={`Edit ${jobDescription.title}`} />
 
-            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
                     <Link href="/job-descriptions">

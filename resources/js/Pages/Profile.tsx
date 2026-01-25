@@ -167,7 +167,7 @@ export default function Profile({ auth, voices, industries, timezones }: Profile
         <div className="min-h-screen bg-muted/50 pb-20">
             <Head title="Settings" />
 
-            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
                     <Link href="/dashboard">

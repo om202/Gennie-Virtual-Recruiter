@@ -138,11 +138,14 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Job Descriptions" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
+            <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary">Job Descriptions</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <Briefcase className="h-7 w-7 text-primary/80" />
+                            Job Descriptions
+                        </h1>
                         <p className="text-muted-foreground">
                             Create and manage job postings for your interviews.
                         </p>

@@ -48,7 +48,7 @@ export default function ScheduleInterview({ candidates, interviews, interview, s
         <div className="min-h-screen bg-muted/50">
             <Head title={isEditing ? 'Edit Schedule' : 'Schedule Interview'} />
 
-            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
                     <Link href="/schedules">

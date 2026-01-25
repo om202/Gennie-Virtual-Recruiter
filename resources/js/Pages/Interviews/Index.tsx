@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Copy, Check, Eye } from 'lucide-react'
+import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Copy, Check, Eye, Mic } from 'lucide-react'
 
 import {
     AlertDialog,
@@ -162,11 +162,14 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
         <div className="min-h-screen bg-muted/50">
             <Head title="Interviews" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
+            <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary">Interviews</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <Mic className="h-7 w-7 text-primary/80" />
+                            Interviews
+                        </h1>
                         <p className="text-muted-foreground">
                             Create and manage your interview configurations.
                         </p>

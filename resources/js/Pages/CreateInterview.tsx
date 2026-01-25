@@ -26,7 +26,7 @@ export default function CreateInterview({ auth }: CreateInterviewProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Create Interview" />
 
-            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Header with Back Button */}
                 {/* Back Button */}
                 <div>

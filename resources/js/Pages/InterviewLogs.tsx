@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2 } from 'lucide-react'
+import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 import { CustomAudioPlayer } from '@/components/CustomAudioPlayer'
@@ -274,11 +274,12 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
         <div className="min-h-screen bg-muted/50">
             <Head title={isFiltered ? `Logs - ${interview.job_title}` : "Interview Logs"} />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-6">
+            <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-6">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary">
+                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <ClipboardList className="h-7 w-7 text-primary/80" />
                             {candidateName
                                 ? `Interviews for ${candidateName}`
                                 : isFiltered

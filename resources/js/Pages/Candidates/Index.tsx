@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, MapPin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X } from 'lucide-react';
+import { Plus, Search, MapPin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X, Users } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -129,11 +129,14 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title="Candidates" />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
+            <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary">Candidates</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <Users className="h-7 w-7 text-primary/80" />
+                            Candidates
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage your talent pool and view candidate profiles.
                         </p>

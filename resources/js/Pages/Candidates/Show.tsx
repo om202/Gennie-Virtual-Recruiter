@@ -117,7 +117,7 @@ export default function Show({ candidate }: ShowProps) {
         <div className="min-h-screen bg-muted/50">
             <Head title={candidate.name} />
 
-            <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+            <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div className="flex items-center justify-between">
                     <Link href="/candidates">
