@@ -20,6 +20,7 @@ class PublicInterviewController extends Controller
         $interview = Interview::where('public_token', $token)
             ->where('public_link_enabled', true)
             ->where('status', 'active')
+            ->with('jobDescription')
             ->first();
 
         if (!$interview) {
@@ -28,6 +29,14 @@ class PublicInterviewController extends Controller
 
         // Check if current user is the interview owner (self-preview)
         $isSelfPreview = Auth::check() && Auth::id() === $interview->user_id;
+
+        // Get job description from linked JD or legacy field
+        $jobDescription = null;
+        if ($interview->jobDescription && $interview->jobDescription->description) {
+            $jobDescription = $interview->jobDescription->description;
+        } elseif ($interview->job_description) {
+            $jobDescription = $interview->job_description;
+        }
 
         return Inertia::render('PublicInterview', [
             'interview' => [
@@ -38,6 +47,7 @@ class PublicInterviewController extends Controller
                 'interview_type' => $interview->interview_type,
                 'difficulty_level' => $interview->difficulty_level,
                 'candidate_instructions' => $interview->candidate_instructions,
+                'job_description' => $jobDescription,
             ],
             'token' => $token,
             'type' => 'interview',
@@ -45,14 +55,10 @@ class PublicInterviewController extends Controller
         ]);
     }
 
-    /**
-     * Show public interview page for scheduled interview links.
-     * Company and job slugs are for SEO-friendly URLs, lookup is done by token only.
-     */
     public function showScheduledInterview(string $company, string $job, string $token)
     {
         $schedule = ScheduledInterview::where('public_token', $token)
-            ->with(['interview', 'candidate:id,name,email'])
+            ->with(['interview.jobDescription', 'candidate:id,name,email'])
             ->first();
 
         if (!$schedule) {
@@ -69,6 +75,14 @@ class PublicInterviewController extends Controller
 
         $interview = $schedule->interview;
 
+        // Get job description from linked JD or legacy field
+        $jobDescription = null;
+        if ($interview->jobDescription && $interview->jobDescription->description) {
+            $jobDescription = $interview->jobDescription->description;
+        } elseif ($interview->job_description) {
+            $jobDescription = $interview->job_description;
+        }
+
         return Inertia::render('PublicInterview', [
             'interview' => [
                 'id' => $interview->id,
@@ -77,6 +91,7 @@ class PublicInterviewController extends Controller
                 'duration_minutes' => $interview->duration_minutes,
                 'interview_type' => $interview->interview_type,
                 'difficulty_level' => $interview->difficulty_level,
+                'job_description' => $jobDescription,
             ],
             'candidate' => $schedule->candidate ? [
                 'id' => $schedule->candidate->id,

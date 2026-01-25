@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { MarkdownViewer, DEFAULT_CANDIDATE_INSTRUCTIONS } from "@/components/MarkdownEditor"
 
 interface Interview {
@@ -27,6 +28,7 @@ interface Interview {
     interview_type: string
     difficulty_level: string
     candidate_instructions?: string | null
+    job_description?: string | null
 }
 
 interface Candidate {
@@ -356,9 +358,24 @@ export default function PublicInterview({ interview, candidate, token, error, is
                                 </Button>
                             </div>
 
-                            {/* Bottom: Instructions */}
+                            {/* Bottom: Instructions & Job Description Tabs */}
                             <div className="text-left w-full">
-                                <MarkdownViewer content={interview.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS} />
+                                {interview.job_description ? (
+                                    <Tabs defaultValue="instructions" className="w-full">
+                                        <TabsList className="grid w-full grid-cols-2">
+                                            <TabsTrigger value="instructions">Candidate Instructions</TabsTrigger>
+                                            <TabsTrigger value="job-description">Job Description</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="instructions" className="mt-4">
+                                            <MarkdownViewer content={interview.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS} />
+                                        </TabsContent>
+                                        <TabsContent value="job-description" className="mt-4">
+                                            <MarkdownViewer content={interview.job_description} />
+                                        </TabsContent>
+                                    </Tabs>
+                                ) : (
+                                    <MarkdownViewer content={interview.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS} />
+                                )}
                             </div>
                         </div>
                     ) : (
