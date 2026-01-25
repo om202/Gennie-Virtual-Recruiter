@@ -160,7 +160,7 @@ export default function Dashboard({ interviews: initialInterviews }: DashboardPr
 
     return (
         <div className="min-h-screen bg-muted/50">
-            <Head title="Dashboard - Gennie AI Recruiter" />
+            <Head title="Dashboard - Gennie Talent" />
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
