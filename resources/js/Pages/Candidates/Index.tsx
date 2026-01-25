@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X } from 'lucide-react';
+import { Plus, Search, MapPin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -77,12 +77,7 @@ interface IndexProps {
     };
 }
 
-// Helper to get display text below name (summary or skills as fallback)
-const getSubtitle = (candidate: Candidate): string | null => {
-    if (candidate.experience_summary) return candidate.experience_summary;
-    if (candidate.skills) return candidate.skills;
-    return null;
-};
+
 
 export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
@@ -229,11 +224,6 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                             <CardTitle className="text-lg leading-tight truncate">
                                                 {candidate.name}
                                             </CardTitle>
-                                            {getSubtitle(candidate) && (
-                                                <CardDescription className="line-clamp-2">
-                                                    {getSubtitle(candidate)}
-                                                </CardDescription>
-                                            )}
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Link href={`/candidates/${candidate.id}/edit`}>
@@ -276,17 +266,6 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                                 <MapPin className="h-3.5 w-3.5 shrink-0" />
                                                 <span className="truncate">{getLocation(candidate)}</span>
                                             </div>
-                                        )}
-                                        {candidate.linkedin_url && (
-                                            <a
-                                                href={candidate.linkedin_url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="flex items-center gap-2 text-sm text-primary hover:underline"
-                                            >
-                                                <Linkedin className="h-3.5 w-3.5 shrink-0" />
-                                                <span>LinkedIn Profile</span>
-                                            </a>
                                         )}
                                     </div>
 

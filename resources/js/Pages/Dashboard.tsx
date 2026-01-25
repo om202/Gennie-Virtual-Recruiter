@@ -54,7 +54,7 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
         <div className="min-h-screen bg-muted/50 pb-20">
             <Head title="Dashboard" />
 
-            <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+            <div className="max-w-7xl mx-auto flex-1 space-y-6 p-4 md:p-8 pt-6">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-primary">
                         Welcome, {auth.user.name.split(' ')[0]}

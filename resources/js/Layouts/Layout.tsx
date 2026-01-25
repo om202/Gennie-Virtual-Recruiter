@@ -10,19 +10,28 @@ type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | '
 
 interface PageProps {
     activeTab?: NavigationTab;
+    auth?: {
+        user?: {
+            name: string;
+            avatar?: string;
+        };
+    };
     [key: string]: unknown;
 }
 
 export default function Layout({ children }: PropsWithChildren) {
-    const { props } = usePage<PageProps>();
+    const { props, url } = usePage<PageProps>();
     const activeTab = props.activeTab;
+    const user = props.auth?.user;
+    const currentPath = typeof url === 'string' ? url : window.location.pathname;
+    const isHomePage = currentPath === '/';
 
     const [isCollapsed, setIsCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('sidebar-collapsed');
-            return saved === 'true';
+            return saved === null ? true : saved === 'true'; // Default to collapsed if no preference saved
         }
-        return false;
+        return true; // Default to collapsed
     });
 
     useEffect(() => {
@@ -31,19 +40,20 @@ export default function Layout({ children }: PropsWithChildren) {
 
     return (
         <div className="min-h-screen bg-background">
-            <Header />
+            {isHomePage && <Header />}
             {activeTab && (
                 <Sidebar
                     activeTab={activeTab}
                     isCollapsed={isCollapsed}
                     onToggle={() => setIsCollapsed(!isCollapsed)}
+                    user={user}
                 />
             )}
             <main
                 className={cn(
                     "pb-16 md:pb-0",
                     activeTab && "transition-all duration-300 ease-in-out",
-                    activeTab ? (isCollapsed ? "md:pl-16" : "md:pl-60") : ""
+                    activeTab ? (isCollapsed ? "md:pl-20" : "md:pl-60") : ""
                 )}
             >
                 {children}

@@ -1,6 +1,15 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users, Calendar, ChevronsLeft, ChevronsRight, LayoutDashboard } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar, ChevronsLeft, ChevronsRight, LayoutDashboard, User, LogOut, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
 
@@ -8,9 +17,18 @@ interface SidebarProps {
     activeTab: NavigationTab;
     isCollapsed: boolean;
     onToggle: () => void;
+    user?: {
+        name: string;
+        avatar?: string;
+    };
 }
 
-export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ activeTab, isCollapsed, onToggle, user }: SidebarProps) {
+    const [imageError, setImageError] = useState(false);
+
+    const handleLogout = () => {
+        router.post('/logout');
+    };
 
     const navItems = [
         {
@@ -58,14 +76,14 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
             {/* Desktop Sidebar */}
             <aside
                 className={cn(
-                    "hidden md:flex md:flex-col md:fixed md:inset-y-0 md:top-16 bg-background border-r transition-all duration-300 ease-in-out z-40",
-                    isCollapsed ? "md:w-16" : "md:w-60"
+                    "hidden md:flex md:flex-col md:fixed md:inset-y-0 bg-background border-r transition-all duration-300 ease-in-out z-40",
+                    isCollapsed ? "md:w-20" : "md:w-60"
                 )}
             >
                 {/* Toggle Button - Placed outside the scrollable container to prevent clipping */}
                 <button
                     onClick={onToggle}
-                    className="absolute -right-3 top-4 bg-background border rounded-full p-1 hover:bg-muted transition-colors shadow-sm z-50 hidden md:block"
+                    className="absolute -right-3 top-2 bg-background border rounded-full p-1 hover:bg-muted transition-colors shadow-sm z-50 hidden md:block"
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
                     {isCollapsed ? (
@@ -76,9 +94,32 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
                 </button>
 
                 <div className="flex flex-col flex-grow overflow-y-auto h-full">
+                    {/* Branding */}
+                    <Link
+                        href="/dashboard"
+                        className={cn(
+                            "flex items-center border-b transition-all",
+                            isCollapsed ? "justify-center py-4" : "px-4 py-4 gap-2"
+                        )}
+                    >
+                        <img
+                            src="/gennie.png"
+                            alt="Gennie"
+                            className={cn(
+                                "object-contain transition-all",
+                                isCollapsed ? "h-16 w-16" : "h-10 w-10"
+                            )}
+                        />
+                        {!isCollapsed && (
+                            <span className="font-extrabold text-lg text-primary leading-tight">
+                                Gennie Talent
+                            </span>
+                        )}
+                    </Link>
+
                     {/* Navigation */}
                     <nav className={cn(
-                        "flex-1 py-6 space-y-2",
+                        "flex-1 py-8 space-y-2",
                         isCollapsed ? "px-2" : "px-4"
                     )}>
                         {navItems.map((item) => {
@@ -89,13 +130,13 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
                                     key={item.name}
                                     href={item.href}
                                     className={cn(
-                                        "group flex items-center rounded-md transition-colors",
-                                        isCollapsed ? "justify-center py-2.5" : "px-3 py-2",
+                                        "group flex rounded-md transition-colors",
+                                        isCollapsed ? "flex-col items-center justify-center py-2.5 px-1 gap-1" : "flex-row items-center px-3 py-2",
                                         isActive
                                             ? "bg-primary/10 text-primary"
                                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                     )}
-                                    title={isCollapsed ? item.name : undefined}
+                                    title={isCollapsed ? ((item as any).desktopName || item.name) : undefined}
                                 >
                                     <Icon
                                         className={cn(
@@ -105,7 +146,11 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
                                         )}
                                         strokeWidth={isActive ? 2.5 : 2}
                                     />
-                                    {!isCollapsed && (
+                                    {isCollapsed ? (
+                                        <span className="text-[11px] font-medium text-center leading-tight">
+                                            {item.name}
+                                        </span>
+                                    ) : (
                                         <span className="text-sm font-medium truncate">
                                             {(item as any).desktopName || item.name}
                                         </span>
@@ -114,6 +159,67 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
                             );
                         })}
                     </nav>
+
+                    {/* User Profile */}
+                    {user && (
+                        <div className={cn(
+                            "border-t p-4",
+                            isCollapsed && "flex justify-center"
+                        )}>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className={cn(
+                                            "transition-all",
+                                            isCollapsed
+                                                ? "h-12 w-12 rounded-full p-0"
+                                                : "w-full justify-start h-auto py-2 px-3"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "flex items-center",
+                                            isCollapsed ? "" : "gap-3 w-full"
+                                        )}>
+                                            <div className="flex-shrink-0">
+                                                {user.avatar && !imageError ? (
+                                                    <img
+                                                        src={user.avatar}
+                                                        alt={user.name}
+                                                        className="h-8 w-8 rounded-full"
+                                                        onError={() => setImageError(true)}
+                                                        referrerPolicy="no-referrer"
+                                                    />
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <User className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {!isCollapsed && (
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <p className="text-sm font-medium truncate">{user.name}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/profile" className="cursor-pointer">
+                                            <Settings className="h-4 w-4 mr-2" />
+                                            Settings
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                                        <LogOut className="h-4 w-4 mr-2" />
+                                        Sign Out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
                 </div>
             </aside>
 
