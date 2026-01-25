@@ -1,9 +1,9 @@
-import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { Head, Link, router } from '@inertiajs/react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2, X } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -48,6 +48,28 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
     const [jobDescriptions, setJobDescriptions] = useState<JobDescription[]>(initialJobs)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [jobToDelete, setJobToDelete] = useState<JobDescription | null>(null)
+    const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null)
+
+    // Check for highlight query parameter on mount
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const highlightId = urlParams.get('highlight')
+        if (highlightId) {
+            setHighlightedJobId(highlightId)
+            // Filter to show only the highlighted JD
+            const filtered = initialJobs.filter(j => j.id === highlightId)
+            if (filtered.length > 0) {
+                setJobDescriptions(filtered)
+            }
+        }
+    }, [initialJobs])
+
+    const clearFilter = () => {
+        setHighlightedJobId(null)
+        setJobDescriptions(initialJobs)
+        // Update URL without the query param
+        router.visit('/job-descriptions', { preserveState: true, replace: true })
+    }
 
     const confirmDelete = (job: JobDescription) => {
         setJobToDelete(job)
@@ -129,11 +151,30 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
 
                 {/* Main Content */}
                 <div className="space-y-6">
+                    {/* Filter Indicator */}
+                    {highlightedJobId && (
+                        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary">Filtered</Badge>
+                                <span className="text-sm text-muted-foreground">
+                                    Showing 1 job description from interview logs
+                                </span>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={clearFilter}>
+                                <X className="h-4 w-4 mr-2" />
+                                Clear Filter
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Actions Bar */}
                     {jobDescriptions.length > 0 && (
                         <div className="flex justify-between items-center">
                             <p className="text-sm text-muted-foreground">
-                                {jobDescriptions.length} job description{jobDescriptions.length !== 1 ? 's' : ''}
+                                {highlightedJobId
+                                    ? `Viewing: ${jobDescriptions[0]?.title}`
+                                    : `${jobDescriptions.length} job description${jobDescriptions.length !== 1 ? 's' : ''}`
+                                }
                             </p>
                             <Link href="/job-descriptions/create" className={buttonVariants()}>
                                 <Plus className="h-4 w-4 mr-2" />

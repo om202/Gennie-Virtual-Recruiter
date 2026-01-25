@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Clock, CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2 } from 'lucide-react'
+import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2 } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 import {
@@ -48,6 +48,10 @@ interface Session {
         id: string
         name: string
         email: string
+        phone?: string
+        address?: string
+        skills?: string
+        experience_years?: number
     }
 }
 
@@ -63,6 +67,8 @@ interface Interview {
     id: string
     job_title: string
     company_name: string
+    round?: string
+    job_description_id?: string
     sessions?: Session[]
 }
 
@@ -314,7 +320,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                                 <div className="flex items-start justify-between gap-2 mb-2">
                                                                     <div className="flex flex-col gap-0.5">
                                                                         <span className={cn("text-xs font-semibold", isSelected ? "text-primary" : "text-foreground")}>
-                                                                            {session.candidate ? session.candidate.name : 'Unknown User'}
+                                                                            {session.candidate ? session.candidate.name : 'Unknown Candidate'}
                                                                         </span>
                                                                         <time className={cn("text-xs", isSelected ? "text-muted-foreground/80" : "text-muted-foreground")}>
                                                                             {sessionDate.toLocaleDateString([], {
@@ -359,6 +365,72 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
 
                         {/* Main Content: Scorecard & Transcript */}
                         <div className="col-span-3 flex flex-col space-y-6">
+                            {/* Interview Context Header */}
+                            {selectedSessionId && (() => {
+                                const session = getActiveSession();
+                                const sessionMeta = allSessions.find(s => s.id === selectedSessionId);
+                                if (!session) return null;
+
+                                const interviewTitle = (sessionMeta as any)?.interview_title || 'Interview';
+                                const interviewCompany = (sessionMeta as any)?.interview_company || '';
+                                const interviewId = (sessionMeta as any)?.interview_id || session.interview_id;
+                                const targetInterview = interviews.find(i => i.id === interviewId);
+                                // Use candidate from original session data (sessionMeta) as it has the relationship loaded
+                                const candidate = sessionMeta?.candidate || session.candidate;
+                                const candidateId = candidate?.id || session.candidate_id;
+
+                                return (
+                                    <div className="flex items-start justify-between gap-4 pb-4 border-b">
+                                        <div className="flex-1 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="font-semibold text-lg">{interviewTitle}</h2>
+                                                {targetInterview?.round && (
+                                                    <Badge variant="outline" className="text-xs">{targetInterview.round}</Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                <span className="flex items-center gap-1.5">
+                                                    <Building2 className="h-3.5 w-3.5" />
+                                                    {interviewCompany}
+                                                </span>
+                                                <span className="flex items-center gap-1.5">
+                                                    <User className="h-3.5 w-3.5" />
+                                                    {candidate?.name || 'Unknown Candidate'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 shrink-0">
+                                            {candidateId && (
+                                                <Link href={`/candidates?highlight=${candidateId}`}>
+                                                    <Button variant="outline" size="sm">
+                                                        <User className="h-4 w-4 mr-2" />
+                                                        View Candidate
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            {targetInterview?.job_description_id && (
+                                                <Link href={`/job-descriptions?highlight=${targetInterview.job_description_id}`}>
+                                                    <Button variant="outline" size="sm">
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        View Job Description
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSessionToDelete(session.id);
+                                                    setDeleteSessionDialogOpen(true);
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                             {/* Scorecard or Generate Analysis Button */}
                             {selectedSessionId && (() => {
                                 const session = getActiveSession();
@@ -379,7 +451,6 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
 
                                     return (
                                         <div className="space-y-3">
-                                            {/* TODO: TEMPORARY - Remove this button later */}
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge
                                                     variant={session.status === 'completed' ? 'default' : 'secondary'}
@@ -388,17 +459,6 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                     {session.status}
                                                 </Badge>
                                                 <div className="flex gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            setSessionToDelete(session.id);
-                                                            setDeleteSessionDialogOpen(true);
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 mr-2 text-destructive" />
-                                                        Delete
-                                                    </Button>
                                                     {/* Hide Re-run Assessment for insufficient data cases */}
                                                     {!isInsufficientData && (
                                                         <Button
@@ -784,7 +844,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                             open={assessmentDialogOpen}
                             onClose={() => setAssessmentDialogOpen(false)}
                             interview={sessionInterview}
-                            session={session}
+                            session={session as any}
                         />
                     );
                 })()

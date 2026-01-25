@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, MapPin, Linkedin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -90,6 +91,30 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
+    const [highlightedCandidateId, setHighlightedCandidateId] = useState<string | null>(null);
+    const [displayedCandidates, setDisplayedCandidates] = useState<Candidate[]>(candidates.data);
+
+    // Check for highlight query parameter on mount
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const highlightId = urlParams.get('highlight');
+        if (highlightId) {
+            setHighlightedCandidateId(highlightId);
+            // Filter to show only the highlighted candidate
+            const filtered = candidates.data.filter(c => c.id === highlightId);
+            if (filtered.length > 0) {
+                setDisplayedCandidates(filtered);
+            }
+        } else {
+            setDisplayedCandidates(candidates.data);
+        }
+    }, [candidates.data]);
+
+    const clearFilter = () => {
+        setHighlightedCandidateId(null);
+        setDisplayedCandidates(candidates.data);
+        router.visit('/candidates', { preserveState: true, replace: true });
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -156,8 +181,24 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                     </Link>
                 </div>
 
+                {/* Filter Indicator */}
+                {highlightedCandidateId && (
+                    <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <Badge variant="secondary">Filtered</Badge>
+                            <span className="text-sm text-muted-foreground">
+                                Showing 1 candidate from interview logs
+                            </span>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={clearFilter}>
+                            <X className="h-4 w-4 mr-2" />
+                            Clear Filter
+                        </Button>
+                    </div>
+                )}
+
                 {/* Candidates List */}
-                {candidates.data.length === 0 ? (
+                {displayedCandidates.length === 0 ? (
                     <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-16">
                             <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -191,7 +232,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {candidates.data.map((candidate) => (
+                        {displayedCandidates.map((candidate) => (
                             <Card key={candidate.id} className="hover:shadow-md transition-shadow">
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
