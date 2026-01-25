@@ -79,7 +79,23 @@ class JobDescriptionController extends Controller
      */
     public function index(Request $request)
     {
-        $jobDescriptions = JobDescription::where('user_id', $request->user()->id)
+        $user = $request->user();
+
+        // Auto-generate careers token (company slug) if not set
+        if (!$user->careers_token && $user->company_name) {
+            $baseSlug = \Illuminate\Support\Str::slug($user->company_name);
+            $slug = $baseSlug;
+            $counter = 1;
+            // Ensure uniqueness
+            while (\App\Models\User::where('careers_token', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter++;
+            }
+            $user->careers_token = $slug;
+            $user->careers_page_enabled = true;
+            $user->save();
+        }
+
+        $jobDescriptions = JobDescription::where('user_id', $user->id)
             ->withCount(['interviews', 'applications'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -88,7 +104,7 @@ class JobDescriptionController extends Controller
             'activeTab' => 'job-descriptions',
             'jobDescriptions' => $jobDescriptions,
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
         ]);
     }
@@ -132,6 +148,8 @@ class JobDescriptionController extends Controller
         $jobDescription = JobDescription::create([
             ...$validated,
             'user_id' => $request->user()->id,
+            'public_token' => \Illuminate\Support\Str::random(32),
+            'public_link_enabled' => true,
         ]);
 
         return response()->json([

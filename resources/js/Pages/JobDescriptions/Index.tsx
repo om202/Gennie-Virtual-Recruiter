@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye } from 'lucide-react'
+import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye, Globe } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -52,12 +52,14 @@ interface IndexProps {
             avatar: string
             company_name: string
             phone: string
+            careers_token: string | null
+            careers_page_enabled: boolean
         }
     }
     jobDescriptions: JobDescription[]
 }
 
-export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
+export default function Index({ auth, jobDescriptions: initialJobs }: IndexProps) {
     const [jobDescriptions, setJobDescriptions] = useState<JobDescription[]>(initialJobs)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [jobToDelete, setJobToDelete] = useState<JobDescription | null>(null)
@@ -70,6 +72,10 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
     const [isGeneratingLink, setIsGeneratingLink] = useState(false)
     const [copiedLink, setCopiedLink] = useState(false)
     const [copiedEmail, setCopiedEmail] = useState(false)
+
+    // Careers dialog state
+    const [careersDialogOpen, setCareersDialogOpen] = useState(false)
+    const [copiedCareersLink, setCopiedCareersLink] = useState(false)
 
     // Check for highlight query parameter on mount
     useEffect(() => {
@@ -243,6 +249,15 @@ ${job.company_name} Hiring Team`
                         </p>
                     </div>
                     <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setCareersDialogOpen(true)
+                            }}
+                        >
+                            <Globe className="h-4 w-4 mr-2" />
+                            Careers Page
+                        </Button>
                         <Link href="/applications" className={buttonVariants({ variant: "outline", className: "w-full md:w-auto" })}>
                             <Users className="h-4 w-4 mr-2" />
                             All Applications
@@ -539,6 +554,61 @@ ${job.company_name} Hiring Team`
                                 </Button>
                             </>
                         )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Careers Page Dialog */}
+            <Dialog open={careersDialogOpen} onOpenChange={setCareersDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Globe className="h-5 w-5" />
+                            Careers Page
+                        </DialogTitle>
+                        <DialogDescription>
+                            Share this link on your website to show all open positions.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="rounded-lg bg-primary/5 p-4 border border-primary/10">
+                            <Label className="text-xs text-muted-foreground mb-1 block">Your Careers Page URL</Label>
+                            <div className="flex gap-2">
+                                <input
+                                    readOnly
+                                    value={`${window.location.origin}/careers/${auth.user.careers_token}`}
+                                    className="flex-1 text-sm bg-background border rounded-md px-3 py-2"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={async () => {
+                                        await navigator.clipboard.writeText(`${window.location.origin}/careers/${auth.user.careers_token}`)
+                                        setCopiedCareersLink(true)
+                                        setTimeout(() => setCopiedCareersLink(false), 2000)
+                                    }}
+                                >
+                                    {copiedCareersLink ? (
+                                        <Check className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                            Only jobs with public application links enabled will appear on your careers page.
+                        </p>
+
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => window.open(`/careers/${auth.user.careers_token}`, '_blank')}
+                        >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview Careers Page
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

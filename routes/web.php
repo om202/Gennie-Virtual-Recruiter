@@ -27,6 +27,9 @@ Route::get('/apply/{company}/{job}/{token}', [\App\Http\Controllers\PublicJobCon
 Route::post('/apply/{token}', [\App\Http\Controllers\PublicJobController::class, 'apply'])->name('public.job.apply');
 Route::post('/apply/parse-resume', [\App\Http\Controllers\PublicJobController::class, 'parseResume'])->name('public.job.parse');
 
+// Public Careers Page (no auth required)
+Route::get('/careers/{token}', [\App\Http\Controllers\PublicCareersController::class, 'show'])->name('public.careers');
+
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', fn() => redirect()->route('auth.google'))->name('login');
@@ -81,6 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'destroy'])->name('job-descriptions.destroy');
     Route::post('/job-descriptions/{jobDescription}/enable-public-link', [JobDescriptionController::class, 'enablePublicLink'])->name('job-descriptions.enable-public-link');
     Route::get('/job-descriptions/{jobDescription}/applications', [JobDescriptionController::class, 'applications'])->name('job-descriptions.applications');
+
+    // Careers Page Management
+    Route::post('/careers/enable', [\App\Http\Controllers\PublicCareersController::class, 'enable'])->name('careers.enable');
+    Route::post('/careers/disable', [\App\Http\Controllers\PublicCareersController::class, 'disable'])->name('careers.disable');
 
     // Candidate Management
     Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');
