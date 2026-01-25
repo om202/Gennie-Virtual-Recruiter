@@ -64,8 +64,18 @@ interface Candidate {
     ai_profile_data?: AiProfileData | null;
 }
 
+interface JobApplication {
+    id: string;
+    job_title: string;
+    company_name: string;
+    status: string;
+    status_label: string;
+    applied_at: string;
+}
+
 interface ShowProps {
     candidate: Candidate;
+    jobApplications: JobApplication[];
 }
 
 const formatDate = (date: string | null) => {
@@ -98,7 +108,7 @@ const formatSkills = (skills: string[] | string | null): string | null => {
     return trimmed;
 };
 
-export default function Show({ candidate }: ShowProps) {
+export default function Show({ candidate, jobApplications }: ShowProps) {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = async (text: string, field: string) => {
@@ -262,6 +272,31 @@ export default function Show({ candidate }: ShowProps) {
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     View Resume
                                 </Button>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Job Applications */}
+                    {jobApplications && jobApplications.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    Job Applications
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {jobApplications.map((app) => (
+                                    <div key={app.id} className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-md">
+                                        <div>
+                                            <p className="font-medium text-sm">{app.job_title}</p>
+                                            <p className="text-xs text-muted-foreground">{app.company_name} • Applied {app.applied_at}</p>
+                                        </div>
+                                        <Badge variant="outline" className={`text-xs ${app.status === 'shortlisted' ? 'bg-green-500/10 text-green-700' : app.status === 'rejected' ? 'bg-red-500/10 text-red-700' : 'bg-blue-500/10 text-blue-700'}`}>
+                                            {app.status_label}
+                                        </Badge>
+                                    </div>
+                                ))}
                             </CardContent>
                         </Card>
                     )}

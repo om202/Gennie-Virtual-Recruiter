@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobApplication;
 use App\Models\JobDescription;
 use App\Services\JobDescriptionParserService;
 use Illuminate\Http\Request;
@@ -39,6 +40,38 @@ class JobDescriptionController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Display all applications across all job descriptions.
+     */
+    public function allApplications(Request $request)
+    {
+        $jobDescriptionIds = JobDescription::where('user_id', $request->user()->id)
+            ->pluck('id');
+
+        $applications = JobApplication::whereIn('job_description_id', $jobDescriptionIds)
+            ->with(['candidate:id,name,email,phone', 'jobDescription:id,title,company_name'])
+            ->orderBy('applied_at', 'desc')
+            ->get()
+            ->map(fn($app) => [
+                'id' => $app->id,
+                'candidate' => $app->candidate,
+                'job_description' => $app->jobDescription,
+                'status' => $app->status,
+                'status_label' => $app->status_label,
+                'status_color' => $app->status_color,
+                'cover_letter' => $app->cover_letter,
+                'applied_at' => $app->applied_at->format('M d, Y'),
+                'source' => $app->source,
+            ]);
+
+        return Inertia::render('Applications/Index', [
+            'applications' => $applications,
+            'auth' => [
+                'user' => $request->user(),
+            ],
+        ]);
     }
 
     /**

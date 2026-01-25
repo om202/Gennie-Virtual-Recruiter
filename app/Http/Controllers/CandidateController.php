@@ -137,8 +137,23 @@ class CandidateController extends Controller
             abort(403);
         }
 
+        // Load job applications for this candidate
+        $jobApplications = $candidate->jobApplications()
+            ->with('jobDescription:id,title,company_name')
+            ->orderBy('applied_at', 'desc')
+            ->get()
+            ->map(fn($app) => [
+                'id' => $app->id,
+                'job_title' => $app->jobDescription->title ?? 'Unknown',
+                'company_name' => $app->jobDescription->company_name ?? '',
+                'status' => $app->status,
+                'status_label' => $app->status_label,
+                'applied_at' => $app->applied_at->format('M d, Y'),
+            ]);
+
         return Inertia::render('Candidates/Show', [
             'candidate' => $candidate,
+            'jobApplications' => $jobApplications,
         ]);
     }
 

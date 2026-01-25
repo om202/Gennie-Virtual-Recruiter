@@ -242,12 +242,18 @@ ${job.company_name} Hiring Team`
                             Create and manage job postings for your interviews.
                         </p>
                     </div>
-                    {jobDescriptions.length > 0 && (
-                        <Link href="/job-descriptions/create" className={buttonVariants({ className: "w-full md:w-auto" })}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Job Description
+                    <div className="flex gap-2">
+                        <Link href="/applications" className={buttonVariants({ variant: "outline", className: "w-full md:w-auto" })}>
+                            <Users className="h-4 w-4 mr-2" />
+                            All Applications
                         </Link>
-                    )}
+                        {jobDescriptions.length > 0 && (
+                            <Link href="/job-descriptions/create" className={buttonVariants({ className: "w-full md:w-auto" })}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create Job Description
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 {/* Main Content */}
@@ -384,7 +390,7 @@ ${job.company_name} Hiring Team`
                                                         Applications
                                                     </Button>
                                                 </Link>
-                                                <Link href="/interviews/create">
+                                                <Link href={`/interviews/create?job_description_id=${job.id}`}>
                                                     <Button variant="outline" size="sm" className="w-full">
                                                         <Plus className="h-4 w-4 mr-2" />
                                                         Interview

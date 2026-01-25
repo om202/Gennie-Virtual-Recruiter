@@ -70,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/interviews/{interview}/enable-public-link', [InterviewController::class, 'enablePublicLink'])->name('interviews.enable-public-link');
 
     // Job Description Management
+    Route::get('/applications', [JobDescriptionController::class, 'allApplications'])->name('applications.index');
     Route::get('/job-descriptions', [JobDescriptionController::class, 'index'])->name('job-descriptions.index');
     Route::get('/job-descriptions/create', [JobDescriptionController::class, 'create'])->name('job-descriptions.create');
     Route::post('/job-descriptions', [JobDescriptionController::class, 'store'])->name('job-descriptions.store');
