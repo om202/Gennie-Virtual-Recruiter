@@ -19,6 +19,7 @@ class InterviewController extends Controller
             ->get();
 
         return Inertia::render('Interviews/Index', [
+            'activeTab' => 'interviews',
             'interviews' => $interviews,
         ]);
     }

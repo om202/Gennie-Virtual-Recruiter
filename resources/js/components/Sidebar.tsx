@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users, Calendar, PanelLeft } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar, PanelLeft, LayoutDashboard } from 'lucide-react';
 
-type NavigationTab = 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
 
 interface SidebarProps {
     activeTab: NavigationTab;
@@ -14,8 +14,14 @@ export default function Sidebar({ activeTab, isCollapsed, onToggle }: SidebarPro
 
     const navItems = [
         {
-            name: 'Interviews',
+            name: 'Dashboard',
             href: '/dashboard',
+            icon: LayoutDashboard,
+            tab: 'overview' as NavigationTab,
+        },
+        {
+            name: 'Interviews',
+            href: '/interviews',
             icon: Mic,
             tab: 'interviews' as NavigationTab,
         },

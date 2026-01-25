@@ -6,7 +6,7 @@ import { usePage } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 
-type NavigationTab = 'interviews' | 'job-descriptions' | 'logs' | 'candidates';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates';
 
 interface PageProps {
     activeTab?: NavigationTab;
