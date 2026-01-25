@@ -137,10 +137,10 @@ Attempt 3 fails → Mark as FAILED permanently
 
 ### Development
 
-Queue worker runs automatically with `composer dev`:
+4 parallel queue workers run automatically with `composer dev`:
 ```bash
 composer dev
-# Includes: php artisan queue:listen --tries=1
+# Runs: queue1, queue2, queue3, queue4 (4 parallel workers)
 ```
 
 ### Production
@@ -161,15 +161,42 @@ php artisan queue:work --stop-when-empty
 ```ini
 [program:gennie-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/gennie/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/gennie/artisan queue:work --sleep=1 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-numprocs=2
+numprocs=16
 redirect_stderr=true
 stdout_logfile=/var/www/gennie/storage/logs/worker.log
 ```
+
+---
+
+## Real-Time Notifications (SSE)
+
+When analysis completes, the frontend is notified in real-time via **Server-Sent Events**.
+
+### SSE Endpoint
+`GET /api/sessions/{id}/analysis-stream`
+
+### How It Works
+1. Frontend opens SSE connection when user clicks "Generate Analysis"
+2. Backend streams status updates (`pending` → `processing` → `completed`)
+3. Connection closes automatically when analysis finishes
+
+### Events
+| Event | Data | Description |
+|-------|------|-------------|
+| `status` | `{status, result}` | Status change notification |
+| `done` | `{status}` | Analysis complete, stream ends |
+| `heartbeat` | `{time}` | Keep-alive (every 10s) |
+| `timeout` | `{message}` | Stream timeout after 3 minutes |
+
+### Files
+- Controller: `app/Http/Controllers/Api/AnalysisStreamController.php`
+- Route: `routes/api.php`
+- Frontend: `InterviewLogs.tsx`, `TryGennieResult.tsx`
 
 ---
 
