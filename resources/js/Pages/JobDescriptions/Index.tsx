@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2, X } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Plus, Briefcase, MapPin, Building2, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2 } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,6 +15,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
 
 interface JobDescription {
     id: string
@@ -28,6 +37,9 @@ interface JobDescription {
     salary_currency: string
     salary_period: string
     interviews_count: number
+    applications_count: number
+    public_token: string | null
+    public_link_enabled: boolean
     created_at: string
 }
 
@@ -49,6 +61,13 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [jobToDelete, setJobToDelete] = useState<JobDescription | null>(null)
     const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null)
+
+    // Share dialog state
+    const [shareDialogOpen, setShareDialogOpen] = useState(false)
+    const [selectedJob, setSelectedJob] = useState<JobDescription | null>(null)
+    const [publicUrl, setPublicUrl] = useState<string>('')
+    const [isGeneratingLink, setIsGeneratingLink] = useState(false)
+    const [urlCopied, setUrlCopied] = useState(false)
 
     // Check for highlight query parameter on mount
     useEffect(() => {
@@ -92,6 +111,44 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
         }
     }
 
+    const handleShareClick = async (job: JobDescription) => {
+        setSelectedJob(job)
+        setShareDialogOpen(true)
+        setUrlCopied(false)
+
+        // If already has a public link, construct URL
+        if (job.public_token && job.public_link_enabled) {
+            const companySlug = job.company_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            const jobSlug = job.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            setPublicUrl(`${window.location.origin}/apply/${companySlug}/${jobSlug}/${job.public_token}`)
+        } else {
+            // Generate new link
+            setIsGeneratingLink(true)
+            try {
+                const response = await window.axios.post(`/job-descriptions/${job.id}/enable-public-link`)
+                if (response.data.success) {
+                    setPublicUrl(response.data.public_url)
+                    // Update local state
+                    setJobDescriptions(prev => prev.map(j =>
+                        j.id === job.id
+                            ? { ...j, public_token: response.data.public_token, public_link_enabled: true }
+                            : j
+                    ))
+                }
+            } catch (error) {
+                console.error('Failed to generate link:', error)
+            } finally {
+                setIsGeneratingLink(false)
+            }
+        }
+    }
+
+    const handleCopyUrl = async () => {
+        await navigator.clipboard.writeText(publicUrl)
+        setUrlCopied(true)
+        setTimeout(() => setUrlCopied(false), 2000)
+    }
+
     const getRemoteTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
             onsite: 'On-site',
@@ -132,6 +189,22 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
             return `${currency} ${job.salary_min.toLocaleString()}+${period}`
         }
         return `Up to ${currency} ${job.salary_max?.toLocaleString()}${period}`
+    }
+
+    const getEmailTemplate = () => {
+        if (!selectedJob) return ''
+        return `Hi,
+
+I wanted to share an exciting opportunity with you!
+
+We're hiring for the position of ${selectedJob.title} at ${selectedJob.company_name}.
+
+You can apply directly using this link:
+${publicUrl}
+
+Looking forward to receiving your application!
+
+Best regards`
     }
 
     return (
@@ -214,6 +287,15 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                                 </CardDescription>
                                             </div>
                                             <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0"
+                                                    onClick={() => handleShareClick(job)}
+                                                    title="Share Application Link"
+                                                >
+                                                    <Link2 className="h-4 w-4" />
+                                                </Button>
                                                 <Link href={`/job-descriptions/${job.id}/edit`}>
                                                     <Button
                                                         variant="ghost"
@@ -261,13 +343,22 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                                             <p className="text-sm font-medium">{formatSalary(job)}</p>
                                         )}
 
-                                        {/* Interview Count */}
-                                        <div className="flex items-center gap-1 text-sm text-muted-foreground pt-2 border-t">
-                                            <Users className="h-3 w-3" />
-                                            <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''} using this JD</span>
+                                        {/* Stats */}
+                                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
+                                            <div className="flex items-center gap-1">
+                                                <Users className="h-3 w-3" />
+                                                <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''}</span>
+                                            </div>
+                                            {job.applications_count > 0 && (
+                                                <Link
+                                                    href={`/job-descriptions/${job.id}/applications`}
+                                                    className="flex items-center gap-1 hover:text-primary"
+                                                >
+                                                    <FileText className="h-3 w-3" />
+                                                    <span>{job.applications_count} application{job.applications_count !== 1 ? 's' : ''}</span>
+                                                </Link>
+                                            )}
                                         </div>
-
-
                                     </CardContent>
                                 </Card>
                             ))}
@@ -297,6 +388,92 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Share Link Dialog */}
+            <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Link2 className="h-5 w-5" />
+                            Share Application Link
+                        </DialogTitle>
+                        <DialogDescription>
+                            Share this link with candidates to receive applications for {selectedJob?.title}.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        {isGeneratingLink ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                <span className="ml-2 text-muted-foreground">Generating link...</span>
+                            </div>
+                        ) : (
+                            <>
+                                {/* URL Input with Copy */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Application Link</label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={publicUrl}
+                                            readOnly
+                                            className="font-mono text-sm"
+                                        />
+                                        <Button
+                                            onClick={handleCopyUrl}
+                                            variant="outline"
+                                            className="shrink-0"
+                                        >
+                                            {urlCopied ? (
+                                                <>
+                                                    <Check className="h-4 w-4 mr-2 text-green-500" />
+                                                    Copied
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy className="h-4 w-4 mr-2" />
+                                                    Copy
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Email Template */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Email Template</label>
+                                    <div className="relative">
+                                        <textarea
+                                            value={getEmailTemplate()}
+                                            readOnly
+                                            className="w-full h-40 p-3 text-sm border rounded-md bg-muted/50 resize-none"
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute top-2 right-2"
+                                            onClick={async () => {
+                                                await navigator.clipboard.writeText(getEmailTemplate())
+                                            }}
+                                        >
+                                            <Copy className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
+                            Close
+                        </Button>
+                        <Button onClick={() => window.open(publicUrl, '_blank')} disabled={!publicUrl}>
+                            Preview Link
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

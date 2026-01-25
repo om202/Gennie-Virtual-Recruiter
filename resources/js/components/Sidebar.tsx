@@ -77,7 +77,7 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                     {/* Branding */}
                     <Link
                         href="/dashboard"
-                        className="flex items-center justify-center py-4"
+                        className="flex items-center justify-center pt-6 pb-0"
                     >
                         <img
                             src="/gennie.png"
@@ -87,7 +87,7 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                     </Link>
 
                     {/* Navigation */}
-                    <nav className="flex-1 py-4 space-y-2">
+                    <nav className="flex-1 pt-2 pb-4 space-y-2">
                         {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = activeTab === item.tab;
@@ -105,12 +105,12 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                                 >
                                     <Icon
                                         className={cn(
-                                            "flex-shrink-0 h-[18px] w-[18px]",
+                                            "flex-shrink-0 h-[22px] w-[22px]",
                                             isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                                         )}
                                         strokeWidth={isActive ? 2.5 : 2}
                                     />
-                                    <span className="text-[11px] font-medium text-center leading-tight">
+                                    <span className="text-[10px] font-medium text-center leading-tight">
                                         {item.name}
                                     </span>
                                 </Link>
@@ -183,10 +183,10 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                                 )}
                             >
                                 <Icon
-                                    className="h-[18px] w-[18px]"
+                                    className="h-[20px] w-[20px]"
                                     strokeWidth={isActive ? 2.5 : 2}
                                 />
-                                <span className="text-[11px] font-medium">{item.name}</span>
+                                <span className="text-[10px] font-medium">{item.name}</span>
                             </Link>
                         );
                     })}

@@ -56,3 +56,19 @@ Route::post('/twilio/voice', [\App\Http\Controllers\Api\TwilioController::class,
 Route::post('/twilio/call-status', [\App\Http\Controllers\Api\TwilioController::class, 'callStatus']);
 Route::post('/twilio/recording-status', [\App\Http\Controllers\Api\TwilioController::class, 'recordingStatus']);
 
+// =============================================================================
+// JOB APPLICATIONS (pages are auth protected via Inertia)
+// =============================================================================
+Route::patch('/applications/{application}/status', function (Request $request, \App\Models\JobApplication $application) {
+    $request->validate([
+        'status' => 'required|in:applied,under_review,shortlisted,rejected',
+    ]);
+
+    $application->update(['status' => $request->status]);
+
+    return response()->json([
+        'success' => true,
+        'status_label' => $application->status_label,
+        'status_color' => $application->status_color,
+    ]);
+});

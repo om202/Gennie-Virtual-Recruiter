@@ -22,6 +22,11 @@ Route::get('/i/{company}/{job}/{token}', [PublicInterviewController::class, 'sho
 Route::get('/s/{company}/{job}/{token}', [PublicInterviewController::class, 'showScheduledInterview'])->name('public.scheduled');
 Route::post('/public/start/{token}', [PublicInterviewController::class, 'startSession'])->name('public.start');
 
+// Public Job Application (no auth required)
+Route::get('/apply/{company}/{job}/{token}', [\App\Http\Controllers\PublicJobController::class, 'show'])->name('public.job.show');
+Route::post('/apply/{token}', [\App\Http\Controllers\PublicJobController::class, 'apply'])->name('public.job.apply');
+Route::post('/apply/parse-resume', [\App\Http\Controllers\PublicJobController::class, 'parseResume'])->name('public.job.parse');
+
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', fn() => redirect()->route('auth.google'))->name('login');
@@ -73,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/job-descriptions/{jobDescription}/edit', [JobDescriptionController::class, 'edit'])->name('job-descriptions.edit');
     Route::put('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'update'])->name('job-descriptions.update');
     Route::delete('/job-descriptions/{jobDescription}', [JobDescriptionController::class, 'destroy'])->name('job-descriptions.destroy');
+    Route::post('/job-descriptions/{jobDescription}/enable-public-link', [JobDescriptionController::class, 'enablePublicLink'])->name('job-descriptions.enable-public-link');
+    Route::get('/job-descriptions/{jobDescription}/applications', [JobDescriptionController::class, 'applications'])->name('job-descriptions.applications');
 
     // Candidate Management
     Route::post('/candidates/parse-resume', [CandidateController::class, 'parseResume'])->name('candidates.parse');

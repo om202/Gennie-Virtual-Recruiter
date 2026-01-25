@@ -47,7 +47,7 @@ class JobDescriptionController extends Controller
     public function index(Request $request)
     {
         $jobDescriptions = JobDescription::where('user_id', $request->user()->id)
-            ->withCount('interviews')
+            ->withCount(['interviews', 'applications'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -190,6 +190,56 @@ class JobDescriptionController extends Controller
         return response()->json([
             'success' => true,
             'jobDescriptions' => $jobDescriptions,
+        ]);
+    }
+
+    /**
+     * Enable public application link for a job description.
+     */
+    public function enablePublicLink(Request $request, JobDescription $jobDescription)
+    {
+        $this->authorize('update', $jobDescription);
+
+        $url = $jobDescription->enablePublicLink();
+
+        return response()->json([
+            'success' => true,
+            'public_url' => $url,
+            'public_token' => $jobDescription->public_token,
+        ]);
+    }
+
+    /**
+     * Display applications for a job description.
+     */
+    public function applications(Request $request, JobDescription $jobDescription)
+    {
+        $this->authorize('view', $jobDescription);
+
+        $applications = $jobDescription->applications()
+            ->with('candidate:id,name,email,phone')
+            ->orderBy('applied_at', 'desc')
+            ->get();
+
+        return Inertia::render('JobDescriptions/Applications', [
+            'jobDescription' => [
+                'id' => $jobDescription->id,
+                'title' => $jobDescription->title,
+                'company_name' => $jobDescription->company_name,
+            ],
+            'applications' => $applications->map(fn($app) => [
+                'id' => $app->id,
+                'candidate' => $app->candidate,
+                'status' => $app->status,
+                'status_label' => $app->status_label,
+                'status_color' => $app->status_color,
+                'cover_letter' => $app->cover_letter,
+                'applied_at' => $app->applied_at->format('M d, Y'),
+                'source' => $app->source,
+            ]),
+            'auth' => [
+                'user' => $request->user(),
+            ],
         ]);
     }
 }

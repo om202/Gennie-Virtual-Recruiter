@@ -61,4 +61,9 @@ class Candidate extends Model
     {
         return $this->hasMany(ScheduledInterview::class);
     }
+
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(\App\Models\JobApplication::class);
+    }
 }
