@@ -34,14 +34,17 @@ class Candidate extends Model
         'city',
         'state',
         'zip',
+        'ai_profile_data',
     ];
 
     protected $casts = [
+        'skills' => 'array',
         'work_history' => 'array',
         'education' => 'array',
         'certificates' => 'array',
         'authorized_to_work' => 'boolean',
         'sponsorship_needed' => 'boolean',
+        'ai_profile_data' => 'array',
     ];
 
     public function user(): BelongsTo

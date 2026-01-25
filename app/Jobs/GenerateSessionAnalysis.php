@@ -147,12 +147,47 @@ class GenerateSessionAnalysis implements ShouldQueue
                 'analysis_result' => $result,
             ]);
 
+            // Extract and update candidate profile from interview transcript
+            $this->extractCandidateProfile($transcript);
+
         } catch (\Exception $e) {
             $this->session->update([
                 'analysis_status' => 'failed',
                 'analysis_result' => ['error' => $e->getMessage()],
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Extract candidate profile data from transcript and update empty fields.
+     */
+    private function extractCandidateProfile(string $transcript): void
+    {
+        try {
+            // Check if session has a candidate
+            $candidate = $this->session->candidate;
+
+            if (!$candidate) {
+                return;
+            }
+
+            $extractor = app(\App\Services\InterviewProfileExtractorService::class);
+            $updatedFields = $extractor->extractAndUpdate($candidate, $transcript);
+
+            if (!empty($updatedFields)) {
+                Log::info('Candidate profile enriched from interview', [
+                    'session_id' => $this->session->id,
+                    'candidate_id' => $candidate->id,
+                    'fields' => $updatedFields,
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Don't fail the job if profile extraction fails
+            Log::warning('Failed to extract candidate profile from interview', [
+                'session_id' => $this->session->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

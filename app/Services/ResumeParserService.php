@@ -253,15 +253,20 @@ EOT;
 
         foreach ($results as $result) {
             // Scalar fields: first non-null wins
-            foreach (['name', 'email', 'phone', 'linkedin_url', 'address', 'city', 'state', 'zip', 'skills', 'experience_summary', 'work_authorization', 'salary_expectation'] as $field) {
+            foreach (['name', 'email', 'phone', 'linkedin_url', 'address', 'city', 'state', 'zip', 'experience_summary', 'work_authorization', 'salary_expectation'] as $field) {
                 if (empty($merged[$field]) && !empty($result[$field])) {
-                    // Handle skills - can come as array or string, normalize to string
-                    if ($field === 'skills' && is_array($result[$field])) {
-                        $merged[$field] = implode(', ', $result[$field]);
-                    } else {
-                        $merged[$field] = $result[$field];
-                    }
+                    $merged[$field] = $result[$field];
                 }
+            }
+
+            // Handle skills - database expects JSON array
+            if (empty($merged['skills']) && !empty($result['skills'])) {
+                $skills = $result['skills'];
+                // Normalize to array
+                if (is_string($skills)) {
+                    $skills = array_map('trim', explode(',', $skills));
+                }
+                $merged['skills'] = $skills;
             }
 
             // Array fields: concatenate

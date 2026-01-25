@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check, ExternalLink, FileText } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check, ExternalLink, FileText, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 interface WorkHistory {
     company: string;
@@ -28,13 +29,28 @@ interface Certificate {
     date: string | null;
 }
 
+interface AiProfileData {
+    skills?: string[] | null;
+    experience_summary?: string | null;
+    work_history?: WorkHistory[];
+    education?: Education[];
+    certificates?: Certificate[];
+    work_authorization?: string | null;
+    salary_expectation?: string | null;
+    city?: string | null;
+    state?: string | null;
+    linkedin_url?: string | null;
+    extracted_at?: string;
+    source?: string;
+}
+
 interface Candidate {
     id: string;
     name: string;
     email: string;
     phone: string | null;
     linkedin_url: string | null;
-    skills: string | null;
+    skills: string[] | null;
     experience_summary: string | null;
     address: string | null;
     city: string | null;
@@ -46,6 +62,7 @@ interface Candidate {
     work_history: WorkHistory[];
     education: Education[];
     certificates: Certificate[];
+    ai_profile_data?: AiProfileData | null;
 }
 
 interface ViewCandidateDialogProps {
@@ -69,9 +86,10 @@ const workAuthLabels: Record<string, string> = {
     'need_sponsorship': 'Need Sponsorship',
 };
 
-// Helper to clean skills string (remove JSON brackets if legacy format)
-const cleanSkills = (skills: string | null): string | null => {
+// Helper to format skills (handles both array and string formats)
+const formatSkills = (skills: string[] | string | null): string | null => {
     if (!skills) return null;
+    if (Array.isArray(skills)) return skills.join(', ');
     const trimmed = skills.trim();
     // Handle legacy JSON array format: ["React", "Python"] -> React, Python
     if (trimmed.startsWith('[')) {
@@ -287,14 +305,14 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                         )}
 
                         {/* Skills */}
-                        {cleanSkills(candidate.skills) && (
+                        {formatSkills(candidate.skills) && (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-base">Skills</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-sm text-muted-foreground">
-                                        {cleanSkills(candidate.skills)}
+                                        {formatSkills(candidate.skills)}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -380,6 +398,160 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                     ))}
                                 </CardContent>
                             </Card>
+                        )}
+
+                        {/* AI Extracted Data Section */}
+                        {candidate.ai_profile_data && (
+                            <>
+                                <Separator className="my-6" />
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="h-5 w-5 text-purple-500" />
+                                        <h3 className="text-lg font-semibold">AI Extracted Data</h3>
+                                        <Badge variant="secondary" className="text-xs">
+                                            From Interview
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        This data was automatically extracted from interview conversations.
+                                        {candidate.ai_profile_data.extracted_at && (
+                                            <> Extracted on {new Date(candidate.ai_profile_data.extracted_at).toLocaleDateString()}.</>
+                                        )}
+                                    </p>
+
+                                    {/* AI Skills */}
+                                    {candidate.ai_profile_data.skills && candidate.ai_profile_data.skills.length > 0 && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm flex items-center gap-2">
+                                                    <Sparkles className="h-3 w-3 text-purple-500" />
+                                                    Skills Mentioned
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {candidate.ai_profile_data.skills.map((skill, i) => (
+                                                        <Badge key={i} variant="outline" className="bg-white">
+                                                            {skill}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* AI Experience Summary */}
+                                    {candidate.ai_profile_data.experience_summary && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm flex items-center gap-2">
+                                                    <Sparkles className="h-3 w-3 text-purple-500" />
+                                                    Experience Summary
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                                    {candidate.ai_profile_data.experience_summary}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* AI Work History */}
+                                    {candidate.ai_profile_data.work_history && candidate.ai_profile_data.work_history.length > 0 && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm flex items-center gap-2">
+                                                    <Sparkles className="h-3 w-3 text-purple-500" />
+                                                    <Briefcase className="h-3 w-3" />
+                                                    Work Experience Mentioned
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                {candidate.ai_profile_data.work_history.map((job, i) => (
+                                                    <div key={i} className="text-sm">
+                                                        <p className="font-medium">{job.title || 'Role'} at {job.company}</p>
+                                                        {job.description && (
+                                                            <p className="text-muted-foreground text-xs mt-1">{job.description}</p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* AI Education */}
+                                    {candidate.ai_profile_data.education && candidate.ai_profile_data.education.length > 0 && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm flex items-center gap-2">
+                                                    <Sparkles className="h-3 w-3 text-purple-500" />
+                                                    <GraduationCap className="h-3 w-3" />
+                                                    Education Mentioned
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-2">
+                                                {candidate.ai_profile_data.education.map((edu, i) => (
+                                                    <div key={i} className="text-sm">
+                                                        <p className="font-medium">{edu.degree} {edu.field && `in ${edu.field}`}</p>
+                                                        <p className="text-muted-foreground text-xs">{edu.institution}</p>
+                                                    </div>
+                                                ))}
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* AI Certificates */}
+                                    {candidate.ai_profile_data.certificates && candidate.ai_profile_data.certificates.length > 0 && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm flex items-center gap-2">
+                                                    <Sparkles className="h-3 w-3 text-purple-500" />
+                                                    <Award className="h-3 w-3" />
+                                                    Certifications Mentioned
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {candidate.ai_profile_data.certificates.map((cert, i) => (
+                                                        <Badge key={i} variant="outline" className="bg-white">
+                                                            {cert.name}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* AI Location & Other */}
+                                    {(candidate.ai_profile_data.city || candidate.ai_profile_data.salary_expectation || candidate.ai_profile_data.work_authorization) && (
+                                        <Card className="border-purple-200 bg-purple-50/30">
+                                            <CardContent className="pt-4">
+                                                <div className="flex flex-wrap gap-4 text-sm">
+                                                    {candidate.ai_profile_data.city && (
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="h-3 w-3 text-muted-foreground" />
+                                                            <span>{candidate.ai_profile_data.city}{candidate.ai_profile_data.state && `, ${candidate.ai_profile_data.state}`}</span>
+                                                        </div>
+                                                    )}
+                                                    {candidate.ai_profile_data.salary_expectation && (
+                                                        <div className="flex items-center gap-2">
+                                                            <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                                            <span>{candidate.ai_profile_data.salary_expectation}</span>
+                                                        </div>
+                                                    )}
+                                                    {candidate.ai_profile_data.work_authorization && (
+                                                        <div className="flex items-center gap-2">
+                                                            <FileCheck className="h-3 w-3 text-muted-foreground" />
+                                                            <span>{candidate.ai_profile_data.work_authorization}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </div>
                 </ScrollArea>
