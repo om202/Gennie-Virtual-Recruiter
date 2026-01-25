@@ -140,13 +140,19 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Job Descriptions</h1>
                         <p className="text-muted-foreground">
                             Create and manage job postings for your interviews.
                         </p>
                     </div>
+                    {jobDescriptions.length > 0 && (
+                        <Link href="/job-descriptions/create" className={buttonVariants({ className: "w-full md:w-auto" })}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Job Description
+                        </Link>
+                    )}
                 </div>
 
                 {/* Main Content */}
@@ -167,20 +173,11 @@ export default function Index({ jobDescriptions: initialJobs }: IndexProps) {
                         </div>
                     )}
 
-                    {/* Actions Bar */}
-                    {jobDescriptions.length > 0 && (
-                        <div className="flex justify-between items-center">
-                            <p className="text-sm text-muted-foreground">
-                                {highlightedJobId
-                                    ? `Viewing: ${jobDescriptions[0]?.title}`
-                                    : `${jobDescriptions.length} job description${jobDescriptions.length !== 1 ? 's' : ''}`
-                                }
-                            </p>
-                            <Link href="/job-descriptions/create" className={buttonVariants()}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Job Description
-                            </Link>
-                        </div>
+                    {/* Count Info - Only show when there are jobs and not filtered */}
+                    {jobDescriptions.length > 0 && !highlightedJobId && (
+                        <p className="text-sm text-muted-foreground">
+                            {jobDescriptions.length} job description{jobDescriptions.length !== 1 ? 's' : ''}
+                        </p>
                     )}
 
                     {/* Job Grid */}

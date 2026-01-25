@@ -102,8 +102,23 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
     const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
     const [sessionAnalysis, setSessionAnalysis] = useState<Record<string, { status: 'pending' | 'processing' | 'completed' | 'failed'; result: any }>>({})
 
-    // Auto-select first session on initial load
+    // Auto-select session on initial load - prioritize URL query param
     useEffect(() => {
+        // Check if there's a session query parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionParam = urlParams.get('session');
+
+        if (sessionParam) {
+            // Find the session and its interview
+            const targetSession = allSessions.find(s => s.id === sessionParam);
+            if (targetSession) {
+                setSelectedSessionId(sessionParam);
+                setExpandedInterview(targetSession.interview_id);
+                return;
+            }
+        }
+
+        // Fallback to default behavior if no query param or session not found
         if (isFiltered && interview.sessions && interview.sessions.length > 0) {
             // Filtered view: select first session of this interview
             setSelectedSessionId(interview.sessions[0].id)
@@ -299,8 +314,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {/* Sidebar: Session List */}
-                        <Card className="col-span-1 md:sticky md:top-6 md:self-start overflow-hidden flex flex-col md:max-h-[calc(100vh-8rem)]">
-                            <CardHeader className="py-4 px-4 border-b bg-muted/30">
+                        <Card className="col-span-1 overflow-hidden flex flex-col">
+                            <CardHeader className="py-4 px-4 border-b">
                                 <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Sessions</CardTitle>
                             </CardHeader>
                             <div className="overflow-y-auto p-2 space-y-2">
@@ -338,7 +353,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                                     "rounded-lg p-3 cursor-pointer transition-all border",
                                                                     isSelected
                                                                         ? "border-border"
-                                                                        : "border-transparent hover:bg-accent/50"
+                                                                        : "border-transparent"
                                                                 )}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2 mb-2">

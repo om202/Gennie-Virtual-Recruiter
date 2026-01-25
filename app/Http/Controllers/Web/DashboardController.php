@@ -45,7 +45,7 @@ class DashboardController extends Controller
                     'description' => $candidateName . ' - ' . $jobTitle,
                     'status' => $session->status,
                     'created_at' => $session->created_at,
-                    'link' => "/interviews/{$session->interview_id}/logs",
+                    'link' => "/interviews/{$session->interview_id}/logs?session={$session->id}",
                 ];
             });
 

@@ -164,26 +164,23 @@ export default function InterviewsIndex({ interviews: initialInterviews }: Dashb
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Interviews</h1>
                         <p className="text-muted-foreground">
                             Create and manage your interview configurations.
                         </p>
                     </div>
+                    {interviews.length > 0 && (
+                        <Link href="/interviews/create" className={buttonVariants({ className: "w-full md:w-auto" })}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Interview
+                        </Link>
+                    )}
                 </div>
 
                 {/* Main Content */}
                 <>
-                    {/* Actions Bar - Only show when there are interviews */}
-                    {interviews.length > 0 && (
-                        <div className="flex justify-end items-center gap-2">
-                            <Link href="/interviews/create" className={buttonVariants()}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Interview
-                            </Link>
-                        </div>
-                    )}
 
                     {/* Interview Grid */}
                     {interviews.length === 0 ? (

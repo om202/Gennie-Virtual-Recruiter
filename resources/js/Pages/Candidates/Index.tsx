@@ -136,42 +136,39 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
 
             <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Candidates</h1>
                         <p className="text-muted-foreground">
                             Manage your talent pool and view candidate profiles.
                         </p>
                     </div>
-                </div>
-
-                {/* Actions Bar */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <form onSubmit={handleSearch} className="relative w-full sm:w-80">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search by name, email, or skills..."
-                            className="pl-9"
-                            value={search}
-                            onChange={(e) => {
-                                const newValue = e.target.value;
-                                setSearch(newValue);
-                                // If search is cleared (empty), reset the search
-                                if (newValue === '') {
-                                    router.get('/candidates', {}, { preserveState: true });
-                                }
-                            }}
-                        />
-                    </form>
-
                     <Link href="/candidates/create">
-                        <Button>
+                        <Button className="w-full md:w-auto">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Candidate
                         </Button>
                     </Link>
                 </div>
+
+                {/* Search Bar */}
+                <form onSubmit={handleSearch} className="relative w-full sm:w-80">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search by name, email, or skills..."
+                        className="pl-9"
+                        value={search}
+                        onChange={(e) => {
+                            const newValue = e.target.value;
+                            setSearch(newValue);
+                            // If search is cleared (empty), reset the search
+                            if (newValue === '') {
+                                router.get('/candidates', {}, { preserveState: true });
+                            }
+                        }}
+                    />
+                </form>
 
                 {/* Filter Indicator */}
                 {highlightedCandidateId && (
