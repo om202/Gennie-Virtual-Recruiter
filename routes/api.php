@@ -41,14 +41,12 @@ Route::post('/sessions/{id}/reset-analysis', [InterviewSessionController::class,
 Route::delete('/sessions/{id}', [InterviewSessionController::class, 'deleteSession']);
 
 // =============================================================================
-// DASHBOARD ROUTES - Write operations (keep protected for direct API access)
+// DASHBOARD ROUTES - Session management (pages are auth protected via Inertia)
 // =============================================================================
-Route::middleware('auth:web')->group(function () {
-    Route::post('/sessions', [InterviewSessionController::class, 'store']);
-    Route::post('/sessions/{id}/jd', [InterviewSessionController::class, 'updateJobDescription']);
-    Route::post('/sessions/{id}/resume', [InterviewSessionController::class, 'updateResume']);
-    Route::post('/sessions/{id}/start', [InterviewSessionController::class, 'start']);
-});
+Route::post('/sessions', [InterviewSessionController::class, 'store']);
+Route::post('/sessions/{id}/jd', [InterviewSessionController::class, 'updateJobDescription']);
+Route::post('/sessions/{id}/resume', [InterviewSessionController::class, 'updateResume']);
+Route::post('/sessions/{id}/start', [InterviewSessionController::class, 'start']);
 
 // =============================================================================
 // TWILIO ROUTES (external callbacks - no auth, validated by Twilio signature)
