@@ -71,26 +71,33 @@ export default function TryGennieResult({ sessionId }: TryGennieResultProps) {
         fetchData()
     }, [sessionId])
 
-    // Poll for analysis completion
+    // SSE for real-time analysis status updates
     useEffect(() => {
         if (!analyzing && session?.analysis_status !== 'processing') return
 
-        const pollInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/sessions/${sessionId}`)
-                const data = await res.json()
-                if (data.success && data.session) {
-                    setSession(data.session)
-                    if (data.session.analysis_status === 'completed' || data.session.analysis_status === 'failed') {
-                        setAnalyzing(false)
-                    }
-                }
-            } catch (e) {
-                console.error('Polling error:', e)
-            }
-        }, 2000)
+        const eventSource = new EventSource(`/api/sessions/${sessionId}/analysis-stream`)
 
-        return () => clearInterval(pollInterval)
+        eventSource.addEventListener('status', (event) => {
+            const data = JSON.parse(event.data)
+            setSession(prev => prev ? { ...prev, analysis_status: data.status, analysis_result: data.result } : null)
+            if (data.status === 'completed' || data.status === 'failed') {
+                setAnalyzing(false)
+            }
+        })
+
+        eventSource.addEventListener('done', () => {
+            eventSource.close()
+        })
+
+        eventSource.addEventListener('error', () => {
+            if (eventSource.readyState === EventSource.CLOSED) {
+                setAnalyzing(false)
+            }
+        })
+
+        return () => {
+            eventSource.close()
+        }
     }, [analyzing, session?.analysis_status, sessionId])
 
     const handleGenerateAnalysis = async () => {
