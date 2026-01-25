@@ -498,9 +498,9 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                                 });
                                                                 try {
                                                                     // Force re-analysis by resetting status first
-                                                                    await fetch(`/api/sessions/${session.id}/reset-analysis`, { method: 'POST' });
-                                                                    const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
-                                                                    const data = await res.json();
+                                                                    await window.axios.post(`/api/sessions/${session.id}/reset-analysis`);
+                                                                    const res = await window.axios.post(`/api/sessions/${session.id}/analyze`);
+                                                                    const data = res.data;
                                                                     if (!data.success) {
                                                                         setAnalyzingSession(null);
                                                                         alert(data.message || 'Failed to start analysis');
@@ -572,8 +572,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                         onClick={async () => {
                                                             setAnalyzingSession(session.id);
                                                             try {
-                                                                const res = await fetch(`/api/sessions/${session.id}/analyze`, { method: 'POST' });
-                                                                const data = await res.json();
+                                                                const res = await window.axios.post(`/api/sessions/${session.id}/analyze`);
+                                                                const data = res.data;
                                                                 if (!data.success) {
                                                                     setAnalyzingSession(null);
                                                                     alert(data.message || 'Failed to start analysis');

@@ -23,6 +23,9 @@ class AnalysisStreamController extends Controller
         $session = InterviewSession::findOrFail($id);
 
         return new StreamedResponse(function () use ($session, $id) {
+            // Allow long-running SSE stream (up to 3 minutes)
+            set_time_limit(0);
+
             // Disable output buffering for real-time streaming
             if (ob_get_level())
                 ob_end_clean();
