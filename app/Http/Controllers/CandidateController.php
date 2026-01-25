@@ -19,7 +19,8 @@ class CandidateController extends Controller
 
     public function index(Request $request)
     {
-        $query = Candidate::where('user_id', $request->user()->id);
+        $query = Candidate::where('user_id', $request->user()->id)
+            ->withCount('jobApplications');
 
         if ($request->has('search')) {
             $search = $request->input('search');

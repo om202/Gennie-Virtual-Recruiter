@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, MapPin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X, Users } from 'lucide-react';
+import { Plus, Search, MapPin, Trash2, Mail, Phone as PhoneIcon, Eye, Pencil, ClipboardList, X, Users, FileText } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -57,6 +57,7 @@ interface Candidate {
     work_history: WorkHistory[];
     education: Education[];
     certificates: Certificate[];
+    job_applications_count: number;
 }
 
 // Helper to derive location from city+state
@@ -269,6 +270,16 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                                                 <MapPin className="h-3.5 w-3.5 shrink-0" />
                                                 <span className="truncate">{getLocation(candidate)}</span>
                                             </div>
+                                        )}
+
+                                        {/* Job Applications Badge */}
+                                        {candidate.job_applications_count > 0 && (
+                                            <Link href={`/candidates/${candidate.id}`} className="pt-1 block">
+                                                <Badge variant="secondary" className="gap-1 text-xs cursor-pointer hover:bg-primary/10">
+                                                    <FileText className="h-3 w-3" />
+                                                    {candidate.job_applications_count} Application{candidate.job_applications_count !== 1 ? 's' : ''}
+                                                </Badge>
+                                            </Link>
                                         )}
                                     </div>
 
