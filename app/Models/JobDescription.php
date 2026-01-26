@@ -32,6 +32,8 @@ class JobDescription extends Model
         'public_token',
         'public_link_enabled',
         'application_deadline',
+        'default_interview_id',
+        'allow_self_scheduling',
     ];
 
     protected $casts = [
@@ -42,6 +44,7 @@ class JobDescription extends Model
         'experience_years_max' => 'integer',
         'public_link_enabled' => 'boolean',
         'application_deadline' => 'datetime',
+        'allow_self_scheduling' => 'boolean',
     ];
 
     /**
@@ -66,6 +69,22 @@ class JobDescription extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(JobApplication::class);
+    }
+
+    /**
+     * Get the default interview template for self-scheduling.
+     */
+    public function defaultInterview(): BelongsTo
+    {
+        return $this->belongsTo(Interview::class, 'default_interview_id');
+    }
+
+    /**
+     * Check if self-scheduling is enabled and configured.
+     */
+    public function canSelfSchedule(): bool
+    {
+        return $this->allow_self_scheduling && $this->default_interview_id;
     }
 
     /**

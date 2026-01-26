@@ -34,6 +34,10 @@ Route::post('/apply/parse-resume', [\App\Http\Controllers\PublicJobController::c
 // Public Careers Page (no auth required)
 Route::get('/careers/{token}', [\App\Http\Controllers\PublicCareersController::class, 'show'])->name('public.careers');
 
+// Public Self-Scheduling (no auth required)
+Route::get('/schedule/{company}/{job}/{token}', [\App\Http\Controllers\PublicScheduleController::class, 'show'])->name('public.schedule.show');
+Route::post('/schedule/{token}', [\App\Http\Controllers\PublicScheduleController::class, 'store'])->name('public.schedule.store');
+
 // Guest Routes (redirect to dashboard if already authenticated)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', fn() => redirect()->route('auth.google'))->name('login');

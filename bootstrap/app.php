@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'public/start/*',
             'apply/*',
+            'schedule/*',
+            's/otp/*',
         ]);
 
         // Redirect authenticated users away from guest-only routes (e.g., /login)

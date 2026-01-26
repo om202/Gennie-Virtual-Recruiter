@@ -93,6 +93,71 @@ export default function PublicInterview({
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
+    // Generic Candidate Info State - must be before any returns
+    const [candidateName, setCandidateName] = useState('')
+    const [candidateEmail, setCandidateEmail] = useState('')
+    const [candidatePhone, setCandidatePhone] = useState('')
+    const [isCandidateInfoDialogOpen, setIsCandidateInfoDialogOpen] = useState(false)
+
+    // Agent config - must be before any returns
+    const getAgentConfig = useCallback((): AgentConfig => ({
+        sessionId: sessionId || undefined,
+        jobTitle: interview?.job_title || '',
+        companyName: interview?.company_name || '',
+        jobDescription: interviewData?.job_description || '',
+        resume: '',
+        interviewType: (interview?.interview_type || 'screening') as AgentConfig['interviewType'],
+        difficultyLevel: (interview?.difficulty_level || 'medium') as AgentConfig['difficultyLevel'],
+        durationMinutes: interview?.duration_minutes || 30,
+        requiredQuestions: interview?.required_questions || [],
+    }), [sessionId, interview, interviewData])
+
+    // Deepgram agent hook - must be before any returns
+    const {
+        speakingState,
+        transcript,
+        startConversation: startDeepgramConversation,
+        stopConversation: stopDeepgramConversation,
+        isConnected,
+        connectionState,
+    } = useDeepgramAgent(getAgentConfig())
+
+    // Watch for interview end - must be before any returns
+    useEffect(() => {
+        if (connectionState === 'idle' && sessionId && transcript.length > 0 && !hasEnded) {
+            setHasEnded(true)
+        }
+    }, [connectionState, sessionId, transcript.length, hasEnded])
+
+    // Start timer when interview begins - must be before any returns
+    useEffect(() => {
+        if (isConnected && interview && timeRemaining === null) {
+            setTimeRemaining(interview.duration_minutes * 60)
+        }
+    }, [isConnected, interview, timeRemaining])
+
+    // Countdown timer - must be before any returns
+    useEffect(() => {
+        if (isConnected && timeRemaining !== null && timeRemaining > 0) {
+            timerIntervalRef.current = setInterval(() => {
+                setTimeRemaining(prev => (prev !== null && prev > 0) ? prev - 1 : 0)
+            }, 1000)
+        }
+
+        return () => {
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current)
+            }
+        }
+    }, [isConnected, timeRemaining !== null])
+
+    // Format time as MM:SS
+    const formatTime = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
     const handleCopyUrl = async () => {
         await navigator.clipboard.writeText(window.location.href)
         setUrlCopied(true)
@@ -403,32 +468,7 @@ export default function PublicInterview({
         )
     }
 
-    const getAgentConfig = useCallback((): AgentConfig => ({
-        sessionId: sessionId || undefined,
-        jobTitle: interview.job_title,
-        companyName: interview.company_name,
-        jobDescription: interviewData?.job_description || '',
-        resume: '',
-        interviewType: interview.interview_type as AgentConfig['interviewType'],
-        difficultyLevel: interview.difficulty_level as AgentConfig['difficultyLevel'],
-        durationMinutes: interview.duration_minutes,
-        requiredQuestions: interview.required_questions || [],
-    }), [sessionId, interview, interviewData])
-
-    const {
-        speakingState,
-        transcript,
-        startConversation: startDeepgramConversation,
-        stopConversation: stopDeepgramConversation,
-        isConnected,
-        connectionState,
-    } = useDeepgramAgent(getAgentConfig())
-
-    // Generic Candidate Info State
-    const [candidateName, setCandidateName] = useState('')
-    const [candidateEmail, setCandidateEmail] = useState('')
-    const [candidatePhone, setCandidatePhone] = useState('')
-    const [isCandidateInfoDialogOpen, setIsCandidateInfoDialogOpen] = useState(false)
+    // Hooks already moved to top of component
 
     // Create a session via the public API
     const createSession = async (): Promise<string> => {
@@ -497,42 +537,7 @@ export default function PublicInterview({
         await stopDeepgramConversation()
     }
 
-    // Watch for interview end
-    useEffect(() => {
-        if (connectionState === 'idle' && sessionId && transcript.length > 0 && !hasEnded) {
-            setHasEnded(true)
-        }
-    }, [connectionState, sessionId, transcript.length, hasEnded])
-
-    // Start timer when interview begins
-    useEffect(() => {
-        if (isConnected && interview && timeRemaining === null) {
-            // Initialize timer with interview duration in seconds
-            setTimeRemaining(interview.duration_minutes * 60)
-        }
-    }, [isConnected, interview, timeRemaining])
-
-    // Countdown timer
-    useEffect(() => {
-        if (isConnected && timeRemaining !== null && timeRemaining > 0) {
-            timerIntervalRef.current = setInterval(() => {
-                setTimeRemaining(prev => (prev !== null && prev > 0) ? prev - 1 : 0)
-            }, 1000)
-        }
-
-        return () => {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current)
-            }
-        }
-    }, [isConnected, timeRemaining !== null])
-
-    // Format time as MM:SS
-    const formatTime = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins}:${secs.toString().padStart(2, '0')}`
-    }
+    // Hooks moved to top of component
 
     const handleCallSubmit = async () => {
         if (!phoneNumber) {

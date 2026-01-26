@@ -35,6 +35,7 @@ class Candidate extends Model
         'state',
         'zip',
         'ai_profile_data',
+        'scheduling_token',
     ];
 
     protected $casts = [
@@ -65,5 +66,17 @@ class Candidate extends Model
     public function jobApplications(): HasMany
     {
         return $this->hasMany(\App\Models\JobApplication::class);
+    }
+
+    /**
+     * Generate scheduling token for public scheduling access.
+     */
+    public function generateSchedulingToken(): string
+    {
+        if (!$this->scheduling_token) {
+            $this->scheduling_token = \Illuminate\Support\Str::random(32);
+            $this->save();
+        }
+        return $this->scheduling_token;
     }
 }

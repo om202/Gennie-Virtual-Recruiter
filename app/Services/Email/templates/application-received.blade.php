@@ -68,7 +68,8 @@
                                                         style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Position</span>
                                                     <p
                                                         style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1e293b;">
-                                                        {{ $jobDescription->title }}</p>
+                                                        {{ $jobDescription->title }}
+                                                    </p>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -78,7 +79,8 @@
                                                         style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Company</span>
                                                     <p
                                                         style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1e293b;">
-                                                        {{ $jobDescription->company_name }}</p>
+                                                        {{ $jobDescription->company_name }}
+                                                    </p>
                                                 </td>
                                             </tr>
                                             @if($jobDescription->location)
@@ -88,7 +90,8 @@
                                                             style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Location</span>
                                                         <p
                                                             style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1e293b;">
-                                                            {{ $jobDescription->location }}</p>
+                                                            {{ $jobDescription->location }}
+                                                        </p>
                                                     </td>
                                                 </tr>
                                             @endif
@@ -97,17 +100,35 @@
                                 </tr>
                             </table>
 
-                            <!-- What happens next -->
-                            <div style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
-                                <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #1e293b;">What
-                                    happens next?</p>
-                                <ul
-                                    style="margin: 0; padding: 0 0 0 20px; color: #475569; font-size: 14px; line-height: 1.8;">
-                                    <li>Our team will review your application</li>
-                                    <li>You'll receive an email within 1-2 weeks</li>
-                                    <li>If selected, you'll get an AI screening invite</li>
-                                </ul>
-                            </div>
+                            @if(isset($schedule_url) && $schedule_url)
+                                <!-- Schedule Your Interview CTA -->
+                                <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; text-align: center;">
+                                    <p style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1e293b;">Ready
+                                        for your AI Screening Interview?</p>
+                                    <p style="margin: 0 0 20px; font-size: 14px; color: #475569; line-height: 1.6;">
+                                        You can schedule your interview right now and pick a time that works best for you.
+                                    </p>
+                                    <a href="{{ $schedule_url }}"
+                                        style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+                                        📅 Schedule Your Interview
+                                    </a>
+                                    <p style="margin: 20px 0 0; font-size: 12px; color: #94a3b8;">
+                                        This link is unique to your application. Don't share it with anyone.
+                                    </p>
+                                </div>
+                            @else
+                                <!-- What happens next (default) -->
+                                <div style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
+                                    <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #1e293b;">What
+                                        happens next?</p>
+                                    <ul
+                                        style="margin: 0; padding: 0 0 0 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+                                        <li>Our team will review your application</li>
+                                        <li>You'll receive an email within 1-2 weeks</li>
+                                        <li>If selected, you'll get an AI screening invite</li>
+                                    </ul>
+                                </div>
+                            @endif
 
                             <p style="margin: 24px 0 0; font-size: 14px; color: #475569; line-height: 1.6;">
                                 We appreciate your interest and wish you the best!

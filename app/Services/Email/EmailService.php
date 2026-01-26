@@ -134,7 +134,16 @@ class EmailService
      */
     public function sendApplicationReceived(JobDescription $jobDescription, Candidate $candidate): bool
     {
-        $jobDescription->load('user');
+        $jobDescription->load(['user', 'defaultInterview']);
+
+        // Generate scheduling URL if self-scheduling is enabled
+        $scheduleUrl = null;
+        if ($jobDescription->canSelfSchedule()) {
+            $token = $candidate->generateSchedulingToken();
+            $companySlug = \Illuminate\Support\Str::slug($jobDescription->company_name);
+            $jobSlug = \Illuminate\Support\Str::slug($jobDescription->title);
+            $scheduleUrl = url("/schedule/{$companySlug}/{$jobSlug}/{$token}");
+        }
 
         return $this->send(
             type: 'application_received',
@@ -143,6 +152,7 @@ class EmailService
                 'jobDescription' => $jobDescription,
                 'candidate' => $candidate,
                 'recruiter_company' => $jobDescription->user?->company_name ?? $jobDescription->company_name,
+                'schedule_url' => $scheduleUrl,
             ],
             placeholders: [
                 'company' => $jobDescription->company_name,
