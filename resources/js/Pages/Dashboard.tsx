@@ -15,7 +15,8 @@ import {
     TrendingUp,
     LayoutDashboard,
     Phone,
-    Globe
+    Globe,
+    FileText
 } from 'lucide-react'
 
 interface DashboardProps {
@@ -203,42 +204,86 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                         </CardHeader>
                         <CardContent className="grid gap-2">
                             <Link href="/interviews/create">
-                                <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-md bg-primary/10 p-2">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
                                             <Plus className="h-4 w-4 text-primary" />
                                         </div>
-                                        <span className="font-medium">Create New Interview</span>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Create Interview</span>
+                                            <span className="text-xs text-muted-foreground">Configure a new interview session</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Button>
                             </Link>
                             <Link href="/job-descriptions/create">
-                                <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-md bg-primary/10 p-2">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
                                             <Briefcase className="h-4 w-4 text-primary" />
                                         </div>
-                                        <span className="font-medium">Upload Job Description</span>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Upload JD</span>
+                                            <span className="text-xs text-muted-foreground">Import job requirements from PDF/Text</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Button>
                             </Link>
                             <Link href="/candidates">
-                                <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-md bg-primary/10 p-2">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
                                             <Users className="h-4 w-4 text-primary" />
                                         </div>
-                                        <span className="font-medium">Manage Candidates</span>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Candidates</span>
+                                            <span className="text-xs text-muted-foreground">Manage candidate directory & history</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Button>
                             </Link>
                             <Link href="/schedules">
-                                <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-md bg-primary/10 p-2">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
                                             <Calendar className="h-4 w-4 text-primary" />
                                         </div>
-                                        <span className="font-medium">Schedule Interview</span>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Schedule</span>
+                                            <span className="text-xs text-muted-foreground">Manage interview calendar & availability</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                </Button>
+                            </Link>
+                            <Link href="/interviews/logs">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
+                                            <Mic className="h-4 w-4 text-primary" />
+                                        </div>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Interview Logs</span>
+                                            <span className="text-xs text-muted-foreground">View transcripts, audio & analysis</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                </Button>
+                            </Link>
+                            <Link href="/applications">
+                                <Button variant="outline" className="w-full justify-start h-auto py-3 px-4 hover:bg-accent hover:border-primary/50 transition-all group">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="rounded-md bg-primary/10 p-2 shrink-0">
+                                            <FileText className="h-4 w-4 text-primary" />
+                                        </div>
+                                        <div className="text-left flex-1">
+                                            <span className="font-medium block">Applications</span>
+                                            <span className="text-xs text-muted-foreground">Review & screen new job applicants</span>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Button>
                             </Link>
