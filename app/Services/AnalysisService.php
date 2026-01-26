@@ -169,41 +169,53 @@ Be calibrated for the level. If the candidate did not provide enough responses t
     ): string {
         $prompt = "EVALUATION FRAMEWORK:\n\n";
         $prompt .= "Interview Type: {$typeConfig['name']}\n";
-        $prompt .= "Description: {$typeConfig['description']}\n\n";
+        $prompt .= "Description: {$typeConfig['description']}\n";
+        $prompt .= "Candidate Level: {$levelConfig['name']}\n\n";
+
+        // If JD provided, make it the primary evaluation source
+        if ($jobDescription) {
+            $prompt .= "═══════════════════════════════════════════════════════════════\n";
+            $prompt .= "JOB REQUIREMENTS (PRIMARY EVALUATION SOURCE):\n";
+            $prompt .= "═══════════════════════════════════════════════════════════════\n";
+            $prompt .= "$jobDescription\n\n";
+            $prompt .= "CRITICAL: Extract the KEY REQUIREMENTS from the job description above.\n";
+            $prompt .= "For each evaluation criterion below, assess how well the candidate demonstrated\n";
+            $prompt .= "skills/experience RELEVANT TO THIS SPECIFIC ROLE, not generic skills.\n\n";
+        }
 
         $prompt .= "EVALUATION CRITERIA (weighted):\n\n";
         foreach ($typeConfig['evaluation_criteria'] as $criterion) {
             $prompt .= "• {$criterion['category']} ({$criterion['weight']}%)\n";
             foreach ($criterion['sub_criteria'] as $sub) {
-                $prompt .= "  - {$sub}\n";
+                $prompt .= "  - {$sub}";
+                if ($jobDescription) {
+                    $prompt .= " (evaluate in context of the JD requirements)";
+                }
+                $prompt .= "\n";
             }
             $prompt .= "\n";
-        }
-
-        $prompt .= "REFERENCE MATERIALS (for context only - DO NOT use to score):\n\n";
-
-        if ($jobDescription) {
-            $prompt .= "JOB DESCRIPTION (to understand expectations, NOT for scoring):\n$jobDescription\n\n";
         }
 
         if ($resume) {
             $prompt .= "CANDIDATE RESUME (for reference only, NOT evidence for scoring):\n$resume\n\n";
         }
 
-        $prompt .= "INTERVIEW TRANSCRIPT (PRIMARY SOURCE - score ONLY based on this):\n$transcript\n\n";
+        $prompt .= "═══════════════════════════════════════════════════════════════\n";
+        $prompt .= "INTERVIEW TRANSCRIPT (PRIMARY EVIDENCE SOURCE):\n";
+        $prompt .= "═══════════════════════════════════════════════════════════════\n";
+        $prompt .= "$transcript\n\n";
 
-        $prompt .= "INSTRUCTIONS:\n";
-        $prompt .= "1. Evaluate the candidate ONLY based on what they said in the transcript above\n";
-        $prompt .= "2. For EACH criterion, provide:\n";
-        $prompt .= "   - A score (0-100) based ONLY on transcript evidence\n";
-        $prompt .= "   - The weight percentage (as shown above)\n";
-        $prompt .= "   - A brief assessment citing what the candidate ACTUALLY SAID\n";
-        $prompt .= "   - Specific quotes or paraphrased evidence from the transcript (NOT from resume)\n";
-        $prompt .= "3. If a criterion was NOT discussed in the interview, score it LOW (0-20)\n";
-        $prompt .= "4. Calculate the overall score as: Σ(criterion_score × weight / 100)\n";
-        $prompt .= "5. Every strength and weakness MUST reference something the candidate said\n";
+        $prompt .= "EVALUATION INSTRUCTIONS:\n";
+        $prompt .= "1. FIRST: Identify the 3-5 MUST-HAVE skills from the job description\n";
+        $prompt .= "2. Evaluate the candidate ONLY based on what they said in the transcript\n";
+        $prompt .= "3. For EACH criterion, assess how the candidate's responses relate to JD requirements:\n";
+        $prompt .= "   - Did they demonstrate the SPECIFIC technologies/skills mentioned in the JD?\n";
+        $prompt .= "   - Did they show experience at the RIGHT LEVEL for this role?\n";
+        $prompt .= "   - Did they address the KEY RESPONSIBILITIES from the JD?\n";
+        $prompt .= "4. Score (0-100) based on how well transcript evidence matches JD requirements\n";
+        $prompt .= "5. If a MUST-HAVE skill from JD was NOT discussed, note it as a gap\n";
         $prompt .= "6. Calibrate for {$levelConfig['name']} expectations\n";
-        $prompt .= "7. Do NOT give credit for resume claims that were not verified in the interview\n";
+        $prompt .= "7. In key_pros/key_cons, reference SPECIFIC JD requirements met or missed\n";
 
         return $prompt;
     }

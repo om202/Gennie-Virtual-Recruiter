@@ -52,6 +52,18 @@
                     "Are they interviewing elsewhere?",
                     "Any questions about the role or company?"
                 ]
+            },
+            {
+                "id": "deep_dive",
+                "name": "Deep Dive (Until Time Ends)",
+                "required": false,
+                "questions": [
+                    "Explore interesting points from their background in more detail",
+                    "Ask follow-up questions on any intriguing experiences they mentioned",
+                    "Learn about their side projects, hobbies, or interests",
+                    "Discuss their preferred work style and what makes them thrive",
+                    "Continue the conversation naturally until the scheduled time is up"
+                ]
             }
         ],
         "technical": [
@@ -93,6 +105,18 @@
                     "Their familiarity with industry best practices",
                     "Tools and frameworks they're comfortable with",
                     "How they stay updated with technology trends"
+                ]
+            },
+            {
+                "id": "deep_dive",
+                "name": "Deep Dive (Until Time Ends)",
+                "required": false,
+                "questions": [
+                    "Dive deeper into their most impressive technical project",
+                    "Explore edge cases or optimizations for problems discussed",
+                    "Discuss architecture decisions they've made and trade-offs",
+                    "Ask about technical challenges they're excited to solve",
+                    "Continue technical exploration until the scheduled time is up"
                 ]
             }
         ],
@@ -136,6 +160,18 @@
                     "How they handle feedback and criticism",
                     "Recent skill or technology they learned and why"
                 ]
+            },
+            {
+                "id": "deep_dive",
+                "name": "Deep Dive (Until Time Ends)",
+                "required": false,
+                "questions": [
+                    "Explore the most impactful story they shared in more depth",
+                    "Ask about relationships they've built with colleagues",
+                    "Discuss how they've grown as a professional over the years",
+                    "Learn about their mentors or people who influenced them",
+                    "Continue getting to know them until the scheduled time is up"
+                ]
             }
         ],
         "final": [
@@ -177,6 +213,18 @@
                     "Confirm compensation expectations",
                     "Start date availability",
                     "Any pending offers or interviews to be aware of?"
+                ]
+            },
+            {
+                "id": "deep_dive",
+                "name": "Deep Dive (Until Time Ends)",
+                "required": false,
+                "questions": [
+                    "Explore what excites them most about this opportunity",
+                    "Discuss their vision for success in this role",
+                    "Ask about their support system and work-life balance needs",
+                    "Learn what would make this their dream job",
+                    "Continue the conversation naturally until the scheduled time is up"
                 ]
             }
         ]

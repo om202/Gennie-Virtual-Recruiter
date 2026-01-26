@@ -129,10 +129,24 @@ class GenerateSessionAnalysis implements ShouldQueue
                 return;
             }
 
-            // Extract interview metadata for analysis context
-            $metadata = $this->session->metadata ?? [];
-            $interviewType = $metadata['interview_type'] ?? 'screening';
-            $difficultyLevel = $metadata['difficulty_level'] ?? 'mid';
+            // Get interview type and difficulty from parent Interview model (primary source)
+            // Fall back to session metadata if parent interview not available
+            $interview = $this->session->interview;
+            if ($interview) {
+                $interviewType = $interview->interview_type ?? 'screening';
+                $difficultyLevel = $interview->difficulty_level ?? 'mid';
+            } else {
+                // Legacy fallback: read from session metadata
+                $metadata = $this->session->metadata ?? [];
+                $interviewType = $metadata['interview_type'] ?? 'screening';
+                $difficultyLevel = $metadata['difficulty_level'] ?? 'mid';
+            }
+
+            Log::info('Analysis using criteria', [
+                'session_id' => $this->session->id,
+                'interview_type' => $interviewType,
+                'difficulty_level' => $difficultyLevel,
+            ]);
 
             $result = $analysisService->analyzeSession(
                 $transcript,
