@@ -411,11 +411,13 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                 }, injectionIntervalMs)
             })
 
-            connection.on(AgentEvents.Close, () => {
+            connection.on(AgentEvents.Close, async () => {
                 console.log('Agent Connection Closed')
                 setConnectionState('disconnected')
                 setStatusText('Connection Closed')
                 setSpeakingState('idle')
+                // Upload recording before cleanup to ensure web recordings are saved
+                await stopAndUploadRecording()
                 stopMicrophone()
             })
 
@@ -725,43 +727,8 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
             timeInjectionIntervalRef.current = null
         }
 
-        // Stop and upload recording
+        // Stop and upload recording (handles all upload logic)
         await stopAndUploadRecording()
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            setStatusText('Uploading Recording...')
-
-            // Handle Upload on Stop
-            mediaRecorderRef.current.onstop = async () => {
-                const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm'
-                const blob = new Blob(recordingChunksRef.current, { type: mimeType })
-                if (configRef.current?.sessionId && blob.size > 0) {
-                    try {
-                        console.log('Uploading recording...', blob.size, 'bytes')
-                        const formData = new FormData()
-                        formData.append('file', blob, 'recording.webm')
-
-                        // Calculate duration
-                        // We can estimate duration from chunks or just let backend handle/metadata
-                        // Ideally we pass duration logic here but keeping it simple
-                        formData.append('duration', '0') // Optional: Calculate real duration
-
-                        await fetch(`/api/sessions/${configRef.current.sessionId}/upload-recording`, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        console.log('✅ Recording uploaded successfully')
-                        addTranscript('system', 'Interview recording saved.')
-                    } catch (uploadErr) {
-                        console.error('Failed to upload recording:', uploadErr)
-                        addTranscript('system', 'Error saving interview recording.')
-                    }
-                }
-                setStatusText('Interview Complete') // Reset status after upload logic
-            }
-            mediaRecorderRef.current.stop()
-        } else {
-            setStatusText('Interview Complete')
-        }
 
         // Notify backend to end session
         if (configRef.current?.sessionId) {
@@ -793,6 +760,24 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
             // Clean up time injection interval
             if (timeInjectionIntervalRef.current) {
                 clearInterval(timeInjectionIntervalRef.current)
+            }
+            // Attempt to upload recording before cleanup (fire and forget for unmount)
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm'
+                mediaRecorderRef.current.stop()
+                const blob = new Blob(recordingChunksRef.current, { type: mimeType })
+                if (configRef.current?.sessionId && blob.size > 0) {
+                    const formData = new FormData()
+                    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm'
+                    formData.append('file', blob, `recording.${ext}`)
+                    formData.append('duration', '0')
+                    navigator.sendBeacon?.(`/api/sessions/${configRef.current.sessionId}/upload-recording`, formData) ||
+                        fetch(`/api/sessions/${configRef.current.sessionId}/upload-recording`, {
+                            method: 'POST',
+                            body: formData,
+                            keepalive: true
+                        }).catch(err => console.error('Unmount upload failed:', err))
+                }
             }
             if (connectionRef.current) {
                 try {

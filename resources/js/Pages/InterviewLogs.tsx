@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList, ArrowLeft } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
-import { CustomAudioPlayer } from '@/components/CustomAudioPlayer'
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -763,9 +763,10 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <CustomAudioPlayer
+                                                    <audio
                                                         src={`/api/sessions/${session.id}/recording`}
-                                                        className="w-full"
+                                                        controls
+                                                        className="w-full h-10"
                                                     />
                                                 </div>
                                             )}
