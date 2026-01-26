@@ -285,8 +285,19 @@ class InterviewSessionController extends Controller
             'metadata' => $request->input('metadata'),
         ]);
 
+        // Extract and store memory when candidate speaks
+        if ($request->input('speaker') === 'candidate') {
+            try {
+                app(\App\Services\InterviewMemoryService::class)
+                    ->extractAndStore($id, $request->input('message'));
+            } catch (\Exception $e) {
+                Log::warning("Memory extraction failed: " . $e->getMessage());
+            }
+        }
+
         return response()->json(['success' => true]);
     }
+
     /**
      * End the interview session and trigger analysis.
      */

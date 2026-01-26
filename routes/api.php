@@ -11,6 +11,8 @@ Route::get('/user', function (Request $request) {
 
 // Tool Endpoint called by Deepgram
 Route::post('/agent/context', [AgentToolController::class, 'getContext']);
+Route::post('/agent/recall', [AgentToolController::class, 'recallMemory']);
+
 
 // Document Parsing
 Route::post('/documents/parse', [\App\Http\Controllers\Api\DocumentController::class, 'parse']);

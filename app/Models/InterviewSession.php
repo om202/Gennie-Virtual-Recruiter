@@ -44,6 +44,14 @@ class InterviewSession extends Model
     }
 
     /**
+     * Get interview memories (RAG-based fact storage).
+     */
+    public function memories()
+    {
+        return $this->hasMany(\App\Models\InterviewMemory::class);
+    }
+
+    /**
      * Get the parent interview.
      */
     public function interview(): BelongsTo

@@ -355,6 +355,16 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                                         required: ['reason'],
                                     },
                                 },
+                                {
+                                    name: 'recall_interview_memory',
+                                    description: 'CRITICAL: Call this BEFORE asking questions to check what the candidate has ALREADY told you. Returns facts they shared (experience, salary, location, visa status, etc). If a topic is covered, DO NOT ask about it again. Use this to avoid repeating questions. Call with optional query for semantic search.',
+                                    parameters: {
+                                        type: 'object',
+                                        properties: {
+                                            query: { type: 'string', description: 'Optional: semantic search query like "years of experience" or "salary expectations"' },
+                                        },
+                                    },
+                                },
                             ],
                         },
                         speak: {
@@ -631,6 +641,53 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             name: functionName,
                             content: JSON.stringify(result),
                         });
+
+                    } else if (functionName === 'recall_interview_memory') {
+                        console.log('🧠 Recalling interview memory');
+
+                        if (configRef.current?.sessionId) {
+                            try {
+                                const res = await fetch('/api/agent/recall', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        session_id: configRef.current.sessionId,
+                                        query: input?.query || null
+                                    })
+                                });
+                                const memory = await res.json();
+
+                                console.log('🧠 Memory recall result:', memory);
+                                addTranscript('system', memory.instruction || 'Memory checked');
+
+                                connection.functionCallResponse({
+                                    id: functionCallId,
+                                    name: functionName,
+                                    content: JSON.stringify(memory),
+                                });
+                            } catch (err) {
+                                console.error('Memory recall failed:', err);
+                                connection.functionCallResponse({
+                                    id: functionCallId,
+                                    name: functionName,
+                                    content: JSON.stringify({
+                                        covered_topics: [],
+                                        facts: {},
+                                        instruction: 'Memory unavailable'
+                                    }),
+                                });
+                            }
+                        } else {
+                            connection.functionCallResponse({
+                                id: functionCallId,
+                                name: functionName,
+                                content: JSON.stringify({
+                                    covered_topics: [],
+                                    facts: {},
+                                    instruction: 'No session'
+                                }),
+                            });
+                        }
 
                     } else {
                         // Unknown function - respond with error to not leave it hanging
