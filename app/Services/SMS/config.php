@@ -10,6 +10,15 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | SMS System Toggle
+    |--------------------------------------------------------------------------
+    | Set to true to enable SMS notifications. Disabled by default until
+    | Twilio A2P 10DLC registration is completed.
+    */
+    'enabled' => env('SMS_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Twilio Credentials
     |--------------------------------------------------------------------------
     */

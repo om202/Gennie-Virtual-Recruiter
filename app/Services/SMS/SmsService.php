@@ -168,6 +168,12 @@ class SmsService
      */
     protected function send(string $type, string $to, array $placeholders = []): bool
     {
+        // Check if SMS system is enabled
+        if (!$this->config['enabled']) {
+            Log::debug('SmsService: SMS system is disabled', ['type' => $type]);
+            return false;
+        }
+
         $typeConfig = $this->config['types'][$type] ?? null;
 
         if (!$typeConfig) {
