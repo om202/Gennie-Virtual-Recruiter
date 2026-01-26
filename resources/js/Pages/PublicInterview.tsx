@@ -5,7 +5,7 @@ import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Copy, Check, Timer } from 'lucide-react'
+import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Copy, Check, Timer, CalendarClock, Hourglass, CheckCircle, XCircle, Mail, KeyRound } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -48,9 +48,29 @@ interface Props {
     type: 'interview' | 'scheduled'
     error?: string
     isSelfPreview?: boolean
+    // Access status for scheduled interviews
+    accessStatus?: 'too_early' | 'accessible' | 'expired' | 'completed' | 'cancelled' | 'in_progress'
+    windowOpensAt?: string
+    candidateName?: string
+    interviewTitle?: string
+    companyName?: string
+    durationMinutes?: number
 }
 
-export default function PublicInterview({ interview, candidate, token, error, isSelfPreview, type }: Props) {
+export default function PublicInterview({
+    interview,
+    candidate,
+    token,
+    error,
+    isSelfPreview,
+    type,
+    accessStatus,
+    windowOpensAt,
+    candidateName: propCandidateName,
+    interviewTitle,
+    companyName: propCompanyName,
+    scheduledAt
+}: Props) {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [isCreatingSession, setIsCreatingSession] = useState(false)
     const [isCalling, setIsCalling] = useState(false)
@@ -62,6 +82,13 @@ export default function PublicInterview({ interview, candidate, token, error, is
     const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'error'>('idle')
     const [callError, setCallError] = useState<string | null>(null)
 
+    // OTP verification state for scheduled interviews
+    const [otpStep, setOtpStep] = useState<'request' | 'verify' | 'verified'>(type === 'scheduled' ? 'request' : 'verified')
+    const [otpCode, setOtpCode] = useState('')
+    const [otpEmail, setOtpEmail] = useState('')
+    const [otpLoading, setOtpLoading] = useState(false)
+    const [otpError, setOtpError] = useState<string | null>(null)
+
     // Interview timer state
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -72,7 +99,124 @@ export default function PublicInterview({ interview, candidate, token, error, is
         setTimeout(() => setUrlCopied(false), 2000)
     }
 
-    // Error state
+    // Access status states for scheduled interviews
+    if (accessStatus && accessStatus !== 'accessible' && accessStatus !== 'in_progress') {
+        const statusConfig = {
+            too_early: {
+                icon: CalendarClock,
+                iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+                iconColor: 'text-amber-600 dark:text-amber-400',
+                title: 'Interview Not Yet Available',
+                description: `Your interview window opens 5 minutes before the scheduled time.`,
+            },
+            expired: {
+                icon: Hourglass,
+                iconBg: 'bg-muted',
+                iconColor: 'text-muted-foreground',
+                title: 'Interview Window Closed',
+                description: 'The access window for this interview has passed. Please contact the recruiter if you need to reschedule.',
+            },
+            completed: {
+                icon: CheckCircle,
+                iconBg: 'bg-green-100 dark:bg-green-900/30',
+                iconColor: 'text-green-600 dark:text-green-400',
+                title: 'Interview Completed',
+                description: 'This interview has already been completed. Thank you for your participation!',
+            },
+            cancelled: {
+                icon: XCircle,
+                iconBg: 'bg-destructive/10',
+                iconColor: 'text-destructive',
+                title: 'Interview Cancelled',
+                description: 'This interview has been cancelled. Please contact the recruiter for more information.',
+            },
+        }
+
+        const config = statusConfig[accessStatus]
+        const StatusIcon = config.icon
+        const scheduledDate = scheduledAt ? new Date(scheduledAt) : null
+        const windowOpensDate = windowOpensAt ? new Date(windowOpensAt) : null
+
+        return (
+            <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
+                <Head title={config.title} />
+
+                <Card className="w-full max-w-md">
+                    {/* Icon Header */}
+                    <div className="pt-8 pb-2 flex justify-center">
+                        <div className={`h-16 w-16 ${config.iconBg} rounded-full flex items-center justify-center`}>
+                            <StatusIcon className={`h-8 w-8 ${config.iconColor}`} />
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="px-6 pb-6 text-center space-y-3">
+                        <h1 className="text-2xl font-bold">{config.title}</h1>
+
+                        {interviewTitle && propCompanyName && (
+                            <p className="text-base font-medium">
+                                {interviewTitle} at {propCompanyName}
+                            </p>
+                        )}
+
+                        {propCandidateName && (
+                            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                                <User className="h-4 w-4" />
+                                <span>{propCandidateName}</span>
+                            </div>
+                        )}
+
+                        <p className="text-sm text-muted-foreground">{config.description}</p>
+                    </div>
+
+                    {/* Schedule Details for "too_early" */}
+                    {accessStatus === 'too_early' && scheduledDate && (
+                        <div className="border-t px-6 py-5 bg-muted/30">
+                            <div className="text-center space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">Scheduled for</p>
+                                <p className="text-base font-medium">
+                                    {scheduledDate.toLocaleDateString(undefined, {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                                <p className="text-lg font-semibold text-primary">
+                                    {scheduledDate.toLocaleTimeString(undefined, {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        timeZoneName: 'short'
+                                    })}
+                                </p>
+                                {windowOpensDate && (
+                                    <p className="text-xs text-muted-foreground pt-2">
+                                        You can join starting at {windowOpensDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Access window reminder */}
+                            <div className="mt-4 pt-3 border-t border-border/50">
+                                <p className="text-xs text-muted-foreground text-center">
+                                    <span className="font-medium">Please be on time.</span> Access closes 10 minutes after the scheduled time.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Footer Action */}
+                    <div className="border-t px-6 py-4 flex justify-center">
+                        <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+                            Refresh Page
+                        </Button>
+                    </div>
+                </Card>
+            </div>
+        )
+    }
+
+    // Error state (legacy fallback)
     if (error || !interview) {
         return (
             <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
@@ -84,6 +228,177 @@ export default function PublicInterview({ interview, candidate, token, error, is
                         {error || 'This interview link is no longer valid or has expired.'}
                     </p>
                 </div>
+            </div>
+        )
+    }
+
+    // OTP verification handlers
+    const handleRequestOtp = async () => {
+        setOtpLoading(true)
+        setOtpError(null)
+
+        try {
+            const res = await fetch(`/s/otp/request/${token}`, { method: 'POST' })
+            const data = await res.json()
+
+            if (data.success) {
+                setOtpEmail(data.email)
+                setOtpStep('verify')
+            } else {
+                setOtpError(data.error || 'Failed to send access code')
+            }
+        } catch {
+            setOtpError('Network error. Please try again.')
+        } finally {
+            setOtpLoading(false)
+        }
+    }
+
+    const handleVerifyOtp = async () => {
+        if (otpCode.length !== 6) {
+            setOtpError('Please enter a 6-digit code')
+            return
+        }
+
+        setOtpLoading(true)
+        setOtpError(null)
+
+        try {
+            const res = await fetch(`/s/otp/verify/${token}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: otpCode })
+            })
+            const data = await res.json()
+
+            if (data.success) {
+                setOtpStep('verified')
+            } else {
+                setOtpError(data.error || 'Invalid code')
+            }
+        } catch {
+            setOtpError('Network error. Please try again.')
+        } finally {
+            setOtpLoading(false)
+        }
+    }
+
+    // OTP verification screens for scheduled interviews
+    if (type === 'scheduled' && otpStep !== 'verified') {
+        return (
+            <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
+                <Head title="Verify Your Identity" />
+
+                <Card className="w-full max-w-md">
+                    {/* Icon Header */}
+                    <div className="pt-8 pb-2 flex justify-center">
+                        <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
+                            {otpStep === 'request' ? (
+                                <Mail className="h-8 w-8 text-primary" />
+                            ) : (
+                                <KeyRound className="h-8 w-8 text-primary" />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="px-6 pb-6 text-center space-y-3">
+                        <h1 className="text-2xl font-bold">
+                            {otpStep === 'request' ? 'Ready to Start' : 'Enter Access Code'}
+                        </h1>
+
+                        <p className="text-base font-medium">
+                            {interview.job_title} at {interview.company_name}
+                        </p>
+
+                        {candidate && (
+                            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                                <User className="h-4 w-4" />
+                                <span>{candidate.name}</span>
+                            </div>
+                        )}
+
+                        <p className="text-sm text-muted-foreground">
+                            {otpStep === 'request'
+                                ? 'To verify your identity, we\'ll send a one-time access code to your email address on file.'
+                                : `We sent a 6-digit code to ${otpEmail}. Enter it below to continue.`
+                            }
+                        </p>
+                    </div>
+
+                    {/* OTP Input (verify step) */}
+                    {otpStep === 'verify' && (
+                        <div className="px-6 pb-4">
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={6}
+                                placeholder="000000"
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className="text-center text-2xl tracking-widest font-mono"
+                                autoFocus
+                            />
+                        </div>
+                    )}
+
+                    {/* Error Message */}
+                    {otpError && (
+                        <div className="px-6 pb-4">
+                            <p className="text-sm text-destructive text-center">{otpError}</p>
+                        </div>
+                    )}
+
+                    {/* Spam folder reminder */}
+                    {otpStep === 'verify' && (
+                        <div className="px-6 pb-4">
+                            <p className="text-xs text-muted-foreground text-center">
+                                Don't see it? Check your spam or junk folder.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="border-t px-6 py-4 space-y-3">
+                        {otpStep === 'request' ? (
+                            <Button
+                                onClick={handleRequestOtp}
+                                disabled={otpLoading}
+                                className="w-full"
+                            >
+                                {otpLoading ? (
+                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</>
+                                ) : (
+                                    <><Mail className="h-4 w-4 mr-2" /> Send Access Code</>
+                                )}
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    onClick={handleVerifyOtp}
+                                    disabled={otpLoading || otpCode.length !== 6}
+                                    className="w-full"
+                                >
+                                    {otpLoading ? (
+                                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
+                                    ) : (
+                                        'Verify & Continue'
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleRequestOtp}
+                                    disabled={otpLoading}
+                                    className="w-full text-muted-foreground"
+                                >
+                                    Resend Code
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </Card>
             </div>
         )
     }

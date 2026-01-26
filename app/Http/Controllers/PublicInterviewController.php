@@ -66,15 +66,22 @@ class PublicInterviewController extends Controller
             abort(404, 'Scheduled interview not found.');
         }
 
-        // Check if schedule is still valid
-        if ($schedule->status !== 'scheduled') {
+        $accessStatus = $schedule->getAccessStatus();
+        $interview = $schedule->interview;
+
+        // For non-accessible states, return limited info
+        if (!in_array($accessStatus, ['accessible', 'in_progress'])) {
             return Inertia::render('PublicInterview', [
-                'error' => 'This interview has already been completed or cancelled.',
+                'accessStatus' => $accessStatus,
+                'scheduledAt' => $schedule->scheduled_at->toIso8601String(),
+                'windowOpensAt' => $schedule->getWindowOpensAt()?->toIso8601String(),
+                'candidateName' => $schedule->candidate?->name,
+                'interviewTitle' => $interview->job_title,
+                'companyName' => $interview->company_name,
+                'durationMinutes' => $interview->duration_minutes,
                 'type' => 'scheduled',
             ]);
         }
-
-        $interview = $schedule->interview;
 
         // Get job description from linked JD or legacy field
         $jobDescription = null;
@@ -104,6 +111,7 @@ class PublicInterviewController extends Controller
             'scheduleId' => $schedule->id,
             'token' => $token,
             'type' => 'scheduled',
+            'accessStatus' => $accessStatus,
         ]);
     }
 
@@ -216,4 +224,85 @@ class PublicInterviewController extends Controller
             ],
         ]);
     }
+
+    // =========================================================================
+    // OTP Verification Methods
+    // =========================================================================
+
+    /**
+     * Request OTP for scheduled interview access.
+     */
+    public function requestOtp(string $token)
+    {
+        $schedule = ScheduledInterview::where('public_token', $token)
+            ->with(['candidate', 'interview'])
+            ->first();
+
+        if (!$schedule) {
+            return response()->json(['success' => false, 'error' => 'Interview not found.'], 404);
+        }
+
+        // Check if within access window
+        $accessStatus = $schedule->getAccessStatus();
+        if (!in_array($accessStatus, ['accessible', 'in_progress'])) {
+            return response()->json(['success' => false, 'error' => 'Interview is not currently accessible.'], 403);
+        }
+
+        // Generate OTP and send email
+        $otp = $schedule->generateOtp();
+
+        try {
+            app(\App\Services\Email\EmailService::class)->sendInterviewOtp($schedule, $otp);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send OTP email', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to send access code. Please try again.'], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Access code sent to your email.',
+            'email' => $this->maskEmail($schedule->candidate->email),
+        ]);
+    }
+
+    /**
+     * Verify OTP for scheduled interview access.
+     */
+    public function verifyOtp(Request $request, string $token)
+    {
+        $schedule = ScheduledInterview::where('public_token', $token)->first();
+
+        if (!$schedule) {
+            return response()->json(['success' => false, 'error' => 'Interview not found.'], 404);
+        }
+
+        $code = $request->input('code');
+        if (!$code || strlen($code) !== 6) {
+            return response()->json(['success' => false, 'error' => 'Please enter a valid 6-digit code.'], 422);
+        }
+
+        $result = $schedule->verifyOtp($code);
+
+        return response()->json($result, $result['success'] ? 200 : 422);
+    }
+
+    /**
+     * Mask email for privacy (e.g., j***@example.com)
+     */
+    private function maskEmail(string $email): string
+    {
+        $parts = explode('@', $email);
+        if (count($parts) !== 2)
+            return '***@***.***';
+
+        $local = $parts[0];
+        $domain = $parts[1];
+
+        $maskedLocal = strlen($local) > 2
+            ? substr($local, 0, 1) . str_repeat('*', strlen($local) - 1)
+            : $local[0] . '*';
+
+        return $maskedLocal . '@' . $domain;
+    }
 }
+

@@ -22,6 +22,10 @@ Route::get('/i/{company}/{job}/{token}', [PublicInterviewController::class, 'sho
 Route::get('/s/{company}/{job}/{token}', [PublicInterviewController::class, 'showScheduledInterview'])->name('public.scheduled');
 Route::post('/public/start/{token}', [PublicInterviewController::class, 'startSession'])->name('public.start');
 
+// OTP verification for scheduled interviews
+Route::post('/s/otp/request/{token}', [PublicInterviewController::class, 'requestOtp'])->name('public.otp.request');
+Route::post('/s/otp/verify/{token}', [PublicInterviewController::class, 'verifyOtp'])->name('public.otp.verify');
+
 // Public Job Application (no auth required)
 Route::get('/apply/{company}/{job}/{token}', [\App\Http\Controllers\PublicJobController::class, 'show'])->name('public.job.show');
 Route::post('/apply/{token}', [\App\Http\Controllers\PublicJobController::class, 'apply'])->name('public.job.apply');

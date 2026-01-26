@@ -207,6 +207,31 @@ class EmailService
     }
 
     /**
+     * Send OTP for scheduled interview access.
+     */
+    public function sendInterviewOtp(ScheduledInterview $schedule, string $otpCode): bool
+    {
+        $schedule->load(['candidate', 'interview']);
+        $formatted = $this->getFormattedTime($schedule);
+
+        return $this->send(
+            type: 'interview_otp',
+            to: $schedule->candidate->email,
+            data: [
+                'schedule' => $schedule,
+                'candidate' => $schedule->candidate,
+                'interview' => $schedule->interview,
+                'otp_code' => $otpCode,
+                'formatted_time' => $formatted,
+            ],
+            placeholders: [
+                'company' => $schedule->interview->company_name,
+                'job' => $schedule->interview->job_title,
+            ]
+        );
+    }
+
+    /**
      * Get all configured email types (for admin/debugging).
      */
     public function getEmailTypes(): array
@@ -214,3 +239,4 @@ class EmailService
         return $this->config['types'];
     }
 }
+

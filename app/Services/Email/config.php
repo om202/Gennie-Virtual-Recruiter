@@ -50,6 +50,12 @@ return [
             'template' => 'application-received',
             'description' => 'Confirmation sent to candidate after applying',
         ],
+
+        'interview_otp' => [
+            'subject' => 'Your Interview Access Code - {company}',
+            'template' => 'interview-otp',
+            'description' => 'OTP code sent to verify candidate identity before interview',
+        ],
     ],
 
     /*
