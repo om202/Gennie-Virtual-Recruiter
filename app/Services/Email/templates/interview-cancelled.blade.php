@@ -3,82 +3,125 @@
 
 <head>
     <meta charset="utf-8">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            border-bottom: 2px solid #ef4444;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            color: #ef4444;
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .alert {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 15px;
-            margin: 20px 0;
-        }
-
-        .details {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .details p {
-            margin: 8px 0;
-        }
-
-        .footer {
-            border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
-            margin-top: 30px;
-            font-size: 13px;
-            color: #64748b;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Cancelled</title>
 </head>
 
-<body>
-    <div class="header">
-        <h1>{{ $branding['product_name'] }}</h1>
-    </div>
+<body
+    style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
 
-    <p>Hello <strong>{{ $candidate->name }}</strong>,</p>
+    <!-- Wrapper -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
 
-    <div class="alert">
-        <strong>Interview Cancelled</strong><br>
-        We're writing to inform you that your scheduled interview has been cancelled.
-    </div>
+                <!-- Main Card -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                    style="max-width: 520px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
 
-    <div class="details">
-        <p>💼 <strong>Position:</strong> {{ $interview->job_title }}</p>
-        <p>🏢 <strong>Company:</strong> {{ $interview->company_name }}</p>
-        <p>📅 <strong>Originally Scheduled:</strong> {{ $formatted_time['date'] }} at {{ $formatted_time['time'] }}</p>
-    </div>
+                    <!-- Header -->
+                    <tr>
+                        <td
+                            style="background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); padding: 32px 40px; text-align: center;">
+                            <h1
+                                style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: -0.025em;">
+                                {{ $branding['product_name'] }}
+                            </h1>
+                        </td>
+                    </tr>
 
-    <p>If you believe this was done in error, please reach out to the hiring team.</p>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
 
-    <p>We appreciate your interest in the position and wish you the best in your job search.</p>
+                            <!-- Status Badge -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                                <tr>
+                                    <td
+                                        style="background-color: #fee2e2; color: #991b1b; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                        Cancelled
+                                    </td>
+                                </tr>
+                            </table>
 
-    <div class="footer">
-        <p>Best regards,<br><strong>{{ $interview->company_name }} Hiring Team</strong></p>
-        <p><em>Powered by {{ $branding['product_name'] }}</em><br>📧 {{ $branding['support_email'] }}</p>
-    </div>
+                            <!-- Greeting -->
+                            <p style="margin: 0 0 20px; font-size: 16px; color: #1e293b; line-height: 1.6;">
+                                Hello <strong>{{ $candidate->name }}</strong>,
+                            </p>
+
+                            <p style="margin: 0 0 28px; font-size: 16px; color: #475569; line-height: 1.6;">
+                                We're writing to inform you that your scheduled interview has been cancelled.
+                            </p>
+
+                            <!-- Details Card -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 28px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                    <span
+                                                        style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Position</span>
+                                                    <p
+                                                        style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #64748b; text-decoration: line-through;">
+                                                        {{ $interview->job_title }}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                                                    <span
+                                                        style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Company</span>
+                                                    <p
+                                                        style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #64748b;">
+                                                        {{ $interview->company_name }}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0 0;">
+                                                    <span
+                                                        style="color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Original
+                                                        Date & Time</span>
+                                                    <p
+                                                        style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #94a3b8; text-decoration: line-through;">
+                                                        {{ $formatted_time['date'] }} at {{ $formatted_time['time'] }}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                                If you believe this was a mistake or would like to reschedule, please contact the hiring
+                                team directly.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 24px 40px; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0 0 8px; font-size: 14px; color: #475569;">
+                                Best regards,<br>
+                                <strong style="color: #1e293b;">{{ $recruiter_company }} Hiring Team</strong>
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                Powered by {{ $branding['product_name'] }} • {{ $branding['support_email'] }}
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
 </body>
 
 </html>

@@ -230,9 +230,10 @@ export function ScheduleForm({ schedule, interviewId, candidates, interviews, on
                                             <SelectValue placeholder="Hour" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Array.from({ length: 24 }, (_, i) => {
-                                                const hour = i.toString().padStart(2, '0')
-                                                const display = i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`
+                                            {Array.from({ length: 16 }, (_, i) => {
+                                                const hourNum = i + 7 // Start at 7 AM, end at 10 PM (22)
+                                                const hour = hourNum.toString().padStart(2, '0')
+                                                const display = hourNum < 12 ? `${hourNum} AM` : hourNum === 12 ? '12 PM' : `${hourNum - 12} PM`
                                                 return (
                                                     <SelectItem key={hour} value={hour}>
                                                         {display}
@@ -250,7 +251,7 @@ export function ScheduleForm({ schedule, interviewId, candidates, interviews, on
                                             <SelectValue placeholder="Min" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {['00', '15', '30', '45'].map(minute => (
+                                            {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(minute => (
                                                 <SelectItem key={minute} value={minute}>
                                                     {minute}
                                                 </SelectItem>

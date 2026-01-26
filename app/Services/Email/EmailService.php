@@ -49,6 +49,7 @@ class EmailService
                 'interview' => $schedule->interview,
                 'interview_url' => $schedule->getPublicUrl(),
                 'formatted_time' => $formatted,
+                'recruiter_company' => $schedule->interview->user?->company_name ?? $schedule->interview->company_name,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
@@ -77,6 +78,7 @@ class EmailService
                 'interview' => $schedule->interview,
                 'interview_url' => $schedule->getPublicUrl(),
                 'formatted_time' => $formatted,
+                'recruiter_company' => $schedule->interview->user?->company_name ?? $schedule->interview->company_name,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
@@ -104,6 +106,7 @@ class EmailService
                 'candidate' => $schedule->candidate,
                 'interview' => $schedule->interview,
                 'formatted_time' => $formatted,
+                'recruiter_company' => $schedule->interview->user?->company_name ?? $schedule->interview->company_name,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
@@ -131,12 +134,15 @@ class EmailService
      */
     public function sendApplicationReceived(JobDescription $jobDescription, Candidate $candidate): bool
     {
+        $jobDescription->load('user');
+
         return $this->send(
             type: 'application_received',
             to: $candidate->email,
             data: [
                 'jobDescription' => $jobDescription,
                 'candidate' => $candidate,
+                'recruiter_company' => $jobDescription->user?->company_name ?? $jobDescription->company_name,
             ],
             placeholders: [
                 'company' => $jobDescription->company_name,
@@ -211,7 +217,7 @@ class EmailService
      */
     public function sendInterviewOtp(ScheduledInterview $schedule, string $otpCode): bool
     {
-        $schedule->load(['candidate', 'interview']);
+        $schedule->load(['candidate', 'interview.user']);
         $formatted = $this->getFormattedTime($schedule);
 
         return $this->send(
@@ -223,6 +229,7 @@ class EmailService
                 'interview' => $schedule->interview,
                 'otp_code' => $otpCode,
                 'formatted_time' => $formatted,
+                'recruiter_company' => $schedule->interview->user?->company_name ?? $schedule->interview->company_name,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
