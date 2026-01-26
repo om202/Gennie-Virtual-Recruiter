@@ -1,9 +1,10 @@
 import { Head, router, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Eye, Mic, Link2, Copy, Check, Mail } from 'lucide-react'
+import { Plus, Clock, Briefcase, Calendar, Pencil, History, AlertCircle, Trash2, Eye, Mic, Link2, Copy, Check, Mail, X } from 'lucide-react'
+import { getInterviewTypeColor, getDifficultyLevelColor } from '@/lib/badgeColors'
 
 import {
     AlertDialog,
@@ -79,8 +80,34 @@ interface DashboardProps {
 
 export default function InterviewsIndex({ interviews: initialInterviews }: DashboardProps) {
     const [interviews, setInterviews] = useState<Interview[]>(initialInterviews)
+    const [filteredJobId, setFilteredJobId] = useState<string | null>(null)
+    const [filteredJobTitle, setFilteredJobTitle] = useState<string | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [interviewToDelete, setInterviewToDelete] = useState<Interview | null>(null)
+
+    // Check for job_description_id filter on mount
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const jobDescId = urlParams.get('job_description_id')
+        if (jobDescId) {
+            setFilteredJobId(jobDescId)
+            const filtered = initialInterviews.filter(i => i.job_description_id === jobDescId)
+            setInterviews(filtered)
+            // Get the job title from the first matching interview
+            if (filtered.length > 0 && filtered[0].job_description_relation) {
+                setFilteredJobTitle(filtered[0].job_description_relation.title)
+            } else if (filtered.length > 0) {
+                setFilteredJobTitle(filtered[0].job_title)
+            }
+        }
+    }, [initialInterviews])
+
+    const clearFilter = () => {
+        setFilteredJobId(null)
+        setFilteredJobTitle(null)
+        setInterviews(initialInterviews)
+        router.visit('/interviews', { preserveState: true, replace: true })
+    }
 
     // Share dialog state
     const [shareDialogOpen, setShareDialogOpen] = useState(false)
@@ -187,16 +214,6 @@ ${interview.company_name} Hiring Team`
         }
     }
 
-    const getTypeColor = (type: string) => {
-        const colors: Record<string, string> = {
-            screening: 'bg-primary/10 text-primary',
-            technical: 'bg-purple-500/10 text-purple-700',
-            behavioral: 'bg-green-500/10 text-green-700',
-            final: 'bg-orange-500/10 text-orange-700',
-        }
-        return colors[type] || 'bg-gray-100 text-gray-800'
-    }
-
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never'
@@ -234,6 +251,21 @@ ${interview.company_name} Hiring Team`
 
                 {/* Main Content */}
                 <>
+                    {/* Filter Indicator */}
+                    {filteredJobId && (
+                        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary">Filtered</Badge>
+                                <span className="text-sm text-muted-foreground">
+                                    Showing interviews for: <strong>{filteredJobTitle || 'Job Description'}</strong>
+                                </span>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={clearFilter}>
+                                <X className="h-4 w-4 mr-2" />
+                                Clear Filter
+                            </Button>
+                        </div>
+                    )}
 
                     {/* Interview Grid */}
                     {interviews.length === 0 ? (
@@ -253,7 +285,7 @@ ${interview.company_name} Hiring Team`
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {interviews.map((interview) => (
-                                <Card key={interview.id} className="hover:shadow-md transition-shadow">
+                                <Card key={interview.id} className="hover:shadow-lg hover:border-primary/20 transition-all duration-200">
                                     <CardHeader className="pb-2">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
@@ -308,14 +340,14 @@ ${interview.company_name} Hiring Team`
 
                                         {/* Tags */}
                                         <div className="flex flex-wrap gap-2">
-                                            <Badge variant="outline" className={getTypeColor(interview.interview_type)}>
+                                            <Badge variant="outline" className={getInterviewTypeColor(interview.interview_type)}>
                                                 {interview.interview_type}
                                             </Badge>
-                                            <Badge variant="outline">
+                                            <Badge variant="secondary" className="font-normal">
                                                 <Clock className="h-3 w-3 mr-1" />
                                                 {interview.duration_minutes}m
                                             </Badge>
-                                            <Badge variant="outline">
+                                            <Badge variant="outline" className={getDifficultyLevelColor(interview.difficulty_level)}>
                                                 {interview.difficulty_level}
                                             </Badge>
                                         </div>

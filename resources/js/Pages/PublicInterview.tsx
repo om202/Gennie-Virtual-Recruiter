@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { MarkdownViewer, DEFAULT_CANDIDATE_INSTRUCTIONS } from "@/components/MarkdownEditor"
+import { getInterviewTypeColor } from '@/lib/badgeColors'
 
 interface Interview {
     id: string
@@ -338,7 +339,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
                 <main className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full space-y-8">
                     {/* Header Info */}
                     <div className="text-center space-y-4">
-                        <Badge variant="outline" className="px-3 py-1">
+                        <Badge variant="outline" className={`px-3 py-1 ${getInterviewTypeColor(interview.interview_type)}`}>
                             {interview.interview_type.charAt(0).toUpperCase() + interview.interview_type.slice(1)} Interview
                         </Badge>
                         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">

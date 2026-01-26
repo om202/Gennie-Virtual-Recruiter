@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
 
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, DollarSign, Clock, Mail, Eye, Globe, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Briefcase, MapPin, Users, Pencil, Trash2, X, Link2, Copy, Check, FileText, Loader2, Mail, Eye, Globe, ToggleLeft, ToggleRight } from 'lucide-react'
+import { formatSalaryRange } from '@/lib/formatCurrency'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -212,17 +213,12 @@ ${job.company_name} Hiring Team`
     }
 
     const formatSalary = (job: JobDescription) => {
-        if (!job.salary_min && !job.salary_max) return null
-        const currency = job.salary_currency || 'USD'
-        const period = job.salary_period === 'yearly' ? '/yr' : job.salary_period === 'monthly' ? '/mo' : '/hr'
-
-        if (job.salary_min && job.salary_max) {
-            return `${currency} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}${period}`
-        }
-        if (job.salary_min) {
-            return `${currency} ${job.salary_min.toLocaleString()}+${period}`
-        }
-        return `Up to ${currency} ${job.salary_max?.toLocaleString()}${period}`
+        return formatSalaryRange(
+            job.salary_min,
+            job.salary_max,
+            job.salary_currency || 'USD',
+            job.salary_period as 'yearly' | 'monthly' | 'hourly' || 'yearly'
+        )
     }
 
     const formatDate = (dateString: string) => {
@@ -312,7 +308,16 @@ ${job.company_name} Hiring Team`
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="min-w-0 flex-1">
                                                 <CardTitle className="text-lg truncate">{job.title}</CardTitle>
-                                                <CardDescription className="truncate">{job.company_name}</CardDescription>
+                                                <CardDescription className="truncate flex items-center gap-2">
+                                                    <span>{job.company_name}</span>
+                                                    {job.location && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <MapPin className="h-3 w-3 shrink-0" />
+                                                            <span className="truncate">{job.location}</span>
+                                                        </>
+                                                    )}
+                                                </CardDescription>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <Link href={`/job-descriptions/${job.id}/edit`}>
@@ -339,14 +344,6 @@ ${job.company_name} Hiring Team`
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex-1 space-y-4">
-                                        {/* Location */}
-                                        {job.location && (
-                                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="truncate">{job.location}</span>
-                                            </div>
-                                        )}
-
                                         {/* Tags - matching Interview cards styling */}
                                         <div className="flex flex-wrap gap-2">
                                             <Badge variant="outline" className={getRemoteTypeColor(job.remote_type)}>
@@ -357,7 +354,6 @@ ${job.company_name} Hiring Team`
                                             </Badge>
                                             {formatSalary(job) && (
                                                 <Badge variant="outline">
-                                                    <DollarSign className="h-3 w-3 mr-1" />
                                                     {formatSalary(job)}
                                                 </Badge>
                                             )}
@@ -365,24 +361,15 @@ ${job.company_name} Hiring Team`
 
                                         {/* Stats - matching Interview cards styling */}
                                         <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-1">
-                                                    <Users className="h-3 w-3" />
-                                                    <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''}</span>
-                                                </div>
-                                                {job.applications_count > 0 && (
-                                                    <Link
-                                                        href={`/job-descriptions/${job.id}/applications`}
-                                                        className="flex items-center gap-1 hover:text-primary"
-                                                    >
-                                                        <FileText className="h-3 w-3" />
-                                                        <span>{job.applications_count} app{job.applications_count !== 1 ? 's' : ''}</span>
-                                                    </Link>
-                                                )}
-                                            </div>
+                                            <Link
+                                                href={`/interviews?job_description_id=${job.id}`}
+                                                className="flex items-center gap-1 hover:text-primary"
+                                            >
+                                                <Users className="h-3 w-3" />
+                                                <span>{job.interviews_count} interview{job.interviews_count !== 1 ? 's' : ''}</span>
+                                            </Link>
                                             <span className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
-                                                {formatDate(job.created_at)}
+                                                Created {formatDate(job.created_at)}
                                             </span>
                                         </div>
                                     </CardContent>
@@ -434,7 +421,7 @@ ${job.company_name} Hiring Team`
                                             <Link href={`/interviews/create?job_description_id=${job.id}`}>
                                                 <Button variant="outline" size="sm" className="w-full">
                                                     <Plus className="h-4 w-4 mr-2" />
-                                                    Interview
+                                                    Create Interview
                                                 </Button>
                                             </Link>
                                         </div>

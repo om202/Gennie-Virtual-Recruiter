@@ -2,18 +2,20 @@ import { Head, Link } from '@inertiajs/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
     Activity,
     Users,
     Briefcase,
     Plus,
     ArrowRight,
-    Clock,
-    CheckCircle2,
     Calendar,
     Mic,
     TrendingUp,
-    LayoutDashboard
+    LayoutDashboard,
+    Phone,
+    Globe
 } from 'lucide-react'
 
 interface DashboardProps {
@@ -36,6 +38,7 @@ interface DashboardProps {
         title: string
         description: string
         status: string
+        session_type: 'phone' | 'web'
         created_at: string
         link: string
     }>
@@ -147,13 +150,15 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                                     {recentActivity.map((activity, index) => (
                                         <div key={activity.id}>
                                             <div className="flex items-start gap-4 group">
-                                                <div className="shrink-0">
-                                                    {activity.status === 'completed' ? (
-                                                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                                    ) : (
-                                                        <Clock className="h-5 w-5 text-muted-foreground" />
-                                                    )}
-                                                </div>
+                                                <Avatar className={activity.status === 'completed' ? 'bg-primary/10' : 'bg-secondary'}>
+                                                    <AvatarFallback className={activity.status === 'completed' ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'}>
+                                                        {activity.session_type === 'phone' ? (
+                                                            <Phone className="h-4 w-4" />
+                                                        ) : (
+                                                            <Globe className="h-4 w-4" />
+                                                        )}
+                                                    </AvatarFallback>
+                                                </Avatar>
                                                 <div className="flex-1 space-y-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="flex-1 min-w-0">
@@ -207,7 +212,6 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                                     </div>
                                 </Button>
                             </Link>
-                            <Separator />
                             <Link href="/job-descriptions/create">
                                 <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
                                     <div className="flex items-center gap-3">
@@ -218,7 +222,6 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                                     </div>
                                 </Button>
                             </Link>
-                            <Separator />
                             <Link href="/candidates">
                                 <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
                                     <div className="flex items-center gap-3">
@@ -229,7 +232,6 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                                     </div>
                                 </Button>
                             </Link>
-                            <Separator />
                             <Link href="/schedules">
                                 <Button variant="outline" className="w-full justify-start h-auto py-3 hover:bg-accent">
                                     <div className="flex items-center gap-3">
@@ -241,21 +243,14 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                                 </Button>
                             </Link>
                         </CardContent>
-                        <Separator />
                         <CardContent className="pt-6">
-                            <div className="rounded-lg border bg-card p-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="rounded-md bg-primary/10 p-2">
-                                        <TrendingUp className="h-4 w-4 text-primary" />
-                                    </div>
-                                    <div className="flex-1 space-y-1">
-                                        <p className="text-sm font-medium">Pro Tip</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Use the "Analyze" feature on completed interviews to get detailed insights into candidate performance.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            <Alert>
+                                <TrendingUp className="h-4 w-4" />
+                                <AlertTitle>Pro Tip</AlertTitle>
+                                <AlertDescription>
+                                    Use the "Analyze" feature on completed interviews to get detailed insights into candidate performance.
+                                </AlertDescription>
+                            </Alert>
                         </CardContent>
                     </Card>
                 </div>

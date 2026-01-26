@@ -44,6 +44,7 @@ class DashboardController extends Controller
                     'title' => 'Interview Session ' . ucfirst($session->status),
                     'description' => $candidateName . ' - ' . $jobTitle,
                     'status' => $session->status,
+                    'session_type' => $session->call_sid ? 'phone' : 'web',
                     'created_at' => $session->created_at,
                     'link' => "/interviews/{$session->interview_id}/logs?session={$session->id}",
                 ];
