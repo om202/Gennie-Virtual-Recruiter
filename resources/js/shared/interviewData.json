@@ -187,21 +187,9 @@
         "nova-2": "Nova-2 (Fast & Reliable)"
     },
     "auraVoices": {
-        "aura-asteria-en": "Asteria (Female, US) - Default",
-        "aura-luna-en": "Luna (Female, US) - Soft",
-        "aura-stella-en": "Stella (Female, US) - Professional",
-        "aura-athena-en": "Athena (Female, US) - Authoritative",
-        "aura-hera-en": "Hera (Female, US) - Warm",
-        "aura-orion-en": "Orion (Male, US) - Deep",
-        "aura-arcas-en": "Arcas (Male, US) - Casual",
-        "aura-perseus-en": "Perseus (Male, US) - Energetic",
-        "aura-angus-en": "Angus (Male, Ireland) - Irish Accent",
-        "aura-orpheus-en": "Orpheus (Male, UK) - British Accent",
-        "aura-helios-en": "Helios (Male, UK) - British Professional",
-        "aura-zeus-en": "Zeus (Male, US) - Strong",
-        "aura-2-thalia-en": "Aura 2: Thalia (Female) - Enterprise",
-        "aura-2-andromeda-en": "Aura 2: Andromeda (Female) - Warm",
-        "aura-2-odysseus-en": "Aura 2: Odysseus (Male) - Professional",
-        "aura-2-asteria-en": "Aura 2: Asteria (Female) - Modern"
+        "aura-2-asteria-en": "Asteria (Female, US) - Default",
+        "aura-2-thalia-en": "Thalia (Female, US) - Enterprise",
+        "aura-2-andromeda-en": "Andromeda (Female, US) - Warm",
+        "aura-2-odysseus-en": "Odysseus (Male, US) - Professional"
     }
 }

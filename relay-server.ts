@@ -226,7 +226,7 @@ wss.on("connection", async (ws, req) => {
                     };
                 })(),
                 think: {
-                    provider: { type: "open_ai", model: "gpt-4o-mini" },
+                    provider: { type: "open_ai", model: "gpt-5.1-chat-latest" },
                     prompt: generatePrompt(interviewConfig),
                     functions: [
                         {
@@ -274,7 +274,7 @@ wss.on("connection", async (ws, req) => {
                     ],
                 },
                 speak: {
-                    provider: { type: "deepgram", model: interviewConfig.voiceId || "aura-asteria-en" },
+                    provider: { type: "deepgram", model: interviewConfig.voiceId || "aura-2-asteria-en" },
                 },
             },
         });

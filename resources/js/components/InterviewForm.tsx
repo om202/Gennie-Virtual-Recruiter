@@ -73,18 +73,10 @@ const STT_MODELS: Record<string, string> = {
 }
 
 const AURA_VOICES: Record<string, string> = {
-    'aura-asteria-en': 'Asteria (US Female)',
-    'luna-en': 'Luna (US Female)',
-    'stella-en': 'Stella (US Female)',
-    'athena-en': 'Athena (UK Female)',
-    'hera-en': 'Hera (US Female)',
-    'orion-en': 'Orion (US Male)',
-    'arcas-en': 'Arcas (US Male)',
-    'perseus-en': 'Perseus (US Male)',
-    'angus-en': 'Angus (Irish Male)',
-    'orpheus-en': 'Orpheus (US Male)',
-    'helios-en': 'Helios (UK Male)',
-    'zeus-en': 'Zeus (US Male)'
+    'aura-2-asteria-en': 'Asteria (US Female) - Default',
+    'aura-2-thalia-en': 'Thalia (US Female) - Enterprise',
+    'aura-2-andromeda-en': 'Andromeda (US Female) - Warm',
+    'aura-2-odysseus-en': 'Odysseus (US Male) - Professional'
 }
 
 interface InterviewFormProps {
@@ -115,7 +107,7 @@ export function InterviewForm({
         custom_instructions: initialData?.custom_instructions || '',
         candidate_instructions: initialData?.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS,
         stt_model: initialData?.metadata?.stt_model || 'flux-general-en' as SttModel,
-        voice_id: initialData?.metadata?.voice_id || 'aura-asteria-en' as AuraVoice,
+        voice_id: initialData?.metadata?.voice_id || 'aura-2-asteria-en' as AuraVoice,
         endpointing: initialData?.metadata?.endpointing || 300,
         utterance_end_ms: initialData?.metadata?.utterance_end_ms || 1000,
         smart_format: initialData?.metadata?.smart_format ?? true,
@@ -153,7 +145,7 @@ export function InterviewForm({
                 custom_instructions: initialData.custom_instructions || '',
                 candidate_instructions: initialData.candidate_instructions || DEFAULT_CANDIDATE_INSTRUCTIONS,
                 stt_model: sttModel,
-                voice_id: initialData.voice_id || 'aura-asteria-en',
+                voice_id: initialData.voice_id || 'aura-2-asteria-en',
                 endpointing: sttConfig.endpointing || 300,
                 utterance_end_ms: sttConfig.utterance_end_ms || 1000,
                 smart_format: sttConfig.smart_format ?? true,
@@ -172,7 +164,7 @@ export function InterviewForm({
                 custom_instructions: '',
                 candidate_instructions: DEFAULT_CANDIDATE_INSTRUCTIONS,
                 stt_model: 'flux-general-en',
-                voice_id: 'aura-asteria-en',
+                voice_id: 'aura-2-asteria-en',
                 endpointing: 300,
                 utterance_end_ms: 1000,
                 smart_format: true,

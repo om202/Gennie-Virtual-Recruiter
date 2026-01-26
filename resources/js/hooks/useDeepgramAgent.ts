@@ -300,7 +300,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         greeting,
                         listen: listenConfig,
                         think: {
-                            provider: { type: 'open_ai', model: 'gpt-4o-mini' },
+                            provider: { type: 'open_ai', model: 'gpt-5.1-chat-latest' },
                             prompt: generatePrompt(currentConfig),
                             functions: [
                                 {
@@ -358,7 +358,7 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             ],
                         },
                         speak: {
-                            provider: { type: 'deepgram', model: currentConfig?.voiceId || 'aura-asteria-en' },
+                            provider: { type: 'deepgram', model: currentConfig?.voiceId || 'aura-2-asteria-en' },
                         },
                     },
                 })

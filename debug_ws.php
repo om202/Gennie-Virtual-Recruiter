@@ -36,7 +36,7 @@ try {
         'agent' => [
             'listen' => ['model' => 'nova-2'],
             'think' => ['provider' => ['type' => 'open_ai'], 'model' => 'gpt-4o'],
-            'speak' => ['model' => 'aura-asteria-en']
+            'speak' => ['model' => 'aura-2-asteria-en']
         ]
     ]));
 
