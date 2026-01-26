@@ -28,9 +28,11 @@ interface ScheduleInterviewProps {
     interviews: Interview[]
     interview?: Interview | null
     schedule?: Schedule | null
+    userTimezone?: string
+    userTimezoneLabel?: string
 }
 
-export default function ScheduleInterview({ candidates, interviews, interview, schedule }: ScheduleInterviewProps) {
+export default function ScheduleInterview({ candidates, interviews, interview, schedule, userTimezoneLabel }: ScheduleInterviewProps) {
     const isEditing = !!schedule
 
     const handleSuccess = () => {
@@ -79,6 +81,7 @@ export default function ScheduleInterview({ candidates, interviews, interview, s
                     interviews={interviews}
                     onSuccess={handleSuccess}
                     onCancel={handleCancel}
+                    timezoneLabel={userTimezoneLabel}
                 />
             </div>
         </div>

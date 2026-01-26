@@ -68,8 +68,7 @@
     <div class="details">
         <p>💼 <strong>Position:</strong> {{ $interview->job_title }}</p>
         <p>🏢 <strong>Company:</strong> {{ $interview->company_name }}</p>
-        <p>📅 <strong>Originally Scheduled:</strong> {{ $schedule->scheduled_at->format('l, F j, Y') }} at
-            {{ $schedule->scheduled_at->format('g:i A') }} UTC</p>
+        <p>📅 <strong>Originally Scheduled:</strong> {{ $formatted_time['date'] }} at {{ $formatted_time['time'] }}</p>
     </div>
 
     <p>If you believe this was done in error, please reach out to the hiring team.</p>

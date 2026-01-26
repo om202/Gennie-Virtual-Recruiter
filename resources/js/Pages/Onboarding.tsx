@@ -1,9 +1,10 @@
 import { Head, useForm } from '@inertiajs/react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Globe } from 'lucide-react'
 
 interface OnboardingProps {
     user: {
@@ -17,11 +18,39 @@ export default function Onboarding({ user }: OnboardingProps) {
     const { data, setData, post, processing, errors } = useForm({
         company_name: '',
         phone: '',
+        timezone: 'America/New_York',
     })
+
+    // Auto-detect timezone on mount
+    useEffect(() => {
+        try {
+            const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+            if (detectedTimezone) {
+                setData('timezone', detectedTimezone)
+            }
+        } catch {
+            // Fallback already set
+        }
+    }, [])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         post('/onboarding')
+    }
+
+    // Format timezone for display
+    const formatTimezone = (tz: string) => {
+        try {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: tz,
+                timeZoneName: 'long',
+            })
+            const parts = formatter.formatToParts(new Date())
+            const tzName = parts.find(p => p.type === 'timeZoneName')?.value
+            return tzName || tz
+        } catch {
+            return tz
+        }
     }
 
     return (
@@ -65,6 +94,12 @@ export default function Onboarding({ user }: OnboardingProps) {
                             {errors.phone && (
                                 <p className="text-sm text-destructive">{errors.phone}</p>
                             )}
+                        </div>
+
+                        {/* Auto-detected timezone display */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-3">
+                            <Globe className="h-4 w-4" />
+                            <span>Detected timezone: <strong>{formatTimezone(data.timezone)}</strong></span>
                         </div>
                     </CardContent>
 

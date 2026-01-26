@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Loader2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Loader2, Globe } from 'lucide-react'
+import { Link } from '@inertiajs/react'
 import { cn } from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -36,9 +37,10 @@ interface ScheduleFormProps {
     interviews: Interview[]
     onSuccess: () => void
     onCancel: () => void
+    timezoneLabel?: string
 }
 
-export function ScheduleForm({ schedule, interviewId, candidates, interviews, onSuccess, onCancel }: ScheduleFormProps) {
+export function ScheduleForm({ schedule, interviewId, candidates, interviews, onSuccess, onCancel, timezoneLabel }: ScheduleFormProps) {
     const isEditing = !!schedule
 
     // Parse schedule date/time if editing
@@ -264,6 +266,18 @@ export function ScheduleForm({ schedule, interviewId, candidates, interviews, on
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Timezone Indicator */}
+            {timezoneLabel && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-3">
+                    <Globe className="h-4 w-4" />
+                    <span>Times are in <strong>{timezoneLabel}</strong></span>
+                    <span className="text-muted-foreground/60">•</span>
+                    <Link href="/profile" className="text-primary hover:underline">
+                        Change timezone
+                    </Link>
+                </div>
+            )}
 
             {/* Footer Actions */}
             <div className="flex justify-end gap-2 pt-4">

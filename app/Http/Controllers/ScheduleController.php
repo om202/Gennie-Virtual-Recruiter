@@ -18,15 +18,22 @@ class ScheduleController extends Controller
     {
         $user = auth()->user();
 
+        $schedules = \App\Models\ScheduledInterview::whereHas('interview', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+            ->with(['interview:id,job_title,company_name', 'candidate:id,name,email'])
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at', 'asc')
+            ->get()
+            ->map(function ($schedule) {
+                $schedule->public_url = $schedule->getPublicUrl();
+                return $schedule;
+            });
+
         return Inertia::render('Schedules/Index', [
             'activeTab' => 'schedules',
-            'scheduledInterviews' => \App\Models\ScheduledInterview::whereHas('interview', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-                ->with(['interview:id,job_title,company_name', 'candidate:id,name,email'])
-                ->where('scheduled_at', '>=', now())
-                ->orderBy('scheduled_at', 'asc')
-                ->get(),
+            'scheduledInterviews' => $schedules,
+            'userTimezone' => $user->timezone ?? 'America/New_York',
             'candidates' => $user->candidates()
                 ->select('id', 'name', 'email')
                 ->orderBy('name')
@@ -38,6 +45,7 @@ class ScheduleController extends Controller
         ]);
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
@@ -45,6 +53,8 @@ class ScheduleController extends Controller
     {
         $user = auth()->user();
         $interviewId = $request->query('interview_id');
+        $scheduler = app(\App\Services\Scheduling\SchedulingService::class);
+        $timezones = $scheduler->getTimezones();
 
         return Inertia::render('ScheduleInterview', [
             'candidates' => $user->candidates()
@@ -62,6 +72,8 @@ class ScheduleController extends Controller
                     ->select('id', 'job_title')
                     ->first()
                 : null,
+            'userTimezone' => $user->timezone ?? 'America/New_York',
+            'userTimezoneLabel' => $timezones[$user->timezone ?? 'America/New_York'] ?? 'Eastern Time',
         ]);
     }
 
@@ -77,6 +89,9 @@ class ScheduleController extends Controller
             abort(403);
         }
 
+        $scheduler = app(\App\Services\Scheduling\SchedulingService::class);
+        $timezones = $scheduler->getTimezones();
+
         return Inertia::render('ScheduleInterview', [
             'schedule' => $schedule->load(['interview:id,job_title', 'candidate:id,name,email']),
             'candidates' => $user->candidates()
@@ -88,6 +103,8 @@ class ScheduleController extends Controller
                 ->where('status', 'active')
                 ->orderBy('updated_at', 'desc')
                 ->get(),
+            'userTimezone' => $user->timezone ?? 'America/New_York',
+            'userTimezoneLabel' => $timezones[$user->timezone ?? 'America/New_York'] ?? 'Eastern Time',
         ]);
     }
 

@@ -40,6 +40,7 @@ class OnboardingController extends Controller
         $validated = $request->validate([
             'phone' => 'required|string|max:20',
             'company_name' => 'required|string|max:255',
+            'timezone' => 'nullable|string|max:100',
         ]);
 
         $user = Auth::user();
@@ -47,6 +48,7 @@ class OnboardingController extends Controller
         $user->update([
             'phone' => $validated['phone'],
             'company_name' => $validated['company_name'],
+            'timezone' => $validated['timezone'] ?? 'America/New_York',
             'is_onboarded' => true,
         ]);
 

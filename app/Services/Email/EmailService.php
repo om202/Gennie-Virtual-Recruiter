@@ -8,6 +8,7 @@ use Illuminate\Mail\Message;
 use App\Models\ScheduledInterview;
 use App\Models\JobDescription;
 use App\Models\Candidate;
+use App\Services\Scheduling\SchedulingService;
 
 /**
  * EmailService - Centralized email handling for the application.
@@ -35,7 +36,8 @@ class EmailService
      */
     public function sendInterviewScheduled(ScheduledInterview $schedule): void
     {
-        $schedule->load(['candidate', 'interview']);
+        $schedule->load(['candidate', 'interview.user']);
+        $formatted = $this->getFormattedTime($schedule);
 
         $this->send(
             type: 'interview_scheduled',
@@ -45,13 +47,14 @@ class EmailService
                 'candidate' => $schedule->candidate,
                 'interview' => $schedule->interview,
                 'interview_url' => $schedule->getPublicUrl(),
+                'formatted_time' => $formatted,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
                 'job' => $schedule->interview->job_title,
                 'candidate' => $schedule->candidate->name,
-                'date' => $schedule->scheduled_at->format('l, F j, Y'),
-                'time' => $schedule->scheduled_at->format('g:i A') . ' UTC',
+                'date' => $formatted['date'],
+                'time' => $formatted['time'],
             ]
         );
     }
@@ -61,7 +64,8 @@ class EmailService
      */
     public function sendInterviewRescheduled(ScheduledInterview $schedule): void
     {
-        $schedule->load(['candidate', 'interview']);
+        $schedule->load(['candidate', 'interview.user']);
+        $formatted = $this->getFormattedTime($schedule);
 
         $this->send(
             type: 'interview_rescheduled',
@@ -71,13 +75,14 @@ class EmailService
                 'candidate' => $schedule->candidate,
                 'interview' => $schedule->interview,
                 'interview_url' => $schedule->getPublicUrl(),
+                'formatted_time' => $formatted,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
                 'job' => $schedule->interview->job_title,
                 'candidate' => $schedule->candidate->name,
-                'date' => $schedule->scheduled_at->format('l, F j, Y'),
-                'time' => $schedule->scheduled_at->format('g:i A') . ' UTC',
+                'date' => $formatted['date'],
+                'time' => $formatted['time'],
             ]
         );
     }
@@ -87,7 +92,8 @@ class EmailService
      */
     public function sendInterviewCancelled(ScheduledInterview $schedule): void
     {
-        $schedule->load(['candidate', 'interview']);
+        $schedule->load(['candidate', 'interview.user']);
+        $formatted = $this->getFormattedTime($schedule);
 
         $this->send(
             type: 'interview_cancelled',
@@ -96,15 +102,27 @@ class EmailService
                 'schedule' => $schedule,
                 'candidate' => $schedule->candidate,
                 'interview' => $schedule->interview,
+                'formatted_time' => $formatted,
             ],
             placeholders: [
                 'company' => $schedule->interview->company_name,
                 'job' => $schedule->interview->job_title,
                 'candidate' => $schedule->candidate->name,
-                'date' => $schedule->scheduled_at->format('l, F j, Y'),
-                'time' => $schedule->scheduled_at->format('g:i A') . ' UTC',
+                'date' => $formatted['date'],
+                'time' => $formatted['time'],
             ]
         );
+    }
+
+    /**
+     * Get formatted time using recruiter's timezone.
+     */
+    protected function getFormattedTime(ScheduledInterview $schedule): array
+    {
+        $scheduler = app(SchedulingService::class);
+        $recruiterTimezone = $schedule->interview->user?->timezone;
+
+        return $scheduler->formatForEmail($schedule->scheduled_at, $recruiterTimezone);
     }
 
     /**

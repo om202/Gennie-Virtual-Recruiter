@@ -4,7 +4,8 @@ import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Calendar, Plus, Pencil, Trash2, Copy } from 'lucide-react'
+import { toast } from 'sonner'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -31,6 +32,7 @@ interface ScheduledInterview {
     scheduled_at: string
     status: string
     meeting_link: string | null
+    public_url: string
 }
 
 interface Candidate {
@@ -49,6 +51,7 @@ interface IndexProps {
     scheduledInterviews: ScheduledInterview[]
     candidates: Candidate[]
     interviews: Interview[]
+    userTimezone?: string
 }
 
 export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
@@ -67,6 +70,14 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
         setScheduleToDelete(null)
     }
 
+    const copyLink = async (schedule: ScheduledInterview) => {
+        try {
+            await navigator.clipboard.writeText(schedule.public_url)
+            toast.success('Interview link copied to clipboard')
+        } catch {
+            toast.error('Failed to copy link')
+        }
+    }
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never'
@@ -76,6 +87,7 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
+            timeZoneName: 'short',
         })
     }
 
@@ -147,6 +159,15 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                                             </div>
 
                                             <div className="flex items-center gap-1 self-end md:self-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    onClick={() => copyLink(schedule)}
+                                                    title="Copy Interview Link"
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
                                                 <Link href={`/schedules/${schedule.id}/edit`}>
                                                     <Button
                                                         variant="ghost"

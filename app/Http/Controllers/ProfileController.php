@@ -43,21 +43,8 @@ class ProfileController extends Controller
             'Other',
         ];
 
-        // Common timezones
-        $timezones = [
-            'America/New_York' => 'Eastern Time (ET)',
-            'America/Chicago' => 'Central Time (CT)',
-            'America/Denver' => 'Mountain Time (MT)',
-            'America/Los_Angeles' => 'Pacific Time (PT)',
-            'America/Anchorage' => 'Alaska Time (AKT)',
-            'Pacific/Honolulu' => 'Hawaii Time (HT)',
-            'Europe/London' => 'London (GMT)',
-            'Europe/Paris' => 'Paris (CET)',
-            'Asia/Tokyo' => 'Tokyo (JST)',
-            'Asia/Shanghai' => 'Shanghai (CST)',
-            'Asia/Kolkata' => 'India (IST)',
-            'Australia/Sydney' => 'Sydney (AEST)',
-        ];
+        // Timezones from SchedulingService
+        $timezones = app(\App\Services\Scheduling\SchedulingService::class)->getTimezones();
 
         return Inertia::render('Profile', [
             'auth' => ['user' => $user],

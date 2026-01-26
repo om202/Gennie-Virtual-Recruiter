@@ -71,8 +71,8 @@
     <p>Your AI screening interview has been scheduled!</p>
 
     <div class="details">
-        <p>📅 <strong>Date:</strong> {{ $schedule->scheduled_at->format('l, F j, Y') }}</p>
-        <p>⏰ <strong>Time:</strong> {{ $schedule->scheduled_at->format('g:i A') }} UTC</p>
+        <p>📅 <strong>Date:</strong> {{ $formatted_time['date'] }}</p>
+        <p>⏰ <strong>Time:</strong> {{ $formatted_time['time'] }}</p>
         <p>⏱️ <strong>Duration:</strong> {{ $interview->duration_minutes }} minutes</p>
         <p>💼 <strong>Position:</strong> {{ $interview->job_title }}</p>
         <p>🏢 <strong>Company:</strong> {{ $interview->company_name }}</p>

@@ -76,8 +76,8 @@
     </div>
 
     <div class="details">
-        <p>📅 <strong>New Date:</strong> {{ $schedule->scheduled_at->format('l, F j, Y') }}</p>
-        <p>⏰ <strong>New Time:</strong> {{ $schedule->scheduled_at->format('g:i A') }} UTC</p>
+        <p>📅 <strong>New Date:</strong> {{ $formatted_time['date'] }}</p>
+        <p>⏰ <strong>New Time:</strong> {{ $formatted_time['time'] }}</p>
         <p>⏱️ <strong>Duration:</strong> {{ $interview->duration_minutes }} minutes</p>
         <p>💼 <strong>Position:</strong> {{ $interview->job_title }}</p>
         <p>🏢 <strong>Company:</strong> {{ $interview->company_name }}</p>
