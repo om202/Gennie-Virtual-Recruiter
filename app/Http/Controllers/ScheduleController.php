@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Interview;
 use App\Models\ScheduledInterview;
+use App\Services\Email\EmailService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -108,7 +109,8 @@ class ScheduleController extends Controller
             'status' => 'scheduled',
         ]);
 
-        // TODO: Send email notification
+        // Send email notification to candidate
+        app(EmailService::class)->sendInterviewScheduled($schedule);
 
         return redirect()->back()->with('success', 'Interview scheduled successfully.');
     }
@@ -135,7 +137,8 @@ class ScheduleController extends Controller
             'scheduled_at' => $validated['scheduled_at'],
         ]);
 
-        // TODO: Send email notification
+        // Send reschedule notification to candidate
+        app(EmailService::class)->sendInterviewRescheduled($schedule);
 
         return redirect()->route('schedules.index')->with('success', 'Interview schedule updated successfully.');
     }
@@ -145,6 +148,9 @@ class ScheduleController extends Controller
      */
     public function destroy(ScheduledInterview $scheduledInterview)
     {
+        // Send cancellation notification before deleting
+        app(EmailService::class)->sendInterviewCancelled($scheduledInterview);
+
         $scheduledInterview->delete();
 
         return redirect()->back()->with('success', 'Scheduled interview cancelled.');

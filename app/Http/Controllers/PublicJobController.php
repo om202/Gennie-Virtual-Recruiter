@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobDescription;
 use App\Models\Candidate;
+use App\Services\Email\EmailService;
 use App\Services\ResumeParserService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -162,6 +163,9 @@ class PublicJobController extends Controller
                 'applied_at' => now(),
             ]);
         }
+
+        // Send confirmation email to candidate
+        app(EmailService::class)->sendApplicationReceived($jobDescription, $candidate);
 
         return response()->json([
             'success' => true,
