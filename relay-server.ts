@@ -3,7 +3,7 @@ import { createClient, AgentEvents } from "@deepgram/sdk";
 import { WebSocket, WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import http from "http";
-import { generateGreeting, generatePrompt, type InterviewConfig } from "./resources/js/shared/interviewConfig";
+import { generateGreeting, generatePrompt, getInterviewCategories, type InterviewConfig, type InterviewTemplateType } from "./resources/js/shared/interviewConfig";
 
 dotenv.config();
 
@@ -137,6 +137,10 @@ wss.on("connection", async (ws, req) => {
     let interviewStartTime: number | null = null;
     let timeInjectionInterval: NodeJS.Timeout | null = null;
 
+    // Category progress tracking for structured interviews
+    type CategoryStatus = 'not_started' | 'completed' | 'partially_covered' | 'skipped';
+    const categoryProgress: Map<string, CategoryStatus> = new Map();
+
     // Helper to fetch session context once we have the session ID
     const fetchSessionContext = async (sid: string) => {
         try {
@@ -236,12 +240,33 @@ wss.on("connection", async (ws, req) => {
                             },
                         },
                         {
-                            name: "end_interview",
-                            description: "End the interview call gracefully. Use this when: 1) You have completed all screening questions, 2) The candidate explicitly asks to end the call, 3) The candidate says goodbye or thanks you for your time. Always thank the candidate before ending.",
+                            name: "update_interview_progress",
+                            description: "Mark an interview CATEGORY as completed. You MUST call this for each category after covering its questions. Categories: intro, logistics, qualifications, interest (screening), core_knowledge, problem_solving, experience (technical), etc.",
                             parameters: {
                                 type: "object",
                                 properties: {
-                                    reason: { type: "string", description: "Brief reason for ending (e.g., 'screening_complete', 'candidate_request', 'goodbye')" },
+                                    category_id: { type: "string", description: 'Category ID (e.g., "logistics", "intro")' },
+                                    status: { type: "string", enum: ["completed", "partially_covered", "skipped"] },
+                                    notes: { type: "string", description: "Brief notes on what was covered" }
+                                },
+                                required: ["category_id", "status"],
+                            },
+                        },
+                        {
+                            name: "get_interview_checklist",
+                            description: "Get required categories and their completion status. CRITICAL: Call this BEFORE end_interview to verify all required categories are complete.",
+                            parameters: {
+                                type: "object",
+                                properties: {},
+                            },
+                        },
+                        {
+                            name: "end_interview",
+                            description: "End the interview. IMPORTANT: First call get_interview_checklist() to verify all required categories are completed. Only proceed if ready_to_end is true.",
+                            parameters: {
+                                type: "object",
+                                properties: {
+                                    reason: { type: "string", description: "Values: 'all_categories_complete', 'candidate_request', 'time_limit_reached'" },
                                     summary: { type: "string", description: "Brief summary of the interview outcome" },
                                 },
                             },
@@ -414,6 +439,77 @@ wss.on("connection", async (ws, req) => {
                         ws.close();
                     }
                 }, 5000); // 5 seconds for goodbye message to play
+
+            } else if (functionName === "update_interview_progress") {
+                // Handle category progress tracking
+                const categoryId = input?.category_id;
+                const status = input?.status || "completed";
+                const notes = input?.notes || "";
+
+                console.log("📋 Updating category progress:", { categoryId, status, notes });
+
+                // Update local tracking
+                categoryProgress.set(categoryId, status);
+
+                // Save to backend
+                if (sessionId) {
+                    fetch(`${LARAVEL_API_URL}/api/sessions/${sessionId}/progress`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            action: "mark_category_complete",
+                            payload: { category_id: categoryId, status, notes }
+                        })
+                    }).catch(err => console.error("Failed to save progress:", err));
+                }
+
+                deepgram!.functionCallResponse({
+                    id: functionCallId,
+                    name: functionName,
+                    content: `✓ Category "${categoryId}" marked as ${status}. Continue with remaining categories.`,
+                });
+
+            } else if (functionName === "get_interview_checklist") {
+                // Handle checklist query
+                console.log("📋 Getting interview checklist");
+
+                const interviewType = (buildInterviewConfig().interviewType || "screening") as InterviewTemplateType;
+                const categories = getInterviewCategories(interviewType);
+
+                // Build checklist with current status
+                const checklist = categories.map(cat => {
+                    const status = categoryProgress.get(cat.id) || "not_started";
+                    return {
+                        id: cat.id,
+                        name: cat.name,
+                        required: cat.required,
+                        status
+                    };
+                });
+
+                // Find missing required categories
+                const missingRequired = checklist
+                    .filter(c => c.required && c.status === "not_started")
+                    .map(c => c.id);
+
+                const readyToEnd = missingRequired.length === 0;
+
+                const result = {
+                    categories: checklist,
+                    ready_to_end: readyToEnd,
+                    missing_required: missingRequired,
+                    message: readyToEnd
+                        ? "All required categories completed. You may end the interview."
+                        : `STOP! You still need to cover: ${missingRequired.join(", ")}. Ask those questions before ending.`
+                };
+
+                console.log("📋 Checklist result:", result);
+
+                deepgram!.functionCallResponse({
+                    id: functionCallId,
+                    name: functionName,
+                    content: JSON.stringify(result),
+                });
 
             } else {
                 // Unknown function - respond with error to not leave it hanging

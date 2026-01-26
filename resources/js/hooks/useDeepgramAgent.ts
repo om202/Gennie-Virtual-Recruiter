@@ -4,7 +4,9 @@ import type { ConnectionState, SpeakingState, TranscriptMessage } from '@/types'
 import {
     generateGreeting,
     generatePrompt,
-    type InterviewConfig
+    getInterviewCategories,
+    type InterviewConfig,
+    type InterviewTemplateType
 } from '@/shared/interviewConfig'
 
 interface UseDeepgramAgentReturn {
@@ -41,6 +43,10 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
     // Time-aware pacing refs
     const interviewStartTimeRef = useRef<number | null>(null)
     const timeInjectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Category progress tracking
+    type CategoryStatus = 'not_started' | 'completed' | 'partially_covered' | 'skipped';
+    const categoryProgressRef = useRef<Map<string, CategoryStatus>>(new Map())
 
     // Keep configRef up to date
     configRef.current = config
@@ -318,23 +324,32 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                                 },
                                 {
                                     name: 'update_interview_progress',
-                                    description: 'Mark a required question as COMPLETED. Call this immediately after the candidate provides a satisfactory answer to one of the mandatory questions in your instructions. Do not call this if the answer was vague or incomplete.',
+                                    description: 'Mark an interview CATEGORY as completed. You MUST call this for each category after covering its questions. Categories include: intro, logistics, qualifications, interest (for screening), core_knowledge, problem_solving, experience (for technical), etc. CRITICAL: Track your progress by marking each category complete.',
                                     parameters: {
                                         type: 'object',
                                         properties: {
-                                            question_text: { type: 'string', description: 'The exact text of the required question that was answered.' },
-                                            status: { type: 'string', enum: ['completed', 'skipped'], description: "Status of the question." },
+                                            category_id: { type: 'string', description: 'The category ID being marked (e.g., "logistics", "intro", "qualifications")' },
+                                            status: { type: 'string', enum: ['completed', 'partially_covered', 'skipped'], description: 'Status of the category. Use "completed" when fully covered.' },
+                                            notes: { type: 'string', description: 'Brief notes on what was covered (optional)' }
                                         },
-                                        required: ['question_text', 'status'],
+                                        required: ['category_id', 'status'],
+                                    },
+                                },
+                                {
+                                    name: 'get_interview_checklist',
+                                    description: 'Get the list of required interview categories and their completion status. CRITICAL: You MUST call this BEFORE calling end_interview to verify all required categories are complete. If any required categories are "not_started", ask those questions before ending.',
+                                    parameters: {
+                                        type: 'object',
+                                        properties: {},
                                     },
                                 },
                                 {
                                     name: 'end_interview',
-                                    description: 'Ends the interview session. Call this tool ONLY in these cases: 1) You have asked all your planned questions and the candidate has no further questions. 2) The candidate explicitly asks to stop or end the interview. 3) The candidate says a definitive goodbye. IMPORTANT: Always be polite and thank the candidate before calling this tool.',
+                                    description: 'Ends the interview session. IMPORTANT: Before calling this, you MUST first call get_interview_checklist() to verify all required categories are completed. Only proceed if ready_to_end is true. Always thank the candidate before calling this tool.',
                                     parameters: {
                                         type: 'object',
                                         properties: {
-                                            reason: { type: 'string', description: "The reason for ending the interview. Allowed values: 'screening_complete', 'candidate_request', 'goodbye', 'time_limit_reached'." },
+                                            reason: { type: 'string', description: "The reason for ending. Values: 'all_categories_complete', 'candidate_request', 'time_limit_reached'." },
                                             summary: { type: 'string', description: 'A concise summary (1-2 sentences) of how the interview went.' },
                                         },
                                         required: ['reason'],
@@ -544,16 +559,24 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         });
 
                     } else if (functionName === 'update_interview_progress') {
-                        console.log('Updating interview progress:', input);
-                        addTranscript('system', `Marked question as done: "${input?.question_text}"`);
+                        const categoryId = input?.category_id;
+                        const status = input?.status || 'completed';
+                        const notes = input?.notes || '';
+
+                        console.log('📋 Updating category progress:', { categoryId, status, notes });
+
+                        // Update local tracking
+                        categoryProgressRef.current.set(categoryId, status);
+
+                        addTranscript('system', `Category "${categoryId}" marked as ${status}`);
 
                         if (configRef.current?.sessionId) {
                             fetch(`/api/sessions/${configRef.current.sessionId}/progress`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                    action: 'mark_question_complete',
-                                    payload: input
+                                    action: 'mark_category_complete',
+                                    payload: { category_id: categoryId, status, notes }
                                 })
                             }).catch(err => console.error('Failed to save progress:', err));
                         }
@@ -561,7 +584,52 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                         connection.functionCallResponse({
                             id: functionCallId,
                             name: functionName,
-                            content: `Progress saved. Question "${input?.question_text}" marked as ${input?.status}. Proceed to the next question.`,
+                            content: `✓ Category "${categoryId}" marked as ${status}. Continue with remaining categories.`,
+                        });
+
+                    } else if (functionName === 'get_interview_checklist') {
+                        console.log('📋 Getting interview checklist');
+
+                        // Get categories for current interview type
+                        const interviewType = (configRef.current?.interviewType || 'screening') as InterviewTemplateType;
+                        const categories = getInterviewCategories(interviewType);
+
+                        // Build checklist with current status
+                        const checklist = categories.map(cat => {
+                            const status = categoryProgressRef.current.get(cat.id) || 'not_started';
+                            return {
+                                id: cat.id,
+                                name: cat.name,
+                                required: cat.required,
+                                status
+                            };
+                        });
+
+                        // Find missing required categories
+                        const missingRequired = checklist
+                            .filter(c => c.required && c.status === 'not_started')
+                            .map(c => c.id);
+
+                        const readyToEnd = missingRequired.length === 0;
+
+                        const result = {
+                            categories: checklist,
+                            ready_to_end: readyToEnd,
+                            missing_required: missingRequired,
+                            message: readyToEnd
+                                ? 'All required categories completed. You may end the interview.'
+                                : `STOP! You still need to cover: ${missingRequired.join(', ')}. Ask those questions before ending.`
+                        };
+
+                        console.log('📋 Checklist result:', result);
+                        addTranscript('system', readyToEnd
+                            ? '✓ All categories complete'
+                            : `⚠️ Missing: ${missingRequired.join(', ')}`);
+
+                        connection.functionCallResponse({
+                            id: functionCallId,
+                            name: functionName,
+                            content: JSON.stringify(result),
                         });
 
                     } else {
