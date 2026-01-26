@@ -149,6 +149,7 @@ export function generatePrompt(config?: InterviewConfig): string {
 **═══════════════════════════════════════════════════════════════**
 
 **General Guidelines:**
+- NEVER use markdown formatting (like **bold**, *italics*, or bullet points) in your spoken responses - this is a voice call, speak naturally
 - Keep your questions concise and conversational
 - Listen actively and build on the candidate's responses
 - Use the 'get_context' function for company-specific information
