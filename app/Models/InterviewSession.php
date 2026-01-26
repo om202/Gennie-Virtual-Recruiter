@@ -35,6 +35,26 @@ class InterviewSession extends Model
         'twilio_data' => 'array',
     ];
 
+    protected $appends = ['effective_status'];
+
+    /**
+     * Get effective status - treats stale active sessions as completed.
+     * Sessions stuck in 'active' for over 1 hour are auto-updated to completed.
+     */
+    public function getEffectiveStatusAttribute(): string
+    {
+        // Lazy cleanup: if stale, update DB and return completed
+        if ($this->status === 'active' && $this->updated_at?->lt(now()->subHour())) {
+            // Update silently without triggering events/timestamps
+            static::withoutTimestamps(
+                fn() =>
+                $this->updateQuietly(['status' => 'completed'])
+            );
+            $this->status = 'completed';
+        }
+        return $this->status;
+    }
+
     /**
      * Get logs for this session.
      */

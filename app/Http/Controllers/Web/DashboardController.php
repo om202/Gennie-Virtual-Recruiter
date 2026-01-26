@@ -41,9 +41,9 @@ class DashboardController extends Controller
                 return [
                     'id' => $session->id,
                     'type' => 'session_completed', // simplified for now
-                    'title' => 'Interview Session ' . ucfirst($session->status),
+                    'title' => 'Interview Session ' . ucfirst($session->effective_status),
                     'description' => $candidateName . ' - ' . $jobTitle,
-                    'status' => $session->status,
+                    'status' => $session->effective_status,
                     'session_type' => $session->call_sid ? 'phone' : 'web',
                     'created_at' => $session->created_at,
                     'link' => "/interviews/{$session->interview_id}/logs?session={$session->id}",
