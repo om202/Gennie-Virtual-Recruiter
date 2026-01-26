@@ -1,0 +1,1 @@
+Hi {candidate}, we regret to inform you that your interview for {job} at {company} (scheduled {date} at {time}) has been cancelled. We apologize for any inconvenience. - Gennie Talent

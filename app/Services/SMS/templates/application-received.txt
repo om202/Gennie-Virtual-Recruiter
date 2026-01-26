@@ -1,0 +1,1 @@
+Hi {candidate}! Your application for {job} at {company} has been received. We'll be in touch soon with next steps. - Gennie Talent

@@ -1,0 +1,1 @@
+Hi {candidate}, your interview for {job} at {company} has been rescheduled to {date} at {time}. Join here: {url} - Gennie Talent

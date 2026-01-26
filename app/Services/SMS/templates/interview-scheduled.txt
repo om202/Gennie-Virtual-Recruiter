@@ -1,0 +1,1 @@
+Hi {candidate}! Your AI screening interview for {job} at {company} is scheduled for {date} at {time}. Join here: {url} - Gennie Talent
