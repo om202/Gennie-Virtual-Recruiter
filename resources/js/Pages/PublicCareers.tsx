@@ -73,6 +73,27 @@ export default function PublicCareers({ company, jobs, error }: Props) {
         return colors[type] || 'bg-gray-100 text-gray-800'
     }
 
+    const stripMarkdown = (text: string) => {
+        return text
+            // Remove headers (# ## ###)
+            .replace(/^#+\s+/gm, '')
+            // Remove bold (**text** or __text__)
+            .replace(/(\*\*|__)(.*?)\1/g, '$2')
+            // Remove italic (*text* or _text_)
+            .replace(/(\*|_)(.*?)\1/g, '$2')
+            // Remove links [text](url)
+            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+            // Remove inline code `code`
+            .replace(/`([^`]+)`/g, '$1')
+            // Remove bullet points (- or *)
+            .replace(/^[\s]*[-*]\s+/gm, '')
+            // Remove numbered lists
+            .replace(/^[\s]*\d+\.\s+/gm, '')
+            // Remove extra whitespace
+            .replace(/\s+/g, ' ')
+            .trim()
+    }
+
     return (
         <>
             <Head>
@@ -123,7 +144,7 @@ export default function PublicCareers({ company, jobs, error }: Props) {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {jobs.map((job) => (
-                                    <Card key={job.id} className="hover:shadow-md transition-shadow">
+                                    <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col h-full">
                                         <CardHeader className="pb-3">
                                             <CardTitle className="text-lg">{job.title}</CardTitle>
                                             <CardDescription className="flex items-center gap-2">
@@ -135,7 +156,7 @@ export default function PublicCareers({ company, jobs, error }: Props) {
                                                 )}
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className="space-y-4">
+                                        <CardContent className="flex flex-col flex-1 gap-4">
                                             {/* Tags */}
                                             <div className="flex flex-wrap gap-2">
                                                 <Badge variant="outline" className={getRemoteTypeColor(job.remote_type)}>
@@ -154,10 +175,13 @@ export default function PublicCareers({ company, jobs, error }: Props) {
 
                                             {/* Description preview */}
                                             {job.description && (
-                                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                                    {job.description}
+                                                <p className="text-sm text-muted-foreground line-clamp-3">
+                                                    {stripMarkdown(job.description)}
                                                 </p>
                                             )}
+
+                                            {/* Spacer to push content down */}
+                                            <div className="flex-1" />
 
                                             {/* Posted date */}
                                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
