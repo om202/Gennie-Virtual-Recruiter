@@ -4,6 +4,7 @@ namespace App\Services\Email;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Mail\Message;
 use App\Models\ScheduledInterview;
 use App\Models\JobDescription;
@@ -34,12 +35,12 @@ class EmailService
     /**
      * Send interview scheduled notification to candidate.
      */
-    public function sendInterviewScheduled(ScheduledInterview $schedule): void
+    public function sendInterviewScheduled(ScheduledInterview $schedule): bool
     {
         $schedule->load(['candidate', 'interview.user']);
         $formatted = $this->getFormattedTime($schedule);
 
-        $this->send(
+        return $this->send(
             type: 'interview_scheduled',
             to: $schedule->candidate->email,
             data: [
@@ -62,12 +63,12 @@ class EmailService
     /**
      * Send interview rescheduled notification to candidate.
      */
-    public function sendInterviewRescheduled(ScheduledInterview $schedule): void
+    public function sendInterviewRescheduled(ScheduledInterview $schedule): bool
     {
         $schedule->load(['candidate', 'interview.user']);
         $formatted = $this->getFormattedTime($schedule);
 
-        $this->send(
+        return $this->send(
             type: 'interview_rescheduled',
             to: $schedule->candidate->email,
             data: [
@@ -90,12 +91,12 @@ class EmailService
     /**
      * Send interview cancelled notification to candidate.
      */
-    public function sendInterviewCancelled(ScheduledInterview $schedule): void
+    public function sendInterviewCancelled(ScheduledInterview $schedule): bool
     {
         $schedule->load(['candidate', 'interview.user']);
         $formatted = $this->getFormattedTime($schedule);
 
-        $this->send(
+        return $this->send(
             type: 'interview_cancelled',
             to: $schedule->candidate->email,
             data: [
@@ -128,9 +129,9 @@ class EmailService
     /**
      * Send application received confirmation to candidate.
      */
-    public function sendApplicationReceived(JobDescription $jobDescription, Candidate $candidate): void
+    public function sendApplicationReceived(JobDescription $jobDescription, Candidate $candidate): bool
     {
-        $this->send(
+        return $this->send(
             type: 'application_received',
             to: $candidate->email,
             data: [
@@ -148,7 +149,7 @@ class EmailService
     /**
      * Core send method - handles all email sending logic.
      */
-    protected function send(string $type, string $to, array $data, array $placeholders = []): void
+    protected function send(string $type, string $to, array $data, array $placeholders = []): bool
     {
         $typeConfig = $this->config['types'][$type] ?? null;
 
@@ -162,19 +163,36 @@ class EmailService
         // Add branding to template data
         $data['branding'] = $this->config['branding'];
 
-        // Send via Laravel Mail
-        Mail::send(
-            "email::{$typeConfig['template']}",
-            $data,
-            function (Message $message) use ($to, $subject) {
-                $message->to($to)
-                    ->subject($subject)
-                    ->from(
-                        $this->config['from']['address'],
-                        $this->config['from']['name']
-                    );
-            }
-        );
+        try {
+            // Send via Laravel Mail
+            Mail::send(
+                "email::{$typeConfig['template']}",
+                $data,
+                function (Message $message) use ($to, $subject) {
+                    $message->to($to)
+                        ->subject($subject)
+                        ->from(
+                            $this->config['from']['address'],
+                            $this->config['from']['name']
+                        );
+                }
+            );
+
+            Log::info('Email sent successfully', [
+                'type' => $type,
+                'to' => $to,
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('Email sending failed', [
+                'type' => $type,
+                'to' => $to,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
 
     /**
