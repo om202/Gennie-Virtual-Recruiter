@@ -48,6 +48,7 @@ class PublicInterviewController extends Controller
                 'difficulty_level' => $interview->difficulty_level,
                 'candidate_instructions' => $interview->candidate_instructions,
                 'job_description' => $jobDescription,
+                'required_questions' => $interview->required_questions ?? [],
             ],
             'token' => $token,
             'type' => 'interview',
@@ -92,6 +93,7 @@ class PublicInterviewController extends Controller
                 'interview_type' => $interview->interview_type,
                 'difficulty_level' => $interview->difficulty_level,
                 'job_description' => $jobDescription,
+                'required_questions' => $interview->required_questions ?? [],
             ],
             'candidate' => $schedule->candidate ? [
                 'id' => $schedule->candidate->id,
@@ -210,6 +212,7 @@ class PublicInterviewController extends Controller
                 'job_description' => $interview->job_description,
                 'duration_minutes' => $interview->duration_minutes,
                 'interview_type' => $interview->interview_type,
+                'required_questions' => $interview->required_questions ?? [],
             ],
         ]);
     }

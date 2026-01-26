@@ -17,47 +17,123 @@ class InterviewMemoryService
 {
     /**
      * Topic patterns for fast fact extraction (no LLM call needed).
+     * Covers: Screening, Technical, Behavioral, and Final interview types.
      */
     private array $topicPatterns = [
+        // ═══════════════════════════════════════════════════════════════════
+        // SCREENING INTERVIEW TOPICS
+        // ═══════════════════════════════════════════════════════════════════
         'experience' => [
-            'patterns' => ['/(\d+)\s*years?\s*(of\s*)?(experience|developer|engineer)/i'],
-            'keywords' => ['years of experience', 'worked for', 'been a developer'],
+            'patterns' => ['/(\d+)\s*years?\s*(of\s*)?(experience|developer|engineer|working)/i'],
+            'keywords' => ['years of experience', 'worked for', 'been a developer', 'been working as'],
         ],
         'work_history' => [
             'patterns' => [],
-            'keywords' => ['worked at', 'was with', 'my last role', 'previous company', 'currently at'],
+            'keywords' => ['worked at', 'was with', 'my last role', 'previous company', 'currently at', 'current employer'],
         ],
         'intro' => [
             'patterns' => [],
-            'keywords' => ['my name is', 'i am a', "i'm a", 'my background', 'about myself'],
+            'keywords' => ['my name is', 'i am a', "i'm a", 'my background', 'about myself', 'let me introduce'],
         ],
         'work_authorization' => [
-            'patterns' => ['/green\s*card|citizen|h1b|h-1b|visa|ead|opt|cpt/i'],
-            'keywords' => [],
+            'patterns' => ['/green\s*card|citizen|h1b|h-1b|visa|ead|opt|cpt|permanent\s*resident/i'],
+            'keywords' => ['authorized to work', 'sponsorship', 'work permit'],
         ],
         'location' => [
-            'patterns' => ['/located in|based in|live in|living in|from\s+(\w+)|in\s+(colorado|texas|california|new york|florida|\w+\s*,?\s*\w*)/i'],
-            'keywords' => ['i live', 'my location', 'currently in'],
+            'patterns' => ['/located in|based in|live in|living in|from\s+(\w+)|currently in\s+(\w+)/i'],
+            'keywords' => ['i live', 'my location', 'working from', 'remote from'],
         ],
         'relocation' => [
             'patterns' => [],
-            'keywords' => ['open to relocate', 'willing to move', 'can relocate', 'not willing to relocate'],
+            'keywords' => ['open to relocate', 'willing to move', 'can relocate', 'not willing to relocate', 'prefer remote'],
         ],
         'availability' => [
             'patterns' => ['/start\s*(immediately|right away|asap)|(\d+)\s*weeks?\s*notice|notice\s*period/i'],
-            'keywords' => ['can start', 'available to start', 'notice period', 'two weeks'],
+            'keywords' => ['can start', 'available to start', 'notice period', 'two weeks', 'one month'],
         ],
         'salary' => [
             'patterns' => ['/\$?\s*(\d{2,3})[,\s]?(\d{3})?\s*k?\s*(per\s*year)?|hundred\s*(and\s*\w+)?\s*thousand/i'],
-            'keywords' => ['salary', 'compensation', 'expect', 'looking for'],
+            'keywords' => ['salary', 'compensation', 'expecting', 'looking for around', 'base pay', 'total comp'],
         ],
         'timeline' => [
             'patterns' => [],
-            'keywords' => ['decision', 'timeline', 'making a decision', 'need to decide'],
+            'keywords' => ['decision', 'timeline', 'making a decision', 'need to decide', 'by next week'],
         ],
         'other_interviews' => [
             'patterns' => [],
-            'keywords' => ['interviewing', 'other companies', 'other interviews', 'talking to'],
+            'keywords' => ['interviewing', 'other companies', 'other interviews', 'talking to', 'offer from'],
+        ],
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TECHNICAL INTERVIEW TOPICS
+        // ═══════════════════════════════════════════════════════════════════
+        'technologies' => [
+            'patterns' => ['/react|angular|vue|node|python|java|typescript|javascript|aws|azure|gcp|docker|kubernetes|sql|mongodb|graphql|rest\s*api/i'],
+            'keywords' => ['tech stack', 'programming', 'framework', 'language', 'database', 'cloud'],
+        ],
+        'architecture' => [
+            'patterns' => ['/microservices|monolith|serverless|event\s*driven|distributed/i'],
+            'keywords' => ['architecture', 'system design', 'scaling', 'designed the', 'architected'],
+        ],
+        'projects' => [
+            'patterns' => [],
+            'keywords' => ['project', 'built', 'developed', 'implemented', 'created', 'worked on a', 'my biggest'],
+        ],
+        'problem_solving' => [
+            'patterns' => [],
+            'keywords' => ['solved', 'debugged', 'fixed', 'optimized', 'improved', 'reduced', 'approach to'],
+        ],
+        'best_practices' => [
+            'patterns' => ['/ci\s*\/?\s*cd|unit\s*test|tdd|code\s*review|agile|scrum/i'],
+            'keywords' => ['testing', 'deployment', 'version control', 'git', 'code quality', 'documentation'],
+        ],
+
+        // ═══════════════════════════════════════════════════════════════════
+        // BEHAVIORAL INTERVIEW TOPICS
+        // ═══════════════════════════════════════════════════════════════════
+        'teamwork' => [
+            'patterns' => [],
+            'keywords' => ['team', 'collaborated', 'worked with', 'together', 'group project', 'cross-functional'],
+        ],
+        'conflict' => [
+            'patterns' => [],
+            'keywords' => ['disagreement', 'conflict', 'difficult situation', 'tension', 'resolved', 'compromise'],
+        ],
+        'leadership' => [
+            'patterns' => [],
+            'keywords' => ['led', 'managed', 'mentored', 'coached', 'supervised', 'took ownership', 'initiated'],
+        ],
+        'failure' => [
+            'patterns' => [],
+            'keywords' => ['failed', 'mistake', 'learned', 'lesson', 'wrong', 'setback', 'challenge'],
+        ],
+        'achievement' => [
+            'patterns' => [],
+            'keywords' => ['proud of', 'accomplished', 'achievement', 'succeeded', 'award', 'recognition'],
+        ],
+
+        // ═══════════════════════════════════════════════════════════════════
+        // FINAL INTERVIEW TOPICS
+        // ═══════════════════════════════════════════════════════════════════
+        'motivation' => [
+            'patterns' => [],
+            'keywords' => ['passionate about', 'enjoy', 'love', 'motivates me', 'excited about', 'interested in'],
+        ],
+        'career_goals' => [
+            'patterns' => [],
+            'keywords' => ['career', 'long term', 'five years', 'goal', 'aspiration', 'grow', 'future'],
+        ],
+        'culture_fit' => [
+            'patterns' => [],
+            'keywords' => ['culture', 'values', 'work environment', 'team dynamics', 'company mission'],
+        ],
+        'why_company' => [
+            'patterns' => [],
+            'keywords' => ['why this company', 'attracted to', 'researched', 'impressed by', 'read about'],
+        ],
+        'questions_asked' => [
+            'patterns' => [],
+            'keywords' => ['can i ask', 'want to know', 'wondering about', 'my question is'],
         ],
     ];
 

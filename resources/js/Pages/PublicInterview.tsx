@@ -29,6 +29,7 @@ interface Interview {
     difficulty_level: string
     candidate_instructions?: string | null
     job_description?: string | null
+    required_questions?: string[]
 }
 
 interface Candidate {
@@ -95,6 +96,7 @@ export default function PublicInterview({ interview, candidate, token, error, is
         interviewType: interview.interview_type as AgentConfig['interviewType'],
         difficultyLevel: interview.difficulty_level as AgentConfig['difficultyLevel'],
         durationMinutes: interview.duration_minutes,
+        requiredQuestions: interview.required_questions || [],
     }), [sessionId, interview, interviewData])
 
     const {
