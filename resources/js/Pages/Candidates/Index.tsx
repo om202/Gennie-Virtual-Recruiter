@@ -142,32 +142,36 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                             Manage your talent pool and view candidate profiles.
                         </p>
                     </div>
-                    <Link href="/candidates/create">
-                        <Button className="w-full md:w-auto">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Candidate
-                        </Button>
-                    </Link>
+                    {displayedCandidates.length > 0 && (
+                        <Link href="/candidates/create">
+                            <Button className="w-full md:w-auto">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Candidate
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* Search Bar */}
-                <form onSubmit={handleSearch} className="relative w-full sm:w-80">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search by name, email, or skills..."
-                        className="pl-9"
-                        value={search}
-                        onChange={(e) => {
-                            const newValue = e.target.value;
-                            setSearch(newValue);
-                            // If search is cleared (empty), reset the search
-                            if (newValue === '') {
-                                router.get('/candidates', {}, { preserveState: true });
-                            }
-                        }}
-                    />
-                </form>
+                {displayedCandidates.length > 10 && (
+                    <form onSubmit={handleSearch} className="relative w-full sm:w-80">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search by name, email, or skills..."
+                            className="pl-9 bg-white"
+                            value={search}
+                            onChange={(e) => {
+                                const newValue = e.target.value;
+                                setSearch(newValue);
+                                // If search is cleared (empty), reset the search
+                                if (newValue === '') {
+                                    router.get('/candidates', {}, { preserveState: true });
+                                }
+                            }}
+                        />
+                    </form>
+                )}
 
                 {/* Filter Indicator */}
                 {highlightedCandidateId && (
@@ -189,13 +193,11 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                 {displayedCandidates.length === 0 ? (
                     <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-16">
-                            <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                                {search ? (
-                                    <Search className="h-6 w-6 text-muted-foreground" />
-                                ) : (
-                                    <Plus className="h-6 w-6 text-muted-foreground" />
-                                )}
-                            </div>
+                            {search ? (
+                                <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                            ) : (
+                                <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                            )}
                             <h3 className="text-lg font-medium mb-2">
                                 {search ? `No results for "${search}"` : 'No candidates found'}
                             </h3>
@@ -212,6 +214,7 @@ export default function CandidatesIndex({ candidates, filters }: IndexProps) {
                             ) : (
                                 <Link href="/candidates/create">
                                     <Button>
+                                        <Plus className="h-4 w-4 mr-2" />
                                         Add Candidate
                                     </Button>
                                 </Link>

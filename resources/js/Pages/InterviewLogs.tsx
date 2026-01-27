@@ -306,7 +306,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                 </div>
 
                 {allSessions.length === 0 ? (
-                    <Card>
+                    <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                             <AlertCircle className="h-12 w-12 mb-4 opacity-50" />
                             <h3 className="text-lg font-medium">No Sessions Found</h3>

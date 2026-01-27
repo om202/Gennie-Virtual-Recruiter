@@ -129,6 +129,7 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                                 </p>
                                 <Link href="/schedules/create">
                                     <Button>
+                                        <Plus className="h-4 w-4 mr-2" />
                                         Schedule Your First Interview
                                     </Button>
                                 </Link>

@@ -4,11 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import {
     MapPin,
-    Briefcase,
     DollarSign,
     Building2,
     ExternalLink,
-    Clock
+    Clock,
+    Users
 } from 'lucide-react'
 
 interface Job {
@@ -130,7 +130,7 @@ export default function PublicCareers({ company, jobs, error }: Props) {
                     {!jobs || jobs.length === 0 ? (
                         <Card className="w-full border-dashed">
                             <CardContent className="flex flex-col items-center justify-center py-16">
-                                <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
                                 <h3 className="text-lg font-medium mb-2">No open positions</h3>
                                 <p className="text-muted-foreground text-center">
                                     Check back soon for new opportunities!
