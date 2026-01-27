@@ -62,6 +62,12 @@ Route::middleware(['auth'])->group(function () {
     // Documentation
     Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
     Route::get('/docs/getting-started', [DocsController::class, 'gettingStarted'])->name('docs.getting-started');
+    Route::get('/docs/jobs', [DocsController::class, 'jobs'])->name('docs.jobs');
+    Route::get('/docs/interviews', [DocsController::class, 'interviews'])->name('docs.interviews');
+    Route::get('/docs/candidates', [DocsController::class, 'candidates'])->name('docs.candidates');
+    Route::get('/docs/candidate-experience', [DocsController::class, 'candidateExperience'])->name('docs.candidate-experience');
+    Route::get('/docs/analytics', [DocsController::class, 'analytics'])->name('docs.analytics');
+    Route::get('/docs/settings', [DocsController::class, 'settings'])->name('docs.settings');
     Route::get('/docs/faq', [DocsController::class, 'faq'])->name('docs.faq');
 
     // Profile Settings
