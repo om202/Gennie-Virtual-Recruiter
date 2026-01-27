@@ -1,7 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users, Calendar, LayoutDashboard, User, LogOut, Settings, BookOpen } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar, LayoutDashboard, User, LogOut, Settings, BookOpen, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules' | 'docs';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules' | 'subscription' | 'docs';
 
 interface SidebarProps {
     activeTab?: NavigationTab;
@@ -72,6 +72,14 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
             href: '/docs',
             icon: BookOpen,
             tab: 'docs' as NavigationTab,
+            hideOnMobile: true,
+        },
+        {
+            name: 'Subscription',
+            href: '/subscription',
+            icon: CreditCard,
+            tab: 'subscription' as NavigationTab,
+            hideOnMobile: true,
         },
     ];
 
@@ -105,16 +113,16 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                                         "group flex flex-col items-center justify-center py-2.5 gap-1 transition-colors",
                                         isActive
                                             ? "bg-primary/10 text-primary"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                            : "text-foreground hover:bg-muted/50"
                                     )}
                                     title={(item as any).desktopName || item.name}
                                 >
                                     <Icon
                                         className={cn(
                                             "flex-shrink-0 h-[22px] w-[22px]",
-                                            isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                            isActive ? "text-primary" : "text-foreground"
                                         )}
-                                        strokeWidth={isActive ? 2.5 : 2}
+                                        strokeWidth={isActive ? 2 : 1.5}
                                     />
                                     <span className="text-[10px] font-medium text-center leading-tight">
                                         {item.name}
@@ -174,7 +182,7 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
             {/* Mobile Bottom Navigation */}
             <div className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-50">
                 <nav className="flex justify-around items-center h-16 px-2">
-                    {navItems.map((item) => {
+                    {navItems.filter(item => !item.hideOnMobile).map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.tab;
                         return (
@@ -185,12 +193,12 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                                     "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors",
                                     isActive
                                         ? "text-primary"
-                                        : "text-muted-foreground"
+                                        : "text-foreground"
                                 )}
                             >
                                 <Icon
                                     className="h-[20px] w-[20px]"
-                                    strokeWidth={isActive ? 2.5 : 2}
+                                    strokeWidth={isActive ? 2 : 1.5}
                                 />
                                 <span className="text-[10px] font-medium">{item.name}</span>
                             </Link>

@@ -99,8 +99,8 @@ export default function SchedulesIndex({ scheduledInterviews }: IndexProps) {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-                            <Calendar className="h-7 w-7 text-primary/80" />
+                        <h1 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <Calendar className="h-6 w-6 text-primary/80" />
                             Schedules
                         </h1>
                         <p className="text-muted-foreground">

@@ -107,7 +107,10 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
 
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-primary">Subscription & Billing</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2">
+                        <CreditCard className="h-6 w-6" />
+                        Subscription & Billing
+                    </h1>
                     <p className="text-muted-foreground">
                         Manage your plan and view usage history
                     </p>

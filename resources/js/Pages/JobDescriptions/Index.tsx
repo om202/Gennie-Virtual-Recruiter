@@ -236,8 +236,8 @@ ${job.company_name} Hiring Team`
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-                            <Briefcase className="h-7 w-7 text-primary/80" />
+                        <h1 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <Briefcase className="h-6 w-6 text-primary/80" />
                             Job Descriptions
                         </h1>
                         <p className="text-muted-foreground">

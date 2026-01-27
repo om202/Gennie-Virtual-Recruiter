@@ -71,8 +71,8 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
 
             <div className="max-w-7xl mx-auto flex-1 space-y-6 p-4 md:p-8 pt-6 md:pt-12">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-                        <LayoutDashboard className="h-7 w-7 text-primary/80" />
+                    <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
+                        <LayoutDashboard className="h-6 w-6 text-primary/80" />
                         Welcome, {auth.user.name.split(' ')[0]}
                     </h2>
                     <p className="text-muted-foreground">
