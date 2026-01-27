@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from '@inertiajs/react';
-import { Building2, Bell, CreditCard, Users, Palette, Globe } from 'lucide-react';
+import { Building2, Bell, CreditCard, Users, Palette, Globe, Mic, Clock, Gauge } from 'lucide-react';
 
 export default function Settings() {
     return (
@@ -94,6 +94,42 @@ export default function Settings() {
                             Configure your public careers page URL and customize the landing page content.
                             All public job descriptions are automatically listed here.
                         </p>
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Interview Preferences */}
+                <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">Interview Preferences</h2>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="flex items-start gap-3 p-4 border rounded-lg">
+                            <Mic className="w-5 h-5 text-primary flex-shrink-0" />
+                            <div>
+                                <h4 className="font-medium">AI Voice</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    Choose the voice personality for your AI interviewer (Professional, Friendly, Technical).
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 border rounded-lg">
+                            <Clock className="w-5 h-5 text-primary flex-shrink-0" />
+                            <div>
+                                <h4 className="font-medium">Default Duration</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    Set the default interview length (10, 15, or 20 minutes). Can be overridden per interview.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 border rounded-lg">
+                            <Gauge className="w-5 h-5 text-primary flex-shrink-0" />
+                            <div>
+                                <h4 className="font-medium">High Score Alerts</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    Get instant notifications when candidates score above your threshold (e.g., 8/10).
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

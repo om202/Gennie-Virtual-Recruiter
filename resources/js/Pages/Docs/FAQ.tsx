@@ -85,6 +85,57 @@ export default function FAQ() {
                     answer: "Yes! You can invite team members to your Gennie workspace. They will be able to view candidate profiles, listen to recordings, and read transcripts."
                 },
             ]
+        },
+        {
+            category: "Scheduling",
+            faqs: [
+                {
+                    question: "How does self-scheduling work?",
+                    answer: "After a candidate applies, they receive an email with a 'Schedule Your Interview' button. They can pick any available 5-minute slot between 7 AM and 10 PM in their timezone. Gennie will call them at the scheduled time."
+                },
+                {
+                    question: "Can candidates change their scheduled time?",
+                    answer: "Yes, candidates can reschedule or cancel via links in their confirmation email. You can also reschedule on their behalf from the candidate management screen."
+                },
+                {
+                    question: "What time zones are supported?",
+                    answer: "Gennie supports all global time zones. Candidates see available slots in their local time, and all scheduled times are converted automatically for both parties."
+                },
+            ]
+        },
+        {
+            category: "Billing & Plans",
+            faqs: [
+                {
+                    question: "What plans are available?",
+                    answer: "We offer Starter, Professional, and Enterprise plans. Each tier includes more interviews per month, team seats, and features like priority support and custom integrations."
+                },
+                {
+                    question: "Can I upgrade or downgrade my plan?",
+                    answer: "Yes, you can change your plan at any time from Settings → Billing. Changes take effect on your next billing cycle, and upgrades are pro-rated."
+                },
+                {
+                    question: "Is there a free trial?",
+                    answer: "Yes! New accounts get 14 days of full access to explore all features. No credit card required to start your trial."
+                },
+            ]
+        },
+        {
+            category: "Troubleshooting",
+            faqs: [
+                {
+                    question: "The candidate says the call never came",
+                    answer: "Check if the phone number is correctly formatted with country code. Ensure the interview was scheduled for the correct timezone. You can resend the interview invitation or manually trigger a call from the candidate page."
+                },
+                {
+                    question: "Audio quality issues during the interview",
+                    answer: "Gennie uses high-quality VoIP. If candidates report issues, ask them to: 1) Move to a quieter location, 2) Use a headset if available, 3) For web interviews, try Chrome browser for best compatibility."
+                },
+                {
+                    question: "Interview was cut short unexpectedly",
+                    answer: "Check the Session Log for error details. Common causes: candidate lost signal, call duration exceeded plan limits, or candidate said 'end interview' which triggers early completion. You can invite them to re-interview if needed."
+                },
+            ]
         }
     ];
 

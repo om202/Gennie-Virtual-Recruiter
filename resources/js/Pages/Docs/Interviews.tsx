@@ -125,6 +125,68 @@ export default function Interviews() {
                 </Accordion>
             </div>
 
+            <Separator />
+
+            {/* Phone vs Web Interviews */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Phone vs Web Interviews</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card className="border-primary/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Mic className="w-5 h-5 text-primary" />
+                                Phone Call Interview
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm text-muted-foreground">
+                            <p>Gennie calls the candidate at their scheduled time. Best for:</p>
+                            <ul className="list-disc list-inside mt-2 space-y-1">
+                                <li>Candidates without reliable internet</li>
+                                <li>More natural, conversational feel</li>
+                                <li>Candidates on mobile devices</li>
+                            </ul>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-primary/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Share2 className="w-5 h-5 text-primary" />
+                                Web-Based Interview
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm text-muted-foreground">
+                            <p>Candidate joins via browser link. Best for:</p>
+                            <ul className="list-disc list-inside mt-2 space-y-1">
+                                <li>Immediate access for walk-in screening</li>
+                                <li>International candidates (no phone costs)</li>
+                                <li>High-volume public links</li>
+                            </ul>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            <Separator />
+
+            {/* Interview Rounds */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Multi-Round Interviews</h3>
+                <p className="text-muted-foreground">
+                    Need multiple screening stages? Gennie supports interview rounds:
+                </p>
+                <div className="flex items-start gap-3 p-4 border rounded-lg bg-muted/50">
+                    <Clock className="w-6 h-6 text-primary flex-shrink-0" />
+                    <div>
+                        <h4 className="font-medium">Round-Based Workflow</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Create separate interviews for each stage (e.g., "Initial Screen", "Technical Deep-Dive").
+                            Review Round 1 results before inviting candidates to Round 2. Each interview tracks
+                            sessions independently with its own score and transcript.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div className="pt-4 border-t flex justify-between items-center">
                 <Link href="/docs/jobs" className="text-sm text-muted-foreground hover:text-primary">
                     ← Job Descriptions

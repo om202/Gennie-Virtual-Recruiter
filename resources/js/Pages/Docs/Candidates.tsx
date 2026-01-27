@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { FileText, UserPlus, Filter, Mail, Calendar, ArrowRight, Eye } from 'lucide-react';
+import { FileText, UserPlus, Mail, Calendar, ArrowRight, Eye } from 'lucide-react';
 
 export default function Candidates() {
     return (
@@ -127,6 +127,45 @@ export default function Candidates() {
                         <span className="text-sm text-muted-foreground">Screening done, report ready.</span>
                     </div>
                 </div>
+            </div>
+
+            <Separator />
+
+            {/* Candidate Profile Features */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Candidate Profile Details</h3>
+                <p className="text-muted-foreground">
+                    Click on any candidate to view their detailed profile:
+                </p>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <div className="flex items-start gap-3 p-4 border rounded-lg">
+                        <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
+                        <div>
+                            <h4 className="font-medium">Session History</h4>
+                            <p className="text-sm text-muted-foreground">
+                                View all past interview sessions for this candidate,
+                                including scores, dates, and which interview they took.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-4 border rounded-lg">
+                        <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                        <div>
+                            <h4 className="font-medium">Resume Download</h4>
+                            <p className="text-sm text-muted-foreground">
+                                Download the original uploaded resume (PDF/DOCX)
+                                directly from the candidate profile.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-100 dark:border-blue-900">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                    <strong>Pro Tip:</strong> Use the search bar to quickly find candidates by name or email.
+                    Combine with filters for powerful candidate discovery.
+                </p>
             </div>
 
             <div className="pt-4 border-t flex justify-between items-center">
