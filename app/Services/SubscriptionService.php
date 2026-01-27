@@ -12,17 +12,19 @@ class SubscriptionService
 {
     /**
      * Record usage for a completed interview session.
+     * Idempotent: calling multiple times for same session returns existing record.
      */
     public function recordUsage(InterviewSession $session): ?UsageRecord
     {
+        // Idempotency: Check if already recorded
+        $existing = UsageRecord::where('interview_session_id', $session->id)->first();
+        if ($existing) {
+            return $existing;
+        }
+
         // Get the interview owner
         $interview = $session->interview;
         if (!$interview) {
-            return null;
-        }
-
-        $user = $interview->user;
-        if (!$user) {
             return null;
         }
 
@@ -34,26 +36,78 @@ class SubscriptionService
 
         $minutes = round($durationSeconds / 60, 2);
 
-        // Calculate cost
-        $costCents = $this->calculateCost($user, $minutes);
+        // Use transaction with row lock for atomic operation
+        return DB::transaction(function () use ($session, $interview, $minutes) {
+            // Lock user row to prevent concurrent modifications
+            $user = User::lockForUpdate()->find($interview->user_id);
+            if (!$user) {
+                return null;
+            }
 
-        // Create usage record
-        $usageRecord = UsageRecord::create([
-            'user_id' => $user->id,
-            'interview_session_id' => $session->id,
-            'minutes_used' => $minutes,
-            'cost_cents' => $costCents,
-            'plan_slug' => $user->getCurrentPlan()?->slug,
-            'recorded_at' => now(),
-        ]);
+            // Calculate cost (uses current usage state)
+            $costCents = $this->calculateCostForUser($user, $minutes);
 
-        // Update session cost
-        $session->update(['cost_cents' => $costCents]);
+            // Create usage record
+            $usageRecord = UsageRecord::create([
+                'user_id' => $user->id,
+                'interview_session_id' => $session->id,
+                'minutes_used' => $minutes,
+                'cost_cents' => $costCents,
+                'plan_slug' => $user->getCurrentPlan()?->slug,
+                'recorded_at' => now(),
+            ]);
 
-        // Update user's period usage
-        $user->increment('minutes_used_this_period', $minutes);
+            // Update session cost
+            $session->update(['cost_cents' => $costCents]);
 
-        return $usageRecord;
+            // Update user's period usage
+            $user->increment('minutes_used_this_period', $minutes);
+
+            return $usageRecord;
+        });
+    }
+
+    /**
+     * Calculate cost for given minutes based on user's plan.
+     * Internal helper that takes a pre-fetched user to avoid extra queries.
+     */
+    private function calculateCostForUser(User $user, float $minutes): int
+    {
+        $plan = $user->getCurrentPlan();
+        if (!$plan) {
+            return 0;
+        }
+
+        // Enterprise: flat rate
+        if ($plan->slug === 'enterprise') {
+            return (int) round($minutes * $plan->overage_rate);
+        }
+
+        // Free trial: no cost
+        if ($plan->isFreeTrial()) {
+            return 0;
+        }
+
+        // Paid plans: check if within included minutes
+        $used = (float) ($user->minutes_used_this_period ?? 0);
+        $included = $plan->minutes_included;
+
+        // If we're already over, everything is overage
+        if ($used >= $included) {
+            return (int) round($minutes * $plan->overage_rate);
+        }
+
+        // Split between included and overage
+        $remainingIncluded = $included - $used;
+
+        if ($minutes <= $remainingIncluded) {
+            // All within included minutes - no additional cost
+            return 0;
+        }
+
+        // Some overage
+        $overageMinutes = $minutes - $remainingIncluded;
+        return (int) round($overageMinutes * $plan->overage_rate);
     }
 
     /**

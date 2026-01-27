@@ -120,9 +120,16 @@ class User extends Authenticatable
 
     /**
      * Get the current plan or default to free trial.
+     * Falls back to free trial if subscription has expired.
      */
     public function getCurrentPlan(): ?\App\Models\SubscriptionPlan
     {
+        // Check if subscription has expired
+        if ($this->subscription_ends_at && $this->subscription_ends_at->isPast()) {
+            // Expired - fall back to free trial
+            return \App\Models\SubscriptionPlan::where('slug', 'free_trial')->first();
+        }
+
         if ($this->subscriptionPlan) {
             return $this->subscriptionPlan;
         }
@@ -131,9 +138,18 @@ class User extends Authenticatable
 
     /**
      * Get minutes remaining in current period.
+     * Auto-resets period if more than 1 month has passed.
      */
     public function getMinutesRemaining(): float
     {
+        // Auto-reset period if expired (more than 1 month)
+        if ($this->period_started_at && $this->period_started_at->lt(now()->subMonth())) {
+            $this->update([
+                'minutes_used_this_period' => 0,
+                'period_started_at' => now(),
+            ]);
+        }
+
         $plan = $this->getCurrentPlan();
         if (!$plan || $plan->minutes_included === 0) {
             return 0;
