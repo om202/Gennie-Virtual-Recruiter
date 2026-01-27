@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+
 import { Button } from '@/components/ui/button'
-import { Sparkles, MessageSquare, Check, Phone, ArrowRight, Mic, BarChart3, Users, FileText, Calendar, Shield, Zap, Globe, Brain, Clock } from 'lucide-react'
+import { Sparkles, Check, ArrowRight, Mic, BarChart3, Users, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
@@ -64,34 +64,34 @@ export default function Landing({ }: PageProps) {
 
     const capabilities = [
         {
-            icon: Phone,
-            title: "Phone & Web",
-            description: "Candidates choose their preferred interview method."
+            image: "/images/phone_interview.webp",
+            title: "Phone Interviews",
+            description: "Candidates can interview via phone call at their convenience, anytime and anywhere. No app downloads or technical setup required. Just a simple phone call to get started with their screening interview."
         },
         {
-            icon: MessageSquare,
+            image: "/images/web_interview.webp",
+            title: "Web Interviews",
+            description: "Browser-based interviews with no downloads or installations required. Candidates can complete their screening directly from any modern web browser, making the process seamless and accessible from any device."
+        },
+        {
+            image: "/images/smart_followup_interview.webp",
             title: "Smart Follow-ups",
-            description: "AI probes deeper when answers are unclear."
+            description: "AI probes deeper when answers are unclear or incomplete, asking intelligent follow-up questions based on the candidate's responses. This creates a natural, conversational experience that reveals true competency and communication skills."
         },
         {
-            icon: FileText,
+            image: "/images/transcript_interview.webp",
             title: "Full Transcripts",
-            description: "Every word captured, searchable, and reviewable."
+            description: "Every word captured, searchable, and reviewable in detail. Complete transcripts are generated automatically for every interview, allowing you to review conversations at your own pace and search for specific keywords or topics."
         },
         {
-            icon: Shield,
-            title: "Fair Evaluation",
-            description: "Same questions and rubric for every candidate."
-        },
-        {
-            icon: Brain,
+            image: "/images/score_interview.webp",
             title: "AI Scoring",
-            description: "Automatic scoring on skills and communication."
+            description: "Automatic scoring on skills, communication, and fit with instant results. Our AI analyzes each interview using a consistent rubric, evaluating technical competency, behavioral responses, and overall candidate quality to help you make faster, data-driven decisions."
         },
         {
-            icon: Clock,
-            title: "Instant Results",
-            description: "Scores ready the moment the interview ends."
+            image: "/images/dashboard_interview.webp",
+            title: "Unified Dashboard",
+            description: "Manage all candidates and interviews from one central location. Track application status, review scores, compare candidates side-by-side, and access complete interview history all in a clean, intuitive interface designed for recruiting teams."
         }
     ]
 
@@ -148,9 +148,8 @@ export default function Landing({ }: PageProps) {
                                         <div className="text-center space-y-1">
                                             <p className="text-2xl font-semibold text-white flex items-center gap-2 justify-center">
                                                 Start Live Interview
-                                                <ArrowRight className="h-5 w-5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
                                             </p>
-                                            <p className="text-sm text-white/60 max-w-xs">
+                                            <p className="text-base text-white/60 max-w-xs">
                                                 Step into the candidate's shoes. Take a live screening for a Software Engineer role.
                                             </p>
                                         </div>
@@ -161,10 +160,109 @@ export default function Landing({ }: PageProps) {
                     </div>
                 </section>
 
+                {/* Feature Tabs Section */}
+                <section className="py-20 px-4 bg-muted/40 border-b border-border">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
+                                Everything You Need to Hire Faster
+                            </h2>
+                            <p className="text-muted-foreground max-w-2xl mx-auto">
+                                From first contact to final decision, Gennie handles the heavy lifting.
+                            </p>
+                        </div>
+
+                        {/* Tab Buttons */}
+                        <div className="flex justify-center mb-8">
+                            <div className="inline-flex bg-background border border-border rounded-lg p-1">
+                                {featureTabs.map((tab, index) => {
+                                    const Icon = tab.icon
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveFeature(index)}
+                                            className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeFeature === index
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                                }`}
+                                        >
+                                            <Icon className="h-4 w-4" />
+                                            {tab.label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="relative">
+                            <div className="grid md:grid-cols-2 gap-8 items-center">
+                                <div className="space-y-6">
+                                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                                        {featureTabs[activeFeature].title}
+                                    </h3>
+                                    <p className="text-muted-foreground text-lg leading-relaxed">
+                                        {featureTabs[activeFeature].description}
+                                    </p>
+                                    <div className="space-y-3 pt-2">
+                                        {featureTabs[activeFeature].highlights.map((highlight, i) => (
+                                            <div key={i} className="flex items-center gap-3">
+                                                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                    <Check className="h-3 w-3 text-primary" />
+                                                </div>
+                                                <span className="text-foreground">{highlight}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex justify-center">
+                                    {activeFeature === 0 && (
+                                        <img
+                                            src="/images/story-solution.webp"
+                                            alt="AI voice interview"
+                                            className="w-full max-w-lg object-cover"
+                                        />
+                                    )}
+                                    {activeFeature === 1 && (
+                                        <img
+                                            src="/images/story-results.webp"
+                                            alt="Candidate dashboard"
+                                            className="w-full max-w-lg object-cover"
+                                        />
+                                    )}
+                                    {activeFeature === 2 && (
+                                        <img
+                                            src="/images/story-problem.webp"
+                                            alt="Scale hiring"
+                                            className="w-full max-w-lg object-cover"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Navigation Buttons */}
+                            <button
+                                onClick={() => setActiveFeature((activeFeature - 1 + featureTabs.length) % featureTabs.length)}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 w-10 h-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors"
+                                aria-label="Previous feature"
+                            >
+                                <ChevronLeft className="w-5 h-5 text-foreground" />
+                            </button>
+                            <button
+                                onClick={() => setActiveFeature((activeFeature + 1) % featureTabs.length)}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 w-10 h-10 rounded-full bg-background border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors"
+                                aria-label="Next feature"
+                            >
+                                <ChevronRight className="w-5 h-5 text-foreground" />
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 {/* How It Works */}
                 <section className="py-20 px-4 border-b border-border">
                     <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-14">
+                        <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
                                 How It Works
                             </h2>
@@ -210,89 +308,8 @@ export default function Landing({ }: PageProps) {
                     </div>
                 </section>
 
-                {/* Feature Tabs Section */}
-                <section className="py-24 px-4 bg-muted/40">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
-                                Everything You Need to Hire Faster
-                            </h2>
-                            <p className="text-muted-foreground max-w-2xl mx-auto">
-                                From first contact to final decision, Gennie handles the heavy lifting.
-                            </p>
-                        </div>
-
-                        {/* Tab Buttons */}
-                        <div className="flex justify-center mb-10">
-                            <div className="inline-flex bg-background border border-border rounded-lg p-1">
-                                {featureTabs.map((tab, index) => {
-                                    const Icon = tab.icon
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveFeature(index)}
-                                            className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeFeature === index
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'text-muted-foreground hover:text-foreground'
-                                                }`}
-                                        >
-                                            <Icon className="h-4 w-4" />
-                                            {tab.label}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Tab Content */}
-                        <div className="grid md:grid-cols-2 gap-12 items-center">
-                            <div className="space-y-6">
-                                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                                    {featureTabs[activeFeature].title}
-                                </h3>
-                                <p className="text-muted-foreground text-lg leading-relaxed">
-                                    {featureTabs[activeFeature].description}
-                                </p>
-                                <div className="space-y-3 pt-2">
-                                    {featureTabs[activeFeature].highlights.map((highlight, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                <Check className="h-3 w-3 text-primary" />
-                                            </div>
-                                            <span className="text-foreground">{highlight}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex justify-center">
-                                {activeFeature === 0 && (
-                                    <img
-                                        src="/images/story-solution.webp"
-                                        alt="AI voice interview"
-                                        className="w-full max-w-lg object-cover"
-                                    />
-                                )}
-                                {activeFeature === 1 && (
-                                    <img
-                                        src="/images/story-results.webp"
-                                        alt="Candidate dashboard"
-                                        className="w-full max-w-lg object-cover"
-                                    />
-                                )}
-                                {activeFeature === 2 && (
-                                    <img
-                                        src="/images/story-problem.webp"
-                                        alt="Scale hiring"
-                                        className="w-full max-w-lg object-cover"
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 {/* Capabilities Grid */}
-                <section className="py-20 px-4">
+                <section className="py-20 px-4 border-b border-border">
                     <div className="max-w-5xl mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
@@ -300,26 +317,27 @@ export default function Landing({ }: PageProps) {
                             </h2>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="grid md:grid-cols-2 gap-6">
                             {capabilities.map((item, index) => {
-                                const Icon = item.icon
                                 return (
-                                    <Card
+                                    <div
                                         key={index}
-                                        className="border-border/60 bg-card text-center"
+                                        className="text-center"
                                     >
-                                        <CardContent className="pt-6 pb-6">
-                                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Icon className="h-6 w-6 text-primary" />
-                                            </div>
-                                            <h3 className="font-semibold text-foreground mb-2">
-                                                {item.title}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                {item.description}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
+                                        <div className="mb-4 flex justify-center overflow-hidden">
+                                            <img
+                                                src={item.image}
+                                                alt={item.title}
+                                                className="w-56 h-56 object-cover rounded-lg scale-150 contrast-[1.15]"
+                                            />
+                                        </div>
+                                        <h3 className="font-semibold text-foreground mb-2 text-lg">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-base text-muted-foreground">
+                                            {item.description}
+                                        </p>
+                                    </div>
                                 )
                             })}
                         </div>
@@ -327,7 +345,7 @@ export default function Landing({ }: PageProps) {
                 </section>
 
                 {/* Benefits */}
-                <section className="py-20 px-4 bg-muted/40">
+                <section className="py-20 px-4 bg-muted/40 border-b border-border">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
@@ -339,7 +357,7 @@ export default function Landing({ }: PageProps) {
                         </div>
 
                         {/* Tab Buttons */}
-                        <div className="flex justify-center mb-10">
+                        <div className="flex justify-center mb-8">
                             <div className="inline-flex bg-background border border-border rounded-lg p-1">
                                 <button
                                     onClick={() => setActiveFeature(0)}
@@ -365,7 +383,7 @@ export default function Landing({ }: PageProps) {
                         </div>
 
                         {/* Tab Content */}
-                        <div className="grid md:grid-cols-2 gap-12 items-center">
+                        <div className="grid md:grid-cols-2 gap-8 items-center">
                             <div className="space-y-6">
                                 {activeFeature === 0 ? (
                                     <>
