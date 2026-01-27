@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { usePage } from '@inertiajs/react'
 import { cn } from '@/lib/utils'
 
-type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'docs';
 
 interface PageProps {
     activeTab?: NavigationTab;
@@ -18,9 +18,13 @@ interface PageProps {
     [key: string]: unknown;
 }
 
-export default function Layout({ children }: PropsWithChildren) {
+interface LayoutProps extends PropsWithChildren {
+    activeTab?: NavigationTab;
+}
+
+export default function Layout({ children, activeTab: propActiveTab }: LayoutProps) {
     const { props, url } = usePage<PageProps>();
-    const activeTab = props.activeTab;
+    const activeTab = propActiveTab || props.activeTab;
     const user = props.auth?.user;
     const currentPath = typeof url === 'string' ? url : window.location.pathname;
     const isHomePage = currentPath === '/';

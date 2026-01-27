@@ -1,7 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Mic, Briefcase, ClipboardList, Users, Calendar, LayoutDashboard, User, LogOut, Settings } from 'lucide-react';
+import { Mic, Briefcase, ClipboardList, Users, Calendar, LayoutDashboard, User, LogOut, Settings, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules' | 'docs';
 
 interface SidebarProps {
     activeTab?: NavigationTab;
@@ -66,6 +66,12 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
             href: '/schedules',
             icon: Calendar,
             tab: 'schedules' as NavigationTab,
+        },
+        {
+            name: 'Docs',
+            href: '/docs',
+            icon: BookOpen,
+            tab: 'docs' as NavigationTab,
         },
     ];
 

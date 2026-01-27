@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\VoiceClientController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\JobDescriptionController;
@@ -57,6 +58,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Documentation
+    Route::get('/docs', [DocsController::class, 'index'])->name('docs.index');
+    Route::get('/docs/getting-started', [DocsController::class, 'gettingStarted'])->name('docs.getting-started');
+    Route::get('/docs/faq', [DocsController::class, 'faq'])->name('docs.faq');
 
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
