@@ -3,7 +3,8 @@ import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList, ArrowLeft } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
+import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 
@@ -296,12 +297,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                         </p>
                     </div>
                     {candidateFilter && (
-                        <Link href="/candidates">
-                            <Button variant="outline" size="sm" className="gap-2">
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Candidates
-                            </Button>
-                        </Link>
+                        <BackButton fallback="/candidates" label="Back" variant="outline" />
                     )}
                 </div>
 

@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check, ExternalLink, FileText, Sparkles, ArrowLeft, Pencil } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
+import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Award, DollarSign, FileCheck, Copy, Check, ExternalLink, FileText, Sparkles, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 interface WorkHistory {
@@ -130,12 +131,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div className="flex items-center justify-between">
-                    <Link href="/candidates">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Candidates
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/candidates" label="Back" />
                     <Link href={`/candidates/${candidate.id}/edit`}>
                         <Button variant="outline" className="gap-2">
                             <Pencil className="h-4 w-4" />

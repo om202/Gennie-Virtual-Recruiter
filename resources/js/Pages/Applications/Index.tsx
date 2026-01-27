@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { BackButton } from '@/components/BackButton'
 import {
     Users,
     FileText,
@@ -16,8 +17,7 @@ import {
     MoreVertical,
     Loader2,
     Briefcase,
-    Search,
-    ArrowLeft
+    Search
 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -150,10 +150,7 @@ export default function AllApplications({ applications: initialApplications }: P
                             View and manage applications across all job postings.
                         </p>
                     </div>
-                    <Link href="/job-descriptions" className={buttonVariants({ variant: "outline" })}>
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Jobs
-                    </Link>
+                    <BackButton fallback="/job-descriptions" label="Back" variant="outline" />
                 </div>
 
                 {/* Stats */}

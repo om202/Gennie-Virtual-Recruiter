@@ -1,8 +1,6 @@
-import { Head, Link, router } from '@inertiajs/react'
-
-import { Button } from '@/components/ui/button'
+import { Head, router } from '@inertiajs/react'
 import { InterviewForm } from '@/components/InterviewForm'
-import { ArrowLeft } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 
 interface EditInterviewProps {
     auth: {
@@ -29,15 +27,8 @@ export default function EditInterview({ auth, interview }: EditInterviewProps) {
             <Head title={`Edit - ${interview.job_title}`} />
 
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
-                {/* Header with Back Button */}
-                {/* Back Button */}
                 <div>
-                    <Link href="/dashboard">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Dashboard
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/interviews" label="Back" />
                 </div>
 
                 {/* Header */}

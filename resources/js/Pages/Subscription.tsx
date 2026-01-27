@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { BackButton } from '@/components/BackButton'
 import {
     CreditCard,
     Check,
-    ArrowLeft,
     AlertTriangle,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -102,12 +102,7 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
             <div className="max-w-5xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
-                    <Link href="/profile">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Settings
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/profile" label="Back" />
                 </div>
 
                 {/* Header */}

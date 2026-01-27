@@ -1,6 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { Head, router } from '@inertiajs/react'
+import { BackButton } from '@/components/BackButton'
 import { JobDescriptionForm } from '@/components/JobDescriptionForm'
 
 interface CreateJobDescriptionProps {
@@ -24,12 +23,7 @@ export default function CreateJobDescription({ defaultCompanyName }: CreateJobDe
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
-                    <Link href="/job-descriptions">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Job Descriptions
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/job-descriptions" label="Back" />
                 </div>
 
                 {/* Header */}

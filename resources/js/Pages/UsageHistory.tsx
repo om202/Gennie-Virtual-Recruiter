@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PageProps } from '@/types'
 
 interface UsageRecord {
@@ -46,12 +47,7 @@ export default function UsageHistory({ history }: UsageHistoryProps) {
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
-                    <Link href="/subscription">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Subscription
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/subscription" label="Back" />
                 </div>
 
                 {/* Header */}

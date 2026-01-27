@@ -1,11 +1,12 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Globe, Phone, Clock, User, Loader2, Eye, ArrowLeft, Copy, Check, Timer, CalendarClock, Hourglass, CheckCircle, XCircle, Mail, KeyRound } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
+import { Globe, Phone, Clock, User, Loader2, Eye, Copy, Check, Timer, CalendarClock, Hourglass, CheckCircle, XCircle, Mail, KeyRound } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -644,12 +645,7 @@ export default function PublicInterview({
                                             </>
                                         )}
                                     </Button>
-                                    <Link href="/dashboard">
-                                        <Button variant="outline" size="sm">
-                                            <ArrowLeft className="h-4 w-4 mr-2" />
-                                            Back to Dashboard
-                                        </Button>
-                                    </Link>
+                                    <BackButton fallback="/dashboard" label="Back" variant="outline" />
                                 </div>
                             </div>
                         </div>

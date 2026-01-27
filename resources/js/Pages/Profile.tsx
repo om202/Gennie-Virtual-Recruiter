@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Head, useForm, router, Link } from '@inertiajs/react'
+import { BackButton } from '@/components/BackButton'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,8 +27,7 @@ import {
     Palette,
     Upload,
     Save,
-    Loader2,
-    ArrowLeft
+    Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -170,12 +170,7 @@ export default function Profile({ auth, voices, industries, timezones }: Profile
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
                 {/* Back Button */}
                 <div>
-                    <Link href="/dashboard">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Dashboard
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/dashboard" label="Back" />
                 </div>
 
                 {/* Header */}

@@ -1,7 +1,6 @@
-import { Head, Link, router } from '@inertiajs/react'
-import { Button } from '@/components/ui/button'
+import { Head, router } from '@inertiajs/react'
 import { ScheduleForm } from '@/components/ScheduleForm'
-import { ArrowLeft } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 
 interface Candidate {
     id: string
@@ -51,14 +50,8 @@ export default function ScheduleInterview({ candidates, interviews, interview, s
             <Head title={isEditing ? 'Edit Schedule' : 'Schedule Interview'} />
 
             <div className="max-w-4xl mx-auto py-8 md:pt-12 px-4 space-y-6">
-                {/* Back Button */}
                 <div>
-                    <Link href="/schedules">
-                        <Button variant="ghost" className="pl-0 gap-2 hover:bg-transparent hover:underline">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Schedules
-                        </Button>
-                    </Link>
+                    <BackButton fallback="/schedules" label="Back" />
                 </div>
 
                 {/* Header */}

@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { BackButton } from '@/components/BackButton'
 import {
-    ArrowLeft,
     FileText,
     Mail,
     Phone,
@@ -112,13 +112,7 @@ export default function Applications({ jobDescription, applications: initialAppl
             <div className="max-w-7xl mx-auto py-8 md:pt-12 px-4 md:px-8 space-y-8">
                 {/* Header - matching Interviews Index styling */}
                 <div className="space-y-4">
-                    <Link
-                        href="/job-descriptions"
-                        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        <ArrowLeft className="h-4 w-4 mr-1" />
-                        Back to Job Descriptions
-                    </Link>
+                    <BackButton fallback="/job-descriptions" label="Back" />
 
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
