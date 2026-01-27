@@ -315,7 +315,8 @@ class InterviewSessionController extends Controller
 
         $durationSeconds = 0;
         if ($firstLog && $lastLog) {
-            $durationSeconds = $lastLog->created_at->diffInSeconds($firstLog->created_at);
+            // Note: diffInSeconds can return negative if order is wrong, use abs() for safety
+            $durationSeconds = abs($firstLog->created_at->diffInSeconds($lastLog->created_at));
         }
 
         $session->update([
