@@ -69,6 +69,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/docs/analytics', [DocsController::class, 'analytics'])->name('docs.analytics');
     Route::get('/docs/settings', [DocsController::class, 'settings'])->name('docs.settings');
     Route::get('/docs/faq', [DocsController::class, 'faq'])->name('docs.faq');
+    Route::get('/docs/dashboard', [DocsController::class, 'dashboard'])->name('docs.dashboard');
+    Route::get('/docs/scheduling', [DocsController::class, 'scheduling'])->name('docs.scheduling');
+    Route::get('/docs/public-pages', [DocsController::class, 'publicPages'])->name('docs.public-pages');
+    Route::get('/docs/emails', [DocsController::class, 'emails'])->name('docs.emails');
+    Route::get('/docs/ai-features', [DocsController::class, 'aiFeatures'])->name('docs.ai-features');
 
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

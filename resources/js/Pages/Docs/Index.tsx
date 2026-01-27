@@ -3,14 +3,19 @@ import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { ArrowRight, Mic, Users, Calendar, Briefcase, BarChart3, Settings2, HelpCircle } from 'lucide-react';
+import { ArrowRight, Mic, Users, Calendar, Briefcase, BarChart3, Settings2, HelpCircle, LayoutDashboard, Globe, Mail, Sparkles } from 'lucide-react';
 
 export default function DocsIndex() {
     const quickLinks = [
+        { title: "Dashboard", href: "/docs/dashboard", icon: LayoutDashboard, description: "Your central command center" },
         { title: "Job Descriptions", href: "/docs/jobs", icon: Briefcase, description: "Create and manage job postings" },
         { title: "Interviews", href: "/docs/interviews", icon: Mic, description: "Configure AI interviewer settings" },
         { title: "Candidates", href: "/docs/candidates", icon: Users, description: "Track applicants and resumes" },
+        { title: "Scheduling", href: "/docs/scheduling", icon: Calendar, description: "Self-scheduling and rescheduling" },
+        { title: "Public Pages", href: "/docs/public-pages", icon: Globe, description: "Careers portal and application forms" },
+        { title: "Email Communications", href: "/docs/emails", icon: Mail, description: "Automated candidate emails" },
         { title: "Analytics", href: "/docs/analytics", icon: BarChart3, description: "Review scores and transcripts" },
+        { title: "AI Features", href: "/docs/ai-features", icon: Sparkles, description: "Voice, parsing, and analysis" },
         { title: "Settings", href: "/docs/settings", icon: Settings2, description: "Company branding and preferences" },
         { title: "FAQ", href: "/docs/faq", icon: HelpCircle, description: "Common questions answered" },
     ];

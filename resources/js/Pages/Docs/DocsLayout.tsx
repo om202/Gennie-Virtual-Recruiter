@@ -13,6 +13,7 @@ const sidebarNavItems = [
         items: [
             { title: "Introduction", href: "/docs" },
             { title: "Getting Started", href: "/docs/getting-started" },
+            { title: "Dashboard", href: "/docs/dashboard" },
         ]
     },
     {
@@ -21,12 +22,15 @@ const sidebarNavItems = [
             { title: "Job Descriptions", href: "/docs/jobs" },
             { title: "Interviews", href: "/docs/interviews" },
             { title: "Candidates", href: "/docs/candidates" },
+            { title: "Scheduling", href: "/docs/scheduling" },
         ]
     },
     {
         category: "Operations",
         items: [
             { title: "Candidate Experience", href: "/docs/candidate-experience" },
+            { title: "Public Pages", href: "/docs/public-pages" },
+            { title: "Email Communications", href: "/docs/emails" },
             { title: "Analytics & Logs", href: "/docs/analytics" },
         ]
     },
@@ -34,6 +38,7 @@ const sidebarNavItems = [
         category: "Admin",
         items: [
             { title: "Settings", href: "/docs/settings" },
+            { title: "AI Features", href: "/docs/ai-features" },
             { title: "FAQ", href: "/docs/faq" },
         ]
     }

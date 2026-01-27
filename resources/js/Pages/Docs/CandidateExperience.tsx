@@ -1,7 +1,6 @@
 import DocsLayout from './DocsLayout';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
 import { Lock, Smartphone, Timer, CheckCheck, Headphones, ArrowRight } from 'lucide-react';

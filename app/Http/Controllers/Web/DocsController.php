@@ -51,4 +51,29 @@ class DocsController extends Controller
     {
         return Inertia::render('Docs/Settings');
     }
+
+    public function dashboard()
+    {
+        return Inertia::render('Docs/DashboardDoc');
+    }
+
+    public function scheduling()
+    {
+        return Inertia::render('Docs/Scheduling');
+    }
+
+    public function publicPages()
+    {
+        return Inertia::render('Docs/PublicPages');
+    }
+
+    public function emails()
+    {
+        return Inertia::render('Docs/Emails');
+    }
+
+    public function aiFeatures()
+    {
+        return Inertia::render('Docs/AIFeatures');
+    }
 }
