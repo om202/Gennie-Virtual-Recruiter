@@ -47,6 +47,7 @@ class User extends Authenticatable
         'thank_you_message',
         // Subscription
         'subscription_plan_id',
+        'scheduled_plan_id',
         'subscription_started_at',
         'subscription_ends_at',
         'minutes_used_this_period',
@@ -108,6 +109,30 @@ class User extends Authenticatable
     public function subscriptionPlan()
     {
         return $this->belongsTo(\App\Models\SubscriptionPlan::class);
+    }
+
+    /**
+     * Get the user's scheduled plan (for pending downgrades).
+     */
+    public function scheduledPlan()
+    {
+        return $this->belongsTo(\App\Models\SubscriptionPlan::class, 'scheduled_plan_id');
+    }
+
+    /**
+     * Check if user has a pending downgrade.
+     */
+    public function hasPendingDowngrade(): bool
+    {
+        return $this->scheduled_plan_id !== null;
+    }
+
+    /**
+     * Cancel a pending downgrade.
+     */
+    public function cancelScheduledDowngrade(): void
+    {
+        $this->update(['scheduled_plan_id' => null]);
     }
 
     /**

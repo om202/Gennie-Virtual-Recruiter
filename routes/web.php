@@ -134,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subscription/history', [\App\Http\Controllers\SubscriptionController::class, 'history'])->name('subscription.history');
     Route::get('/subscription/plans', [\App\Http\Controllers\SubscriptionController::class, 'plans'])->name('subscription.plans');
     Route::post('/subscription/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+    Route::post('/subscription/cancel-downgrade', [\App\Http\Controllers\SubscriptionController::class, 'cancelDowngrade'])->name('subscription.cancel-downgrade');
     Route::get('/subscription/usage', [\App\Http\Controllers\SubscriptionController::class, 'usageHistory'])->name('subscription.usage');
     Route::get('/subscription/stats', [\App\Http\Controllers\SubscriptionController::class, 'stats'])->name('subscription.stats');
 });

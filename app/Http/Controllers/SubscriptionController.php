@@ -56,7 +56,7 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Upgrade to a new plan (mocked payment).
+     * Change plan (upgrade is immediate, downgrade is scheduled).
      */
     public function upgrade(Request $request)
     {
@@ -65,7 +65,22 @@ class SubscriptionController extends Controller
         ]);
 
         $user = Auth::user();
-        $result = $this->subscriptionService->upgradePlan($user, $request->plan_slug);
+        $result = $this->subscriptionService->changePlan($user, $request->plan_slug);
+
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
+        }
+
+        return back()->with('success', $result['message']);
+    }
+
+    /**
+     * Cancel a scheduled downgrade.
+     */
+    public function cancelDowngrade()
+    {
+        $user = Auth::user();
+        $result = $this->subscriptionService->cancelScheduledDowngrade($user);
 
         if (!$result['success']) {
             return back()->with('error', $result['message']);

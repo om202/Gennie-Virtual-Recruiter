@@ -51,6 +51,12 @@ interface UsageStats {
         candidate_name: string
         job_title: string
     }>
+    scheduled_downgrade: {
+        plan_slug: string
+        plan_name: string
+        effective_date: string
+        effective_date_formatted: string
+    } | null
 }
 
 interface SubscriptionProps {
@@ -77,8 +83,15 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
         }
 
         router.post('/subscription/upgrade', { plan_slug: planSlug }, {
-            onSuccess: () => toast.success('Plan upgraded successfully!'),
-            onError: () => toast.error('Failed to upgrade plan. Payment integration coming soon.'),
+            onSuccess: () => toast.success('Plan changed successfully!'),
+            onError: () => toast.error('Failed to change plan.'),
+        })
+    }
+
+    const handleCancelDowngrade = () => {
+        router.post('/subscription/cancel-downgrade', {}, {
+            onSuccess: () => toast.success('Scheduled downgrade cancelled.'),
+            onError: () => toast.error('Failed to cancel downgrade.'),
         })
     }
 
@@ -101,9 +114,39 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-primary">Subscription & Billing</h1>
                     <p className="text-muted-foreground">
-                        Manage your plan and track your interview usage
+                        Manage your plan and view usage history
                     </p>
                 </div>
+
+                {/* Scheduled Downgrade Notice */}
+                {usageStats.scheduled_downgrade && (
+                    <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                        <CardContent className="pt-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                    <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-amber-800 dark:text-amber-200">
+                                            Downgrade Scheduled
+                                        </p>
+                                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                                            Your plan will change to <strong>{usageStats.scheduled_downgrade.plan_name}</strong> on {usageStats.scheduled_downgrade.effective_date_formatted}.
+                                            You'll keep your current plan benefits until then.
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCancelDowngrade}
+                                    className="shrink-0"
+                                >
+                                    Cancel Downgrade
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Usage Warning */}
                 {isOverLimit && (
@@ -278,14 +321,44 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                                         </ul>
                                     </CardContent>
                                     <CardContent className="pt-0">
-                                        <Button
-                                            className="w-full"
-                                            variant={isCurrent ? 'outline' : isPopular ? 'default' : 'outline'}
-                                            disabled={isCurrent}
-                                            onClick={() => handleUpgrade(plan.slug)}
-                                        >
-                                            {isCurrent ? 'Current Plan' : plan.is_enterprise ? 'Contact Sales' : 'Upgrade'}
-                                        </Button>
+                                        {(() => {
+                                            const isDowngrade = plan.price_monthly < (plans.find(p => p.slug === currentPlanSlug)?.price_monthly || 0)
+                                            const isScheduledDowngrade = usageStats.scheduled_downgrade?.plan_slug === plan.slug
+
+                                            if (isCurrent) {
+                                                return (
+                                                    <Button className="w-full" variant="outline" disabled>
+                                                        Current Plan
+                                                    </Button>
+                                                )
+                                            }
+
+                                            if (isScheduledDowngrade) {
+                                                return (
+                                                    <Button className="w-full" variant="outline" disabled>
+                                                        Downgrade Scheduled
+                                                    </Button>
+                                                )
+                                            }
+
+                                            if (plan.is_enterprise) {
+                                                return (
+                                                    <Button className="w-full" variant="outline" onClick={() => handleUpgrade(plan.slug)}>
+                                                        Contact Sales
+                                                    </Button>
+                                                )
+                                            }
+
+                                            return (
+                                                <Button
+                                                    className="w-full"
+                                                    variant={isDowngrade ? 'outline' : isPopular ? 'default' : 'outline'}
+                                                    onClick={() => handleUpgrade(plan.slug)}
+                                                >
+                                                    {isDowngrade ? 'Downgrade' : 'Upgrade'}
+                                                </Button>
+                                            )
+                                        })()}
                                     </CardContent>
                                 </Card>
                             )

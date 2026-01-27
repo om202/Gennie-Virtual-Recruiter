@@ -255,6 +255,12 @@ class SubscriptionService
                 'candidate_name' => $r->interviewSession?->candidate?->name ?? 'Unknown',
                 'job_title' => $r->interviewSession?->interview?->job_title ?? 'Interview',
             ]),
+            'scheduled_downgrade' => $user->hasPendingDowngrade() ? [
+                'plan_slug' => $user->scheduledPlan->slug,
+                'plan_name' => $user->scheduledPlan->name,
+                'effective_date' => $user->subscription_ends_at?->toISOString(),
+                'effective_date_formatted' => $user->subscription_ends_at?->format('M j, Y'),
+            ] : null,
         ];
     }
 
@@ -331,31 +337,60 @@ class SubscriptionService
     }
 
     /**
-     * Upgrade user to a new plan (mocked payment).
+     * Change user's plan - upgrades are immediate, downgrades are scheduled.
      */
-    public function upgradePlan(User $user, string $planSlug): array
+    public function changePlan(User $user, string $planSlug): array
     {
-        $plan = SubscriptionPlan::where('slug', $planSlug)->where('is_active', true)->first();
+        $newPlan = SubscriptionPlan::where('slug', $planSlug)->where('is_active', true)->first();
 
-        if (!$plan) {
+        if (!$newPlan) {
             return [
                 'success' => false,
                 'message' => 'Plan not found.',
             ];
         }
 
-        if ($plan->slug === 'enterprise') {
+        if ($newPlan->slug === 'enterprise') {
             return [
                 'success' => false,
                 'message' => 'Please contact sales for Enterprise pricing.',
             ];
         }
 
-        // Mock payment - in production, integrate Stripe here
+        $currentPlan = $user->getCurrentPlan();
+
+        // Same plan - no change needed
+        if ($currentPlan && $currentPlan->id === $newPlan->id) {
+            return [
+                'success' => false,
+                'message' => 'You are already on this plan.',
+            ];
+        }
+
+        // Determine if this is an upgrade or downgrade based on price
+        $currentPrice = $currentPlan ? $currentPlan->price_monthly : 0;
+        $newPrice = $newPlan->price_monthly;
+        $isUpgrade = $newPrice > $currentPrice;
+
+        if ($isUpgrade) {
+            // Upgrades are immediate - apply now
+            return $this->applyPlanChange($user, $newPlan, true);
+        } else {
+            // Downgrades are scheduled for next billing period
+            return $this->scheduleDowngrade($user, $newPlan);
+        }
+    }
+
+    /**
+     * Apply a plan change immediately (for upgrades).
+     */
+    private function applyPlanChange(User $user, SubscriptionPlan $plan, bool $isUpgrade): array
+    {
         DB::transaction(function () use ($user, $plan) {
             $now = now();
             $user->update([
                 'subscription_plan_id' => $plan->id,
+                'scheduled_plan_id' => null, // Clear any scheduled downgrade
                 'subscription_started_at' => $now,
                 'subscription_ends_at' => $now->copy()->addMonth(),
                 'minutes_used_this_period' => 0,
@@ -367,7 +402,113 @@ class SubscriptionService
             'success' => true,
             'message' => "Upgraded to {$plan->name} plan!",
             'plan' => $plan,
+            'type' => 'upgrade',
         ];
+    }
+
+    /**
+     * Schedule a downgrade for the next billing period.
+     */
+    private function scheduleDowngrade(User $user, SubscriptionPlan $plan): array
+    {
+        $user->update(['scheduled_plan_id' => $plan->id]);
+
+        $endsAt = $user->subscription_ends_at ?? now()->addMonth();
+
+        return [
+            'success' => true,
+            'message' => "Downgrade to {$plan->name} scheduled. Takes effect on {$endsAt->format('M j, Y')}.",
+            'plan' => $plan,
+            'type' => 'scheduled_downgrade',
+            'effective_date' => $endsAt->toISOString(),
+        ];
+    }
+
+    /**
+     * Cancel a scheduled downgrade.
+     * 
+     * Edge cases handled:
+     * - No scheduled downgrade exists
+     * - Billing period has already ended (too late to cancel)
+     * - Race condition (downgrade applied between check and cancel)
+     */
+    public function cancelScheduledDowngrade(User $user): array
+    {
+        // Edge case 1: No scheduled downgrade
+        if (!$user->hasPendingDowngrade()) {
+            return [
+                'success' => false,
+                'message' => 'No scheduled downgrade to cancel.',
+            ];
+        }
+
+        // Edge case 2: Billing period has already ended - downgrade may have been applied
+        $endsAt = $user->subscription_ends_at;
+        if ($endsAt && $endsAt->isPast()) {
+            // Refresh user to check if downgrade was already applied
+            $user->refresh();
+
+            if (!$user->hasPendingDowngrade()) {
+                return [
+                    'success' => false,
+                    'message' => 'Your billing period has ended and the downgrade has already been applied.',
+                ];
+            }
+        }
+
+        // Edge case 3: Race condition - use transaction with lock
+        return DB::transaction(function () use ($user) {
+            // Re-fetch with lock to prevent race condition
+            $lockedUser = User::lockForUpdate()->find($user->id);
+
+            if (!$lockedUser->hasPendingDowngrade()) {
+                return [
+                    'success' => false,
+                    'message' => 'The scheduled downgrade has already been processed.',
+                ];
+            }
+
+            $scheduledPlan = $lockedUser->scheduledPlan;
+            $lockedUser->update(['scheduled_plan_id' => null]);
+
+            return [
+                'success' => true,
+                'message' => "Scheduled downgrade to {$scheduledPlan->name} has been cancelled. You will remain on your current plan.",
+            ];
+        });
+    }
+
+    /**
+     * Apply all scheduled downgrades (run via cron at billing period end).
+     */
+    public function applyScheduledDowngrades(): int
+    {
+        $count = 0;
+        $now = now();
+
+        // Find users whose billing period has ended and have a scheduled downgrade
+        $users = User::whereNotNull('scheduled_plan_id')
+            ->where('subscription_ends_at', '<=', $now)
+            ->with(['scheduledPlan'])
+            ->get();
+
+        foreach ($users as $user) {
+            if ($user->scheduledPlan) {
+                DB::transaction(function () use ($user, $now) {
+                    $user->update([
+                        'subscription_plan_id' => $user->scheduled_plan_id,
+                        'scheduled_plan_id' => null,
+                        'subscription_started_at' => $now,
+                        'subscription_ends_at' => $now->copy()->addMonth(),
+                        'minutes_used_this_period' => 0,
+                        'period_started_at' => $now,
+                    ]);
+                });
+                $count++;
+            }
+        }
+
+        return $count;
     }
 
     /**
