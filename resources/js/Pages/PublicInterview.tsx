@@ -184,8 +184,8 @@ export default function PublicInterview({
             },
             completed: {
                 icon: CheckCircle,
-                iconBg: 'bg-green-100 dark:bg-green-900/30',
-                iconColor: 'text-green-600 dark:text-green-400',
+                iconBg: 'bg-success/10',
+                iconColor: 'text-success',
                 title: 'Interview Completed',
                 description: 'This interview has already been completed. Thank you for your participation!',
             },
@@ -635,7 +635,7 @@ export default function PublicInterview({
                                     >
                                         {urlCopied ? (
                                             <>
-                                                <Check className="h-4 w-4 text-green-500" />
+                                                <Check className="h-4 w-4 text-success" />
                                                 Copied
                                             </>
                                         ) : (
@@ -722,7 +722,7 @@ export default function PublicInterview({
                     ) : hasEnded ? (
                         /* Ended State */
                         <Card className="w-full max-w-md mx-auto text-center p-8">
-                            <div className="h-16 w-16 bg-green-500/10 text-green-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <div className="h-16 w-16 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto mb-6">
                                 <Check className="h-8 w-8" />
                             </div>
                             <h2 className="text-2xl font-bold mb-2">Interview Completed</h2>

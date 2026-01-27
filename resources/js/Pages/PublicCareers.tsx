@@ -68,7 +68,7 @@ export default function PublicCareers({ company, jobs, error }: Props) {
         const colors: Record<string, string> = {
             onsite: 'bg-primary/10 text-primary',
             hybrid: 'bg-purple-500/10 text-purple-700',
-            remote: 'bg-green-500/10 text-green-700',
+            remote: 'bg-success/10 text-success',
         }
         return colors[type] || 'bg-gray-100 text-gray-800'
     }

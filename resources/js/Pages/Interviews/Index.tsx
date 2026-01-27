@@ -457,7 +457,7 @@ ${interview.company_name} Hiring Team`
                                 >
                                     {copiedLink ? (
                                         <>
-                                            <Check className="h-4 w-4 mr-2 text-green-600" />
+                                            <Check className="h-4 w-4 mr-2 text-success" />
                                             Copied!
                                         </>
                                     ) : (
@@ -484,7 +484,7 @@ ${interview.company_name} Hiring Team`
                                 >
                                     {copiedEmail ? (
                                         <>
-                                            <Check className="h-4 w-4 mr-2 text-green-600" />
+                                            <Check className="h-4 w-4 mr-2 text-success" />
                                             Copied!
                                         </>
                                     ) : (

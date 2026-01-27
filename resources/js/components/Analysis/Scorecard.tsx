@@ -64,7 +64,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                         {/* Alert Icon - only show for non-insufficient data errors */}
                         {!isInsufficientData && (
                             <div className="flex items-center justify-center h-16 w-16">
-                                <AlertCircle className="h-10 w-10 text-orange-500" />
+                                <AlertCircle className="h-10 w-10 text-warning" />
                             </div>
                         )}
 
@@ -107,15 +107,15 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
 
 
     const getScoreRingColor = (score: number) => {
-        if (score >= 80) return "border-green-500"
-        if (score >= 60) return "border-yellow-500"
+        if (score >= 80) return "border-success"
+        if (score >= 60) return "border-warning"
         return "border-destructive"
     }
 
     const getRecommendationStyle = (rec: string): string => {
         if (rec === 'Strong Hire' || rec === 'Hire') return 'bg-primary/10 text-primary'
-        if (rec === 'Weak Hire') return 'bg-amber-500/10 text-amber-700'
-        return 'bg-red-500/10 text-red-700' // Reject
+        if (rec === 'Weak Hire') return 'bg-warning/10 text-warning'
+        return 'bg-destructive/10 text-destructive' // Reject
     }
 
     // Full mode - render content directly without dialog
@@ -140,7 +140,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                                     const circumference = 2 * Math.PI * radius;
                                     const percentage = result.score;
                                     const offset = circumference - (percentage / 100) * circumference;
-                                    const strokeColor = result.score >= 80 ? 'stroke-green-500' : result.score >= 60 ? 'stroke-yellow-500' : 'stroke-destructive';
+                                    const strokeColor = result.score >= 80 ? 'stroke-success' : result.score >= 60 ? 'stroke-warning' : 'stroke-destructive';
 
                                     return (
                                         <svg width={size} height={size} className="transform -rotate-90">
@@ -207,8 +207,8 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                         <CardContent className="space-y-6">
                             {result.criterion_scores.map((criterion, idx) => {
                                 const percentage = (criterion.score / 100) * 100;
-                                const strokeColor = criterion.score >= 80 ? 'stroke-green-500' : criterion.score >= 60 ? 'stroke-yellow-500' : 'stroke-destructive';
-                                const textColor = criterion.score >= 80 ? 'text-green-500' : criterion.score >= 60 ? 'text-yellow-500' : 'text-destructive';
+                                const strokeColor = criterion.score >= 80 ? 'stroke-success' : criterion.score >= 60 ? 'stroke-warning' : 'stroke-destructive';
+                                const textColor = criterion.score >= 80 ? 'text-success' : criterion.score >= 60 ? 'text-warning' : 'text-destructive';
 
                                 // Circle parameters
                                 const size = 80;
@@ -307,7 +307,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <TrendingUp className="h-5 w-5 text-green-600" />
+                                <TrendingUp className="h-5 w-5 text-success" />
                                 Key Strengths
                             </CardTitle>
                             <CardDescription>
@@ -318,7 +318,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                             <ul className="space-y-3">
                                 {result.key_pros.map((pro, i) => (
                                     <li key={i} className="flex items-start gap-3 text-sm">
-                                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                                         <span>{pro}</span>
                                     </li>
                                 ))}
@@ -330,7 +330,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <TrendingDown className="h-5 w-5 text-orange-600" />
+                                <TrendingDown className="h-5 w-5 text-warning" />
                                 Areas for Improvement
                             </CardTitle>
                             <CardDescription>
@@ -341,7 +341,7 @@ export function Scorecard({ result, status, mode = 'compact' }: ScorecardProps) 
                             <ul className="space-y-3">
                                 {result.key_cons.map((con, i) => (
                                     <li key={i} className="flex items-start gap-3 text-sm">
-                                        <XCircle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
+                                        <XCircle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                                         <span>{con}</span>
                                     </li>
                                 ))}

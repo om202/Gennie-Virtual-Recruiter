@@ -196,10 +196,10 @@ ${job.company_name} Hiring Team`
     const getRemoteTypeColor = (type: string) => {
         const colors: Record<string, string> = {
             onsite: 'bg-primary/10 text-primary',
-            hybrid: 'bg-purple-500/10 text-purple-700',
-            remote: 'bg-green-500/10 text-green-700',
+            hybrid: 'bg-primary/10 text-primary',
+            remote: 'bg-success/10 text-success',
         }
-        return colors[type] || 'bg-gray-100 text-gray-800'
+        return colors[type] || 'bg-muted text-muted-foreground'
     }
 
     const getEmploymentTypeLabel = (type: string) => {
@@ -389,7 +389,7 @@ ${job.company_name} Hiring Team`
                                             <Button
                                                 variant={job.public_link_enabled ? "outline" : "ghost"}
                                                 size="icon"
-                                                className={job.public_link_enabled ? "text-green-600" : "text-muted-foreground"}
+                                                className={job.public_link_enabled ? "text-success" : "text-muted-foreground"}
                                                 title={job.public_link_enabled ? "Public - visible on careers page" : "Private - hidden from careers page"}
                                                 onClick={async () => {
                                                     try {
@@ -500,7 +500,7 @@ ${job.company_name} Hiring Team`
                                         >
                                             {copiedLink ? (
                                                 <>
-                                                    <Check className="h-4 w-4 mr-2 text-green-600" />
+                                                    <Check className="h-4 w-4 text-success" />
                                                     Copied!
                                                 </>
                                             ) : (
@@ -527,7 +527,7 @@ ${job.company_name} Hiring Team`
                                         >
                                             {copiedEmail ? (
                                                 <>
-                                                    <Check className="h-4 w-4 mr-2 text-green-600" />
+                                                    <Check className="h-4 w-4 text-success" />
                                                     Copied!
                                                 </>
                                             ) : (
@@ -601,7 +601,7 @@ ${job.company_name} Hiring Team`
                                     }}
                                 >
                                     {copiedCareersLink ? (
-                                        <Check className="h-4 w-4 text-green-500" />
+                                        <Check className="h-4 w-4 text-success" />
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}

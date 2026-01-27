@@ -163,7 +163,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
                                     onClick={() => handleCopy(candidate.email, 'email')}
                                 >
                                     {copiedField === 'email' ? (
-                                        <Check className="h-4 w-4 text-green-600" />
+                                        <Check className="h-4 w-4 text-success" />
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}
@@ -187,7 +187,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
                                         onClick={() => handleCopy(candidate.phone!, 'phone')}
                                     >
                                         {copiedField === 'phone' ? (
-                                            <Check className="h-4 w-4 text-green-600" />
+                                            <Check className="h-4 w-4 text-success" />
                                         ) : (
                                             <Copy className="h-4 w-4" />
                                         )}
@@ -214,7 +214,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
                                         onClick={() => handleCopy(fullAddress, 'address')}
                                     >
                                         {copiedField === 'address' ? (
-                                            <Check className="h-4 w-4 text-green-600" />
+                                            <Check className="h-4 w-4 text-success" />
                                         ) : (
                                             <Copy className="h-4 w-4" />
                                         )}
@@ -241,7 +241,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
                                         onClick={() => handleCopy(candidate.linkedin_url!, 'linkedin')}
                                     >
                                         {copiedField === 'linkedin' ? (
-                                            <Check className="h-4 w-4 text-green-600" />
+                                            <Check className="h-4 w-4 text-success" />
                                         ) : (
                                             <Copy className="h-4 w-4" />
                                         )}
@@ -288,7 +288,7 @@ export default function Show({ candidate, jobApplications }: ShowProps) {
                                             <p className="font-medium text-sm">{app.job_title}</p>
                                             <p className="text-xs text-muted-foreground">{app.company_name} • Applied {app.applied_at}</p>
                                         </div>
-                                        <Badge variant="outline" className={`text-xs ${app.status === 'shortlisted' ? 'bg-green-500/10 text-green-700' : app.status === 'rejected' ? 'bg-red-500/10 text-red-700' : 'bg-blue-500/10 text-blue-700'}`}>
+                                        <Badge variant="outline" className={`text-xs ${app.status === 'shortlisted' ? 'bg-success/10 text-success' : app.status === 'rejected' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
                                             {app.status_label}
                                         </Badge>
                                     </div>

@@ -108,12 +108,12 @@ export default function AllApplications({ applications: initialApplications }: P
 
     const getStatusBadge = (app: Application) => {
         const colorMap: Record<string, string> = {
-            'applied': 'bg-blue-500/10 text-blue-700 border-blue-200',
-            'under_review': 'bg-yellow-500/10 text-yellow-700 border-yellow-200',
-            'shortlisted': 'bg-green-500/10 text-green-700 border-green-200',
-            'rejected': 'bg-red-500/10 text-red-700 border-red-200',
+            'applied': 'bg-primary/10 text-primary',
+            'under_review': 'bg-warning/10 text-warning',
+            'shortlisted': 'bg-success/10 text-success',
+            'rejected': 'bg-destructive/10 text-destructive',
         }
-        return colorMap[app.status] || 'bg-gray-500/10 text-gray-700'
+        return colorMap[app.status] || 'bg-muted text-muted-foreground'
     }
 
     // Filter applications
@@ -158,13 +158,13 @@ export default function AllApplications({ applications: initialApplications }: P
                     <Badge variant="outline" className="px-3 py-1">
                         {applications.length} total
                     </Badge>
-                    <Badge variant="outline" className="px-3 py-1 bg-blue-500/10 text-blue-700 border-blue-200">
+                    <Badge variant="outline" className="px-3 py-1 bg-primary/10 text-primary">
                         {statusCounts['applied'] || 0} new
                     </Badge>
-                    <Badge variant="outline" className="px-3 py-1 bg-yellow-500/10 text-yellow-700 border-yellow-200">
+                    <Badge variant="outline" className="px-3 py-1 bg-warning/10 text-warning">
                         {statusCounts['under_review'] || 0} reviewing
                     </Badge>
-                    <Badge variant="outline" className="px-3 py-1 bg-green-500/10 text-green-700 border-green-200">
+                    <Badge variant="outline" className="px-3 py-1 bg-success/10 text-success">
                         {statusCounts['shortlisted'] || 0} shortlisted
                     </Badge>
                 </div>
@@ -252,7 +252,7 @@ export default function AllApplications({ applications: initialApplications }: P
                                                     onClick={() => updateStatus(app.id, 'shortlisted')}
                                                     disabled={app.status === 'shortlisted'}
                                                 >
-                                                    <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
+                                                    <CheckCircle2 className="h-4 w-4 mr-2 text-success" />
                                                     Shortlist
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />

@@ -151,7 +151,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                         onClick={() => handleCopy(candidate.email, 'email')}
                                     >
                                         {copiedField === 'email' ? (
-                                            <Check className="h-4 w-4 text-green-600" />
+                                            <Check className="h-4 w-4 text-success" />
                                         ) : (
                                             <Copy className="h-4 w-4" />
                                         )}
@@ -175,7 +175,7 @@ export default function ViewCandidateDialog({ candidate, open, onOpenChange }: V
                                             onClick={() => handleCopy(candidate.phone!, 'phone')}
                                         >
                                             {copiedField === 'phone' ? (
-                                                <Check className="h-4 w-4 text-green-600" />
+                                                <Check className="h-4 w-4 text-success" />
                                             ) : (
                                                 <Copy className="h-4 w-4" />
                                             )}

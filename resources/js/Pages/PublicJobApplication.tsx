@@ -186,7 +186,7 @@ export default function PublicJobApplication({ job, token, error }: Props) {
                     <main className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
                         <Card className="w-full text-center">
                             <CardContent className="pt-8 pb-8">
-                                <div className="h-16 w-16 bg-green-500/10 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <div className="h-16 w-16 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Check className="h-8 w-8" />
                                 </div>
                                 <h2 className="text-2xl font-bold mb-2">Application Submitted!</h2>
