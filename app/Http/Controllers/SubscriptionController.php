@@ -32,6 +32,20 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Show the full usage history page.
+     */
+    public function history(Request $request): Response
+    {
+        $user = Auth::user();
+        $page = (int) $request->get('page', 1);
+
+        return Inertia::render('UsageHistory', [
+            'auth' => ['user' => $user],
+            'history' => $this->subscriptionService->getUsageHistory($user, $page, 20),
+        ]);
+    }
+
+    /**
      * Get available plans (API).
      */
     public function plans()
@@ -61,18 +75,17 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Get usage history (API).
+     * Get full usage history with monthly summaries (API).
      */
-    public function usageHistory()
+    public function usageHistory(Request $request)
     {
         $user = Auth::user();
+        $page = (int) $request->get('page', 1);
+        $perPage = (int) $request->get('per_page', 20);
 
-        $records = $user->usageRecords()
-            ->with(['interviewSession:id,candidate_id,interview_id', 'interviewSession.candidate:id,name'])
-            ->orderBy('recorded_at', 'desc')
-            ->paginate(20);
-
-        return response()->json($records);
+        return response()->json(
+            $this->subscriptionService->getUsageHistory($user, $page, $perPage)
+        );
     }
 
     /**

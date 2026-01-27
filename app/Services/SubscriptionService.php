@@ -216,13 +216,16 @@ class SubscriptionService
         $overageMinutes = max(0, $used - $included);
         $overageCost = $plan ? (int) round($overageMinutes * $plan->overage_rate) : 0;
 
-        // Get current period usage records
+        // Get current period usage records with interview details
         $periodStart = $user->period_started_at ?? $user->created_at;
         $recentUsage = $user->usageRecords()
             ->where('recorded_at', '>=', $periodStart)
             ->orderBy('recorded_at', 'desc')
             ->limit(10)
-            ->with('interviewSession:id,candidate_id')
+            ->with([
+                'interviewSession.candidate:id,name,email',
+                'interviewSession.interview:id,job_title'
+            ])
             ->get();
 
         return [
@@ -240,8 +243,6 @@ class SubscriptionService
                 'minutes_remaining' => round($remaining, 1),
                 'percentage_used' => $included > 0 ? min(100, round(($used / $included) * 100)) : 0,
                 'overage_minutes' => round($overageMinutes, 1),
-                'overage_cost_cents' => $overageCost,
-                'overage_cost_formatted' => '$' . number_format($overageCost / 100, 2),
             ],
             'period' => [
                 'started_at' => $periodStart?->toISOString(),
@@ -250,9 +251,82 @@ class SubscriptionService
             'recent_usage' => $recentUsage->map(fn($r) => [
                 'id' => $r->id,
                 'minutes' => $r->minutes_formatted,
-                'cost' => $r->cost_formatted,
                 'recorded_at' => $r->recorded_at->toISOString(),
+                'candidate_name' => $r->interviewSession?->candidate?->name ?? 'Unknown',
+                'job_title' => $r->interviewSession?->interview?->job_title ?? 'Interview',
             ]),
+        ];
+    }
+
+    /**
+     * Get full usage history for a user with pagination and monthly summaries.
+     * Optimized for large datasets (1000+ records).
+     */
+    public function getUsageHistory(User $user, int $page = 1, int $perPage = 20): array
+    {
+        // Eager load relationships upfront to avoid N+1 queries
+        $records = $user->usageRecords()
+            ->with([
+                'interviewSession:id,candidate_id,interview_id',
+                'interviewSession.candidate:id,name',
+                'interviewSession.interview:id,job_title'
+            ])
+            ->orderBy('recorded_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        // Transform records efficiently (no additional queries)
+        $recordsWithDetails = $records->getCollection()->map(fn($r) => [
+            'id' => $r->id,
+            'minutes' => $r->minutes_formatted,
+            'recorded_at' => $r->recorded_at->toISOString(),
+            'candidate_name' => $r->interviewSession?->candidate?->name ?? 'Unknown',
+            'job_title' => $r->interviewSession?->interview?->job_title ?? 'Interview',
+        ]);
+
+        // Only fetch aggregates on first page (they don't change per page)
+        // This significantly reduces load on subsequent page requests
+        $monthlySummary = [];
+        $allTime = ['total_minutes' => 0, 'total_sessions' => 0];
+
+        if ($page === 1) {
+            // Get monthly summaries - PostgreSQL uses index on (user_id, recorded_at)
+            $monthlySummary = $user->usageRecords()
+                ->selectRaw("DATE_TRUNC('month', recorded_at) as month")
+                ->selectRaw('SUM(minutes_used) as total_minutes')
+                ->selectRaw('COUNT(*) as session_count')
+                ->groupByRaw("DATE_TRUNC('month', recorded_at)")
+                ->orderBy('month', 'desc')
+                ->limit(12)
+                ->get()
+                ->map(fn($row) => [
+                    'month' => $row->month,
+                    'month_label' => \Carbon\Carbon::parse($row->month)->format('M Y'),
+                    'total_minutes' => round((float) $row->total_minutes, 1),
+                    'session_count' => (int) $row->session_count,
+                ]);
+
+            // All-time totals - single aggregate query
+            $allTimeTotals = $user->usageRecords()
+                ->selectRaw('SUM(minutes_used) as total_minutes')
+                ->selectRaw('COUNT(*) as total_sessions')
+                ->first();
+
+            $allTime = [
+                'total_minutes' => round((float) ($allTimeTotals->total_minutes ?? 0), 1),
+                'total_sessions' => (int) ($allTimeTotals->total_sessions ?? 0),
+            ];
+        }
+
+        return [
+            'records' => $recordsWithDetails,
+            'pagination' => [
+                'current_page' => $records->currentPage(),
+                'last_page' => $records->lastPage(),
+                'per_page' => $records->perPage(),
+                'total' => $records->total(),
+            ],
+            'monthly_summary' => $monthlySummary,
+            'all_time' => $allTime,
         ];
     }
 

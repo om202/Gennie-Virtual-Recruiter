@@ -5,14 +5,9 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import {
     CreditCard,
-    Clock,
-    TrendingUp,
     Check,
     ArrowLeft,
     AlertTriangle,
-    Zap,
-    Building2,
-    Crown,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -44,8 +39,6 @@ interface UsageStats {
         minutes_remaining: number
         percentage_used: number
         overage_minutes: number
-        overage_cost_cents: number
-        overage_cost_formatted: string
     }
     period: {
         started_at: string | null
@@ -54,8 +47,9 @@ interface UsageStats {
     recent_usage: Array<{
         id: number
         minutes: string
-        cost: string
         recorded_at: string
+        candidate_name: string
+        job_title: string
     }>
 }
 
@@ -86,17 +80,6 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
             onSuccess: () => toast.success('Plan upgraded successfully!'),
             onError: () => toast.error('Failed to upgrade plan. Payment integration coming soon.'),
         })
-    }
-
-    const getPlanIcon = (slug: string) => {
-        switch (slug) {
-            case 'free_trial': return <Clock className="h-5 w-5" />
-            case 'starter': return <Zap className="h-5 w-5" />
-            case 'growth': return <TrendingUp className="h-5 w-5" />
-            case 'pro': return <Crown className="h-5 w-5" />
-            case 'enterprise': return <Building2 className="h-5 w-5" />
-            default: return <CreditCard className="h-5 w-5" />
-        }
     }
 
     return (
@@ -140,25 +123,20 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                 )}
 
                 {/* Current Plan & Usage */}
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-6">
                     {/* Current Plan */}
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                    {getPlanIcon(currentPlanSlug)}
-                                </div>
-                                <div>
-                                    <CardTitle className="flex items-center gap-2">
-                                        {usageStats.plan?.name || 'Free Trial'}
-                                        {isFreeTrial && (
-                                            <Badge variant="secondary" className="text-xs">Trial</Badge>
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {usageStats.plan?.price_formatted || 'Free'}/month
-                                    </CardDescription>
-                                </div>
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    {usageStats.plan?.name || 'Free Trial'}
+                                    {isFreeTrial && (
+                                        <Badge variant="secondary" className="text-xs">Trial</Badge>
+                                    )}
+                                </CardTitle>
+                                <CardDescription>
+                                    {usageStats.plan?.price_formatted || 'Free'}/month
+                                </CardDescription>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -193,7 +171,7 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                             {usageStats.usage.overage_minutes > 0 && (
                                 <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                                     <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                                        Extra: {usageStats.usage.overage_minutes} min ({usageStats.usage.overage_cost_formatted})
+                                        Extra minutes used: {usageStats.usage.overage_minutes} min
                                     </p>
                                 </div>
                             )}
@@ -202,9 +180,18 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
 
                     {/* Recent Usage */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Recent Usage</CardTitle>
-                            <CardDescription>Your last 10 interview sessions</CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-lg">Recent Usage</CardTitle>
+                                <CardDescription>Your last 10 interview sessions</CardDescription>
+                            </div>
+                            {usageStats.recent_usage.length > 0 && (
+                                <Link href="/subscription/history">
+                                    <Button variant="ghost" size="sm" className="text-primary">
+                                        View all
+                                    </Button>
+                                </Link>
+                            )}
                         </CardHeader>
                         <CardContent>
                             {usageStats.recent_usage.length === 0 ? (
@@ -219,12 +206,17 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                                             className="flex items-center justify-between py-2 border-b last:border-0"
                                         >
                                             <div className="text-sm">
-                                                <p className="font-medium">{record.minutes}</p>
+                                                <p className="font-medium">{record.candidate_name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {record.job_title}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-medium text-sm">{record.minutes}</p>
                                                 <p className="text-xs text-muted-foreground">
                                                     {new Date(record.recorded_at).toLocaleDateString()}
                                                 </p>
                                             </div>
-                                            <Badge variant="outline">{record.cost}</Badge>
                                         </div>
                                     ))}
                                 </div>

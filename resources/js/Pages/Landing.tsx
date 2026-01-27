@@ -1,14 +1,33 @@
 import { Head } from '@inertiajs/react'
 
 import { Button } from '@/components/ui/button'
-import { Sparkles, Check, ArrowRight, Mic, BarChart3, Users, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Check, ArrowRight, Mic, BarChart3, Users, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PageProps } from '@/types'
 import { useVantaEffect } from '@/hooks/useVantaEffect'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import Footer from '@/components/Footer'
 import { useState } from 'react'
 
-export default function Landing({ }: PageProps) {
+interface Plan {
+    slug: string
+    name: string
+    description: string
+    price_monthly: number
+    price_formatted: string
+    minutes_included: number
+    overage_rate: number
+    overage_rate_formatted: string
+    is_free_trial: boolean
+    is_enterprise: boolean
+}
+
+interface LandingProps extends PageProps {
+    plans: Plan[]
+}
+
+export default function Landing({ plans }: LandingProps) {
     const vantaRef = useVantaEffect()
     const [activeFeature, setActiveFeature] = useState(0)
 
@@ -450,6 +469,93 @@ export default function Landing({ }: PageProps) {
                                     />
                                 )}
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Pricing Section */}
+                <section id="pricing" className="py-20 px-4 border-b border-border">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
+                                Simple, Transparent Pricing
+                            </h2>
+                            <p className="text-muted-foreground max-w-2xl mx-auto">
+                                Start free, scale as you grow. Pay only for the interview minutes you use.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            {plans.filter(p => !p.is_free_trial).map((plan) => {
+                                const isPopular = plan.slug === 'growth'
+
+                                return (
+                                    <Card
+                                        key={plan.slug}
+                                        className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-[1.02]' : ''}`}
+                                    >
+                                        {isPopular && (
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                                                <Badge>Most Popular</Badge>
+                                            </div>
+                                        )}
+                                        <CardHeader>
+                                            <CardTitle>{plan.name}</CardTitle>
+                                            <div className="pt-2">
+                                                {plan.is_enterprise ? (
+                                                    <div className="text-3xl font-bold">Custom</div>
+                                                ) : (
+                                                    <div>
+                                                        <span className="text-3xl font-bold">{plan.price_formatted}</span>
+                                                        <span className="text-muted-foreground">/mo</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <CardDescription className="pt-2">
+                                                {plan.description}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1">
+                                            <ul className="space-y-3 text-sm">
+                                                <li className="flex items-center gap-2">
+                                                    <Check className="h-4 w-4 text-primary shrink-0" />
+                                                    <span>{plan.is_enterprise ? 'Custom pricing' : `${plan.minutes_included} minutes/mo`}</span>
+                                                </li>
+                                                {!plan.is_enterprise && (
+                                                    <li className="flex items-center gap-2">
+                                                        <Check className="h-4 w-4 text-primary shrink-0" />
+                                                        <span>{plan.overage_rate_formatted} per min</span>
+                                                    </li>
+                                                )}
+                                                <li className="flex items-center gap-2">
+                                                    <Check className="h-4 w-4 text-primary shrink-0" />
+                                                    <span>Unlimited interviews</span>
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <Check className="h-4 w-4 text-primary shrink-0" />
+                                                    <span>Full transcripts & scoring</span>
+                                                </li>
+                                            </ul>
+                                        </CardContent>
+                                        <CardContent className="pt-0">
+                                            <a href="/login">
+                                                <Button
+                                                    className="w-full"
+                                                    variant={isPopular ? 'default' : 'outline'}
+                                                >
+                                                    {plan.is_enterprise ? 'Contact Sales' : 'Get Started'}
+                                                </Button>
+                                            </a>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })}
+                        </div>
+
+                        <div className="text-center mt-8">
+                            <p className="text-sm text-muted-foreground">
+                                All plans include a 30-minute free trial. No credit card required.
+                            </p>
                         </div>
                     </div>
                 </section>

@@ -12,7 +12,11 @@ class VoiceClientController extends Controller
 {
     public function landing()
     {
-        return Inertia::render('Landing');
+        $plans = app(\App\Services\SubscriptionService::class)->getAvailablePlans();
+
+        return Inertia::render('Landing', [
+            'plans' => $plans,
+        ]);
     }
 
     /**

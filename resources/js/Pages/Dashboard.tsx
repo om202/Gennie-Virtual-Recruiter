@@ -17,7 +17,6 @@ import {
     Phone,
     Globe,
     FileText,
-    Clock,
     AlertTriangle
 } from 'lucide-react'
 
@@ -83,13 +82,10 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Active Interviews
                             </CardTitle>
-                            <div className="rounded-full bg-primary/10 p-2">
-                                <Briefcase className="h-4 w-4 text-primary" />
-                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.activeInterviews}</div>
@@ -99,13 +95,10 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
                         </CardContent>
                     </Card>
                     <Card className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Total Candidates
                             </CardTitle>
-                            <div className="rounded-full bg-primary/10 p-2">
-                                <Users className="h-4 w-4 text-primary" />
-                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.totalCandidates}</div>
@@ -115,13 +108,10 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
                         </CardContent>
                     </Card>
                     <Card className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Total Sessions
                             </CardTitle>
-                            <div className="rounded-full bg-primary/10 p-2">
-                                <Mic className="h-4 w-4 text-primary" />
-                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.totalSessions}</div>
@@ -130,26 +120,26 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
                             </p>
                         </CardContent>
                     </Card>
-                    <Link href="/subscription" className="block">
-                        <Card className="hover:shadow-md transition-shadow hover:border-primary/50 h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Minutes Used
-                                </CardTitle>
-                                <div className="rounded-full bg-primary/10 p-2">
-                                    <Clock className="h-4 w-4 text-primary" />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {subscription?.minutes_used || 0} / {subscription?.minutes_included || 30}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {subscription?.plan_name || 'Free Trial'} Plan
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </Link>
+                    <Card className="hover:shadow-md transition-shadow h-full">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                Minutes Used
+                            </CardTitle>
+                            <Link href="/subscription">
+                                <Button variant="outline" size="sm">
+                                    Manage Plan
+                                </Button>
+                            </Link>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {subscription?.minutes_used || 0} / {subscription?.minutes_included || 30}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {subscription?.plan_name || 'Free Trial'} Plan
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Usage Alert (if over limit) */}

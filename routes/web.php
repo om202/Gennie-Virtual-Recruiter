@@ -131,6 +131,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Subscription & Billing
     Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::get('/subscription/history', [\App\Http\Controllers\SubscriptionController::class, 'history'])->name('subscription.history');
     Route::get('/subscription/plans', [\App\Http\Controllers\SubscriptionController::class, 'plans'])->name('subscription.plans');
     Route::post('/subscription/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
     Route::get('/subscription/usage', [\App\Http\Controllers\SubscriptionController::class, 'usageHistory'])->name('subscription.usage');
