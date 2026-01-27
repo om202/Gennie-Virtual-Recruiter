@@ -50,7 +50,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
 
     return (
         <Layout activeTab="docs">
-            <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)] bg-muted/50">
                 {/* Docs Sidebar */}
                 <aside className="hidden md:block w-64 flex-shrink-0 border-r bg-background/50 backdrop-blur-sm sticky top-0 h-screen overflow-y-auto">
                     <div className="py-6 px-4 space-y-6">

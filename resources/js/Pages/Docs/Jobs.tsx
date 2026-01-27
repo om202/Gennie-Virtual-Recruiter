@@ -3,7 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { Briefcase, FileText, Globe, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
+import { Globe, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function Jobs() {
     return (
