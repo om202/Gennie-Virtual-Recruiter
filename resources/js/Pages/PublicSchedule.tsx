@@ -86,8 +86,8 @@ export default function PublicSchedule({ candidate, job, interview, existingSche
                 <Head title="Interview Scheduled" />
                 <Card className="max-w-md w-full">
                     <CardContent className="pt-6 text-center">
-                        <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="h-6 w-6 text-emerald-600" />
+                        <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                            <CheckCircle className="h-6 w-6 text-success" />
                         </div>
                         <h2 className="text-xl font-semibold mb-2">Interview Scheduled!</h2>
                         <p className="text-muted-foreground mb-4">
@@ -152,6 +152,15 @@ export default function PublicSchedule({ candidate, job, interview, existingSche
             <Head title={`Schedule Interview - ${job?.title ?? 'Interview'}`} />
 
             <div className="max-w-2xl mx-auto py-8 md:pt-12 px-4 space-y-6">
+                {/* Powered by Gennie */}
+                <header className="w-full mb-4">
+                    <a href="/" className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                        <span className="text-sm">Powered by</span>
+                        <img src="/gennie.png" alt="Gennie" className="h-6 w-6 object-contain" />
+                        <span className="font-semibold text-sm text-primary">Gennie Talent</span>
+                    </a>
+                </header>
+
                 {/* Header */}
                 <div className="text-center space-y-3">
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-2">

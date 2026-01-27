@@ -640,7 +640,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                 <CardTitle className="text-sm font-medium">Messages</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold text-muted-foreground">{totalMessages}</div>
+                                                <div className="text-2xl font-bold text-foreground">{totalMessages}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     Total exchanges
                                                 </p>
@@ -653,7 +653,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                 <CardTitle className="text-sm font-medium">Candidate Words</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold text-muted-foreground">{candidateWords}</div>
+                                                <div className="text-2xl font-bold text-foreground">{candidateWords}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     {candidatePercentage}% of conversation
                                                 </p>
@@ -666,7 +666,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                 <CardTitle className="text-sm font-medium">Gennie Words</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="text-2xl font-bold text-muted-foreground">{agentWords}</div>
+                                                <div className="text-2xl font-bold text-foreground">{agentWords}</div>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     {agentPercentage}% of conversation
                                                 </p>
@@ -680,7 +680,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                     <CardTitle className="text-sm font-medium">Duration</CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
-                                                    <div className="text-2xl font-bold text-muted-foreground">{durationText}</div>
+                                                    <div className="text-2xl font-bold text-foreground">{durationText}</div>
                                                     <p className="text-xs text-muted-foreground mt-1">
                                                         Interview length
                                                     </p>
@@ -845,7 +845,7 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                                                     ? "bg-primary text-primary-foreground rounded-tr-none"
                                                                     : log.speaker === 'system'
                                                                         ? "bg-muted/50 italic text-muted-foreground w-full text-center border-none shadow-none"
-                                                                        : "bg-white border rounded-tl-none"
+                                                                        : "bg-card border rounded-tl-none"
                                                             )}>
                                                                 {log.message}
                                                             </div>

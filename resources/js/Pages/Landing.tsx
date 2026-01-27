@@ -30,6 +30,7 @@ interface LandingProps extends PageProps {
 export default function Landing({ plans }: LandingProps) {
     const vantaRef = useVantaEffect()
     const [activeFeature, setActiveFeature] = useState(0)
+    const [activeBenefit, setActiveBenefit] = useState(0)
 
     const howItWorks = [
         {
@@ -294,7 +295,7 @@ export default function Landing({ plans }: LandingProps) {
                             {howItWorks.map((item, index) => {
                                 return (
                                     <div key={index} className="flex items-center flex-1">
-                                        <div className="flex-1 bg-card border border-border/60 rounded-xl p-6 text-center">
+                                        <div className="flex-1 bg-card border border-border/60 rounded-xl p-6 text-center transition-all hover:shadow-md hover:border-primary/30">
                                             <div className="flex items-center justify-center mb-4">
                                                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-sm">
                                                     {item.step}
@@ -347,7 +348,7 @@ export default function Landing({ plans }: LandingProps) {
                                             <img
                                                 src={item.image}
                                                 alt={item.title}
-                                                className="w-56 h-56 object-cover rounded-lg scale-150 contrast-[1.15]"
+                                                className="w-56 h-56 object-cover rounded-lg contrast-[1.05]"
                                             />
                                         </div>
                                         <h3 className="font-semibold text-foreground mb-2 text-lg">
@@ -379,8 +380,8 @@ export default function Landing({ plans }: LandingProps) {
                         <div className="flex justify-center mb-8">
                             <div className="inline-flex bg-background border border-border rounded-lg p-1">
                                 <button
-                                    onClick={() => setActiveFeature(0)}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeFeature === 0
+                                    onClick={() => setActiveBenefit(0)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeBenefit === 0
                                         ? 'bg-primary text-primary-foreground'
                                         : 'text-muted-foreground hover:text-foreground'
                                         }`}
@@ -389,8 +390,8 @@ export default function Landing({ plans }: LandingProps) {
                                     For Your Team
                                 </button>
                                 <button
-                                    onClick={() => setActiveFeature(1)}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeFeature === 1
+                                    onClick={() => setActiveBenefit(1)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${activeBenefit === 1
                                         ? 'bg-primary text-primary-foreground'
                                         : 'text-muted-foreground hover:text-foreground'
                                         }`}
@@ -404,7 +405,7 @@ export default function Landing({ plans }: LandingProps) {
                         {/* Tab Content */}
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <div className="space-y-6">
-                                {activeFeature === 0 ? (
+                                {activeBenefit === 0 ? (
                                     <>
                                         <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                                             Reclaim Your Time, Scale Your Hiring
@@ -455,7 +456,7 @@ export default function Landing({ plans }: LandingProps) {
                                 )}
                             </div>
                             <div className="flex justify-center">
-                                {activeFeature === 0 ? (
+                                {activeBenefit === 0 ? (
                                     <img
                                         src="/images/team.webp"
                                         alt="Team collaboration"

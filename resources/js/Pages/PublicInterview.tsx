@@ -170,8 +170,8 @@ export default function PublicInterview({
         const statusConfig = {
             too_early: {
                 icon: CalendarClock,
-                iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-                iconColor: 'text-amber-600 dark:text-amber-400',
+                iconBg: 'bg-warning/10',
+                iconColor: 'text-warning',
                 title: 'Interview Not Yet Available',
                 description: `Your interview window opens 5 minutes before the scheduled time.`,
             },
@@ -616,8 +616,8 @@ export default function PublicInterview({
                         <div className="bg-card border rounded-xl p-5 shadow-sm">
                             <div className="flex items-start justify-between gap-4 mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                                        <Eye className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    <div className="p-2 bg-warning/10 rounded-lg">
+                                        <Eye className="h-5 w-5 text-warning" />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-lg">Organizer Preview Mode</h3>
@@ -802,7 +802,7 @@ export default function PublicInterview({
                                     <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-lg ${timeRemaining <= 120
                                         ? 'bg-destructive/10 text-destructive animate-pulse'
                                         : timeRemaining <= 300
-                                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                            ? 'bg-warning/10 text-warning'
                                             : 'bg-muted text-muted-foreground'
                                         }`}>
                                         <Timer className="h-5 w-5" />

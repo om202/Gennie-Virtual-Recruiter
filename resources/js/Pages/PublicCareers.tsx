@@ -35,18 +35,21 @@ interface Props {
 }
 
 export default function PublicCareers({ company, jobs, error }: Props) {
-    // Error state
     if (error || !company) {
         return (
             <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
                 <Head title="Careers" />
-                <div className="max-w-md text-center space-y-4">
-                    <div className="text-6xl">😔</div>
-                    <h1 className="text-2xl font-bold">Page Not Available</h1>
-                    <p className="text-muted-foreground">
-                        {error || 'This careers page is not available.'}
-                    </p>
-                </div>
+                <Card className="max-w-md w-full">
+                    <CardContent className="pt-6 text-center">
+                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                            <Building2 className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">Page Not Available</h2>
+                        <p className="text-muted-foreground">
+                            {error || 'This careers page is not available.'}
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         )
     }
@@ -67,10 +70,10 @@ export default function PublicCareers({ company, jobs, error }: Props) {
     const getRemoteTypeColor = (type: string) => {
         const colors: Record<string, string> = {
             onsite: 'bg-primary/10 text-primary',
-            hybrid: 'bg-purple-500/10 text-purple-700',
+            hybrid: 'bg-primary/10 text-primary',
             remote: 'bg-success/10 text-success',
         }
-        return colors[type] || 'bg-gray-100 text-gray-800'
+        return colors[type] || 'bg-muted text-muted-foreground'
     }
 
     const stripMarkdown = (text: string) => {
