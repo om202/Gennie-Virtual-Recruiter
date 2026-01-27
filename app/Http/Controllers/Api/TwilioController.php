@@ -114,11 +114,12 @@ class TwilioController extends Controller
 
         if ($session) {
             $existingData = $session->twilio_data ?? [];
+            $durationSeconds = (int) $request->input('CallDuration');
 
             $session->update([
                 'twilio_data' => array_merge($existingData, [
                     'status' => $request->input('CallStatus'),
-                    'duration' => (int) $request->input('CallDuration'),
+                    'duration' => $durationSeconds,
                     'direction' => $request->input('Direction'),
                     'from' => $request->input('From'),
                     'to' => $request->input('To'),
@@ -126,12 +127,23 @@ class TwilioController extends Controller
                     'end_time' => $request->input('EndTime'),
                     'answered_by' => $request->input('AnsweredBy'),
                 ]),
+                'duration_seconds' => $durationSeconds,
+                'status' => 'completed',
             ]);
+
+            // Record usage for billing
+            if ($durationSeconds > 0) {
+                try {
+                    app(\App\Services\SubscriptionService::class)->recordUsage($session->fresh());
+                } catch (\Exception $e) {
+                    \Log::warning("Usage recording failed for session {$session->id}: " . $e->getMessage());
+                }
+            }
 
             \Log::info('Twilio call status received', [
                 'call_sid' => $callSid,
                 'status' => $request->input('CallStatus'),
-                'duration' => $request->input('CallDuration'),
+                'duration' => $durationSeconds,
             ]);
         }
 

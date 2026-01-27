@@ -309,9 +309,28 @@ class InterviewSessionController extends Controller
             return response()->json(['success' => true, 'message' => 'Session already completed']);
         }
 
+        // Calculate duration from logs (first to last message)
+        $firstLog = $session->logs()->orderBy('created_at', 'asc')->first();
+        $lastLog = $session->logs()->orderBy('created_at', 'desc')->first();
+
+        $durationSeconds = 0;
+        if ($firstLog && $lastLog) {
+            $durationSeconds = $lastLog->created_at->diffInSeconds($firstLog->created_at);
+        }
+
         $session->update([
             'status' => 'completed',
+            'duration_seconds' => $durationSeconds,
         ]);
+
+        // Record usage for billing
+        if ($durationSeconds > 0) {
+            try {
+                app(\App\Services\SubscriptionService::class)->recordUsage($session);
+            } catch (\Exception $e) {
+                Log::warning("Usage recording failed for session {$id}: " . $e->getMessage());
+            }
+        }
 
         // Dispatch Analysis Job
         \App\Jobs\GenerateSessionAnalysis::dispatch($session);
@@ -319,6 +338,7 @@ class InterviewSessionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Session ended and analysis queued',
+            'duration_seconds' => $durationSeconds,
         ]);
     }
 
