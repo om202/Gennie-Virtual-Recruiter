@@ -117,7 +117,7 @@ export default function Landing({ }: PageProps) {
 
             <div className="bg-background text-foreground min-h-screen">
                 {/* Hero Section */}
-                <section ref={vantaRef} className="relative flex items-center justify-center min-h-[680px] px-4 py-24 overflow-hidden">
+                <section ref={vantaRef} className="relative flex items-center justify-center min-h-[600px] px-4 py-24 overflow-hidden">
                     <div className="max-w-6xl mx-auto w-full relative z-10">
                         <div className="grid md:grid-cols-2 gap-16 items-center">
                             <div className="space-y-8 text-center md:text-left">
@@ -129,10 +129,10 @@ export default function Landing({ }: PageProps) {
                                     />
                                 </div>
                                 <div className="space-y-5">
-                                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
+                                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
                                         Gennie Talent
                                     </h1>
-                                    <p className="text-2xl md:text-3xl text-white/90 font-medium">
+                                    <p className="text-xl md:text-2xl text-white/90 font-medium">
                                         Scale Your Hiring, Not Your HR Team
                                     </p>
                                     <p className="text-lg text-white/70 max-w-xl leading-relaxed">
