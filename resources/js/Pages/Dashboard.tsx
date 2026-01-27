@@ -16,7 +16,9 @@ import {
     LayoutDashboard,
     Phone,
     Globe,
-    FileText
+    FileText,
+    Clock,
+    AlertTriangle
 } from 'lucide-react'
 
 interface DashboardProps {
@@ -43,9 +45,18 @@ interface DashboardProps {
         created_at: string
         link: string
     }>
+    subscription: {
+        plan_name: string
+        plan_slug: string
+        minutes_used: number
+        minutes_included: number
+        minutes_remaining: number
+        percentage_used: number
+        is_over_limit: boolean
+    }
 }
 
-export default function Dashboard({ auth, stats, recentActivity }: DashboardProps) {
+export default function Dashboard({ auth, stats, recentActivity, subscription }: DashboardProps) {
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
@@ -70,7 +81,7 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                     </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card className="hover:shadow-md transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -119,7 +130,47 @@ export default function Dashboard({ auth, stats, recentActivity }: DashboardProp
                             </p>
                         </CardContent>
                     </Card>
+                    <Link href="/subscription" className="block">
+                        <Card className="hover:shadow-md transition-shadow hover:border-primary/50 h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Minutes Used
+                                </CardTitle>
+                                <div className="rounded-full bg-primary/10 p-2">
+                                    <Clock className="h-4 w-4 text-primary" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {subscription?.minutes_used || 0} / {subscription?.minutes_included || 30}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {subscription?.plan_name || 'Free Trial'} Plan
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 </div>
+
+                {/* Usage Alert (if over limit) */}
+                {subscription?.is_over_limit && (
+                    <Card className="border-destructive bg-destructive/5">
+                        <CardContent className="pt-6">
+                            <div className="flex items-start gap-4">
+                                <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-destructive">Free Trial Exhausted</p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        You have used all your free trial minutes. Upgrade to continue conducting interviews.
+                                    </p>
+                                </div>
+                                <Link href="/subscription">
+                                    <Button size="sm" variant="destructive">Upgrade Now</Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <Card className="col-span-4">

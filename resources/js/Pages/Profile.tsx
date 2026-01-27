@@ -666,28 +666,31 @@ export default function Profile({ auth, voices, industries, timezones }: Profile
                     </CardContent>
                 </Card>
 
-                {/* Coming Soon - Billing */}
-                <Card className="opacity-60">
+                {/* Billing & Subscription */}
+                <Card className="hover:border-primary/50 transition-colors">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                                    <Clock className="h-5 w-5 text-muted-foreground" />
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <Clock className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
                                     <CardTitle>Billing & Subscription</CardTitle>
                                     <CardDescription>Manage your plan and usage</CardDescription>
                                 </div>
                             </div>
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                                Coming Soon
-                            </span>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mb-4">
                             View your current plan, interview usage, and billing history. Upgrade or downgrade your subscription.
                         </p>
+                        <Link href="/subscription">
+                            <Button variant="outline" className="gap-2">
+                                <Clock className="h-4 w-4" />
+                                Manage Subscription
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
             </div>

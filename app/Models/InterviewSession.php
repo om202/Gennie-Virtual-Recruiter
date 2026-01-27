@@ -26,6 +26,8 @@ class InterviewSession extends Model
         'channel',
         'call_sid',
         'twilio_data',
+        'duration_seconds',
+        'cost_cents',
     ];
 
     protected $casts = [
@@ -33,6 +35,8 @@ class InterviewSession extends Model
         'progress_state' => 'array',
         'analysis_result' => 'array',
         'twilio_data' => 'array',
+        'duration_seconds' => 'integer',
+        'cost_cents' => 'integer',
     ];
 
     protected $appends = ['effective_status'];

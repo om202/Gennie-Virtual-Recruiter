@@ -27,6 +27,10 @@ class GoogleAuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
 
+            // Check if this is a new user
+            $existingUser = User::where('email', $googleUser->email)->first();
+            $isNewUser = !$existingUser;
+
             // Find or create user
             $user = User::updateOrCreate(
                 ['email' => $googleUser->email],
@@ -36,6 +40,20 @@ class GoogleAuthController extends Controller
                     'avatar' => $googleUser->avatar,
                 ]
             );
+
+            // Assign free trial to new users
+            if ($isNewUser) {
+                $freeTrial = \App\Models\SubscriptionPlan::where('slug', 'free_trial')->first();
+                if ($freeTrial) {
+                    $now = now();
+                    $user->update([
+                        'subscription_plan_id' => $freeTrial->id,
+                        'subscription_started_at' => $now,
+                        'period_started_at' => $now,
+                        'minutes_used_this_period' => 0,
+                    ]);
+                }
+            }
 
             // Log the user in
             Auth::login($user, true);

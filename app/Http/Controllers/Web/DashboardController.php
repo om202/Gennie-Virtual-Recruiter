@@ -67,6 +67,28 @@ class DashboardController extends Controller
                 'totalSessions' => $totalSessionsCount,
             ],
             'recentActivity' => $recentActivity,
+            'subscription' => $this->getSubscriptionStats($user),
         ]);
+    }
+
+    /**
+     * Get subscription stats for the user.
+     */
+    private function getSubscriptionStats($user): array
+    {
+        $plan = $user->getCurrentPlan();
+        $used = (float) ($user->minutes_used_this_period ?? 0);
+        $included = $plan?->minutes_included ?? 30;
+        $remaining = max(0, $included - $used);
+
+        return [
+            'plan_name' => $plan?->name ?? 'Free Trial',
+            'plan_slug' => $plan?->slug ?? 'free_trial',
+            'minutes_used' => round($used, 1),
+            'minutes_included' => $included,
+            'minutes_remaining' => round($remaining, 1),
+            'percentage_used' => $included > 0 ? min(100, round(($used / $included) * 100)) : 0,
+            'is_over_limit' => $plan?->isFreeTrial() && $remaining <= 0,
+        ];
     }
 }

@@ -128,4 +128,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/schedules/{schedule}/edit', [\App\Http\Controllers\ScheduleController::class, 'edit'])->name('schedules.edit');
     Route::put('/schedules/{schedule}', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('schedules.update');
     Route::delete('/schedules/{scheduledInterview}', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('schedules.destroy');
+
+    // Subscription & Billing
+    Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::get('/subscription/plans', [\App\Http\Controllers\SubscriptionController::class, 'plans'])->name('subscription.plans');
+    Route::post('/subscription/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+    Route::get('/subscription/usage', [\App\Http\Controllers\SubscriptionController::class, 'usageHistory'])->name('subscription.usage');
+    Route::get('/subscription/stats', [\App\Http\Controllers\SubscriptionController::class, 'stats'])->name('subscription.stats');
 });
