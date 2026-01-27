@@ -23,10 +23,11 @@ export default function DocsIndex() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                <img src="/gennie.png" alt="Gennie" className="h-24 w-24 mb-2 object-contain" />
+                <h1 className="scroll-m-20 text-3xl font-bold tracking-tight">
                     Welcome to Gennie
                 </h1>
-                <p className="leading-7 [&:not(:first-child)]:mt-6 text-xl text-muted-foreground">
+                <p className="leading-7 mt-2 text-xl text-muted-foreground">
                     Your AI-powered recruiting assistant designed to streamline your hiring process.
                 </p>
             </div>
