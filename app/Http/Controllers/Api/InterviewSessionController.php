@@ -272,6 +272,38 @@ class InterviewSessionController extends Controller
     }
 
     /**
+     * Store the AI's interview plan created via plan_interview tool.
+     * This captures how the AI analyzed the candidate and plans to conduct the interview.
+     */
+    public function savePlan(Request $request, string $id)
+    {
+        $session = InterviewSession::findOrFail($id);
+
+        $plan = $request->only([
+            'candidate_level',
+            'candidate_yoe',
+            'key_skills',
+            'skill_gaps',
+            'focus_areas',
+            'approach_notes',
+            'created_at'
+        ]);
+
+        // Store plan in progress_state
+        $progressState = $session->progress_state ?? [];
+        $progressState['interview_plan'] = $plan;
+        $session->progress_state = $progressState;
+        $session->save();
+
+        Log::info("Interview plan saved for session {$id}", $plan);
+
+        return response()->json([
+            'success' => true,
+            'plan' => $plan
+        ]);
+    }
+
+    /**
      * Log interaction from Agent to DB.
      * This allows full transcript persistence.
      */

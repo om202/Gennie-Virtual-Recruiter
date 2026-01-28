@@ -311,6 +311,22 @@ wss.on("connection", async (ws, req) => {
                                 },
                             },
                         },
+                        {
+                            name: "plan_interview",
+                            description: "CALL THIS AT THE START of the interview after greeting. Analyze the candidate's resume and JD to create a customized interview plan. This helps you tailor questions to the candidate's experience level and identify skill gaps to probe.",
+                            parameters: {
+                                type: "object",
+                                properties: {
+                                    candidate_yoe: { type: "number", description: "Extracted years of experience from resume" },
+                                    candidate_level: { type: "string", enum: ["junior", "mid", "senior", "principal"], description: "Assessed seniority level" },
+                                    key_skills: { type: "array", items: { type: "string" }, description: "Top 3-5 skills from resume matching JD" },
+                                    skill_gaps: { type: "array", items: { type: "string" }, description: "Skills in JD but not clearly in resume" },
+                                    focus_areas: { type: "array", items: { type: "string" }, description: "2-3 areas you'll focus on based on analysis" },
+                                    approach_notes: { type: "string", description: "Brief note on how you'll adjust your approach" }
+                                },
+                                required: ["candidate_level", "focus_areas"],
+                            },
+                        },
                     ],
                 },
                 speak: {
@@ -592,6 +608,46 @@ wss.on("connection", async (ws, req) => {
                         content: JSON.stringify({ covered_topics: [], facts: {}, instruction: "No session" }),
                     });
                 }
+
+            } else if (functionName === "plan_interview") {
+                // Handle interview planning - AI analyzes context and creates custom plan
+                console.log("📋 AI planning interview:");
+                console.log("   Candidate Level:", input?.candidate_level);
+                console.log("   YOE:", input?.candidate_yoe);
+                console.log("   Key Skills:", input?.key_skills);
+                console.log("   Skill Gaps:", input?.skill_gaps);
+                console.log("   Focus Areas:", input?.focus_areas);
+                console.log("   Approach:", input?.approach_notes);
+
+                // Store the plan (could send to backend for persistence)
+                const interviewPlan = {
+                    candidate_level: input?.candidate_level,
+                    candidate_yoe: input?.candidate_yoe,
+                    key_skills: input?.key_skills || [],
+                    skill_gaps: input?.skill_gaps || [],
+                    focus_areas: input?.focus_areas || [],
+                    approach_notes: input?.approach_notes || "",
+                    created_at: new Date().toISOString()
+                };
+
+                // Optionally save to backend
+                if (sessionId) {
+                    fetch(`${LARAVEL_API_URL}/api/sessions/${sessionId}/plan`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(interviewPlan),
+                    }).catch(err => console.error("Failed to save interview plan:", err));
+                }
+
+                // Respond to AI with confirmation
+                deepgram!.functionCallResponse({
+                    id: functionCallId,
+                    name: functionName,
+                    content: JSON.stringify({
+                        success: true,
+                        message: `Plan registered. Interviewing a ${input?.candidate_level}-level candidate. Focus areas: ${(input?.focus_areas || []).join(", ")}. ${input?.skill_gaps?.length ? `Probe gaps in: ${input?.skill_gaps.join(", ")}` : "No major skill gaps identified."}`
+                    }),
+                });
 
             } else {
                 // Unknown function - respond with error to not leave it hanging

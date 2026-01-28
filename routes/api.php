@@ -25,6 +25,7 @@ Route::post('/sessions/{id}/log', [InterviewSessionController::class, 'logIntera
 Route::post('/sessions/{id}/progress', [InterviewSessionController::class, 'updateProgress']);
 Route::post('/sessions/{id}/end', [InterviewSessionController::class, 'end']);
 Route::get('/sessions/{id}/context', [InterviewSessionController::class, 'getContext']);
+Route::post('/sessions/{id}/plan', [InterviewSessionController::class, 'savePlan']);
 Route::post('/sessions/{id}/upload-recording', [InterviewSessionController::class, 'uploadRecording']);
 Route::get('/sessions/{id}/recording', [InterviewSessionController::class, 'getRecording']);
 Route::get('/sessions/{id}/analysis-stream', [\App\Http\Controllers\Api\AnalysisStreamController::class, 'stream']);
