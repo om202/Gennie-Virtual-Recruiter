@@ -24,6 +24,7 @@ class AnalysisService
      * @param string|null $resume
      * @param string $interviewType
      * @param string $difficultyLevel
+     * @param array|null $aiContext AI's interview plan and memory facts
      * @return array
      */
     public function analyzeSession(
@@ -31,16 +32,17 @@ class AnalysisService
         ?string $jobDescription,
         ?string $resume,
         string $interviewType = 'screening',
-        string $difficultyLevel = 'mid'
+        string $difficultyLevel = 'mid',
+        ?array $aiContext = null
     ): array {
         $typeConfig = $this->measures['interview_types'][$interviewType] ?? $this->measures['interview_types']['screening'];
         $levelConfig = $this->measures['difficulty_levels'][$difficultyLevel] ?? $this->measures['difficulty_levels']['mid'];
 
-        $prompt = $this->buildPrompt($transcript, $jobDescription, $resume, $typeConfig, $levelConfig);
+        $prompt = $this->buildPrompt($transcript, $jobDescription, $resume, $typeConfig, $levelConfig, $aiContext);
 
         try {
             $response = OpenAI::chat()->create([
-                'model' => 'gpt-4o',
+                'model' => 'gpt-4o-mini',  // Fast, cheap, proven
                 'messages' => [
                     ['role' => 'system', 'content' => $this->getSystemPrompt($typeConfig, $levelConfig)],
                     ['role' => 'user', 'content' => $prompt],
@@ -165,7 +167,8 @@ Be calibrated for the level. If the candidate did not provide enough responses t
         ?string $jobDescription,
         ?string $resume,
         array $typeConfig,
-        array $levelConfig
+        array $levelConfig,
+        ?array $aiContext = null
     ): string {
         $prompt = "EVALUATION FRAMEWORK:\n\n";
         $prompt .= "Interview Type: {$typeConfig['name']}\n";
@@ -181,6 +184,45 @@ Be calibrated for the level. If the candidate did not provide enough responses t
             $prompt .= "CRITICAL: Extract the KEY REQUIREMENTS from the job description above.\n";
             $prompt .= "For each evaluation criterion below, assess how well the candidate demonstrated\n";
             $prompt .= "skills/experience RELEVANT TO THIS SPECIFIC ROLE, not generic skills.\n\n";
+        }
+
+        // Include AI's interview context if available
+        if ($aiContext) {
+            $prompt .= "═══════════════════════════════════════════════════════════════\n";
+            $prompt .= "AI INTERVIEWER'S CONTEXT (Pre-Interview Analysis)\n";
+            $prompt .= "═══════════════════════════════════════════════════════════════\n";
+
+            if (!empty($aiContext['interview_plan'])) {
+                $plan = $aiContext['interview_plan'];
+                $prompt .= "**AI's Candidate Assessment:**\n";
+                if (!empty($plan['candidate_level'])) {
+                    $prompt .= "- Assessed Level: {$plan['candidate_level']}\n";
+                }
+                if (!empty($plan['candidate_yoe'])) {
+                    $prompt .= "- Estimated YOE: {$plan['candidate_yoe']} years\n";
+                }
+                if (!empty($plan['key_skills'])) {
+                    $prompt .= "- Key Skills Identified: " . implode(', ', $plan['key_skills']) . "\n";
+                }
+                if (!empty($plan['skill_gaps'])) {
+                    $prompt .= "- Skill Gaps to Probe: " . implode(', ', $plan['skill_gaps']) . "\n";
+                    $prompt .= "  → IMPORTANT: Evaluate how well these gaps were addressed in the transcript\n";
+                }
+                if (!empty($plan['focus_areas'])) {
+                    $prompt .= "- Focus Areas: " . implode(', ', $plan['focus_areas']) . "\n";
+                }
+                $prompt .= "\n";
+            }
+
+            if (!empty($aiContext['memory_facts'])) {
+                $prompt .= "**Facts Extracted During Interview:**\n";
+                foreach ($aiContext['memory_facts'] as $fact) {
+                    $topic = $fact['topic'] ?? 'general';
+                    $content = $fact['fact'] ?? '';
+                    $prompt .= "- [{$topic}]: {$content}\n";
+                }
+                $prompt .= "→ Use these facts to validate transcript accuracy and completeness\n\n";
+            }
         }
 
         $prompt .= "EVALUATION CRITERIA (weighted):\n\n";
@@ -216,6 +258,12 @@ Be calibrated for the level. If the candidate did not provide enough responses t
         $prompt .= "5. If a MUST-HAVE skill from JD was NOT discussed, note it as a gap\n";
         $prompt .= "6. Calibrate for {$levelConfig['name']} expectations\n";
         $prompt .= "7. In key_pros/key_cons, reference SPECIFIC JD requirements met or missed\n";
+
+        // Add AI context-specific instructions
+        if ($aiContext && !empty($aiContext['interview_plan']['skill_gaps'])) {
+            $prompt .= "8. SPECIFICALLY evaluate how the candidate performed on identified skill gaps: "
+                . implode(', ', $aiContext['interview_plan']['skill_gaps']) . "\n";
+        }
 
         return $prompt;
     }

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BackButton } from '@/components/BackButton'
-import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList } from 'lucide-react'
+import { CheckCircle, MessageSquare, AlertCircle, Loader2, ChevronDown, ChevronRight, TrendingUp, Phone, Globe, RefreshCw, Trash2, User, FileText, Building2, ClipboardList, Brain } from 'lucide-react'
 import { Scorecard } from '@/components/Analysis/Scorecard'
 import { AssessmentReportDialog } from '@/components/Analysis/AssessmentReportDialog'
 
@@ -102,6 +102,8 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
     const [loadingLogs, setLoadingLogs] = useState<string | null>(null)
     const [analyzingSession, setAnalyzingSession] = useState<string | null>(null)
     const [sessionAnalysis, setSessionAnalysis] = useState<Record<string, { status: 'pending' | 'processing' | 'completed' | 'failed'; result: any }>>({})
+    const [memoryFacts, setMemoryFacts] = useState<Record<string, Record<string, string>>>({})
+    const [selectedFact, setSelectedFact] = useState<{ topic: string; content: string } | null>(null)
 
     // Auto-select session on initial load - prioritize URL query param
     useEffect(() => {
@@ -209,6 +211,9 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
             }
             if (sessionData.success) {
                 setSessionDetails(prev => ({ ...prev, [sessionId]: sessionData.session }))
+                if (sessionData.memory_facts) {
+                    setMemoryFacts(prev => ({ ...prev, [sessionId]: sessionData.memory_facts }))
+                }
             }
         } catch (err) {
             console.error("Failed to load session data", err)
@@ -771,6 +776,51 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                                 );
                             })()}
 
+                            {/* Extracted Info Card */}
+                            {selectedSessionId && memoryFacts[selectedSessionId] && Object.keys(memoryFacts[selectedSessionId]).length > 0 && (
+                                <Card>
+                                    <CardHeader className="py-4 px-6 border-b">
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            <Brain className="h-5 w-5" />
+                                            Extracted Information
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Key facts automatically extracted during the interview
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="pt-4">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                            {Object.entries(memoryFacts[selectedSessionId]).map(([topic, content]) => {
+                                                // Format the topic name nicely
+                                                const formattedTopic = topic
+                                                    .replace(/_/g, ' ')
+                                                    .replace(/\b\w/g, c => c.toUpperCase());
+
+                                                // Truncate long content for display
+                                                const shortContent = content.length > 100
+                                                    ? content.substring(0, 100) + '...'
+                                                    : content;
+
+                                                return (
+                                                    <div
+                                                        key={topic}
+                                                        className="p-3 rounded-lg bg-muted/50 border cursor-pointer hover:bg-muted/80 transition-colors"
+                                                        onClick={() => setSelectedFact({ topic: formattedTopic, content })}
+                                                    >
+                                                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block mb-1">
+                                                            {formattedTopic}
+                                                        </span>
+                                                        <p className="text-sm font-medium line-clamp-2">
+                                                            {shortContent}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
                             {/* Transcript Card */}
                             <Card className="min-h-[500px]">
                                 <CardHeader className="py-4 px-6 border-b flex flex-row items-center justify-between bg-muted/20">
@@ -912,6 +962,26 @@ export default function InterviewLogs({ auth: _auth, interviews, interview, cand
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete Session
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Extracted Fact Detail Dialog */}
+            <AlertDialog open={!!selectedFact} onOpenChange={(open) => !open && setSelectedFact(null)}>
+                <AlertDialogContent className="max-w-lg">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <Brain className="h-5 w-5" />
+                            {selectedFact?.topic}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-left whitespace-pre-wrap text-foreground text-sm leading-relaxed pt-2">
+                            {selectedFact?.content}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setSelectedFact(null)}>
+                            Close
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -42,9 +42,18 @@ class InterviewSessionController extends Controller
     {
         $session = InterviewSession::findOrFail($id);
 
+        // Fetch memory facts for this session
+        $memoryFacts = \DB::table('interview_memory')
+            ->where('interview_session_id', $id)
+            ->select('topic', 'content')
+            ->get()
+            ->mapWithKeys(fn($fact) => [$fact->topic => $fact->content])
+            ->toArray();
+
         return response()->json([
             'success' => true,
             'session' => $session,
+            'memory_facts' => $memoryFacts,
         ]);
     }
 

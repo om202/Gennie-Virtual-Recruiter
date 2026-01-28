@@ -148,12 +148,31 @@ class GenerateSessionAnalysis implements ShouldQueue
                 'difficulty_level' => $difficultyLevel,
             ]);
 
+            // Gather AI context from the interview
+            $aiContext = $this->gatherAIContext();
+
+            // Log extracted info for visibility
+            if ($aiContext) {
+                if (!empty($aiContext['interview_plan'])) {
+                    Log::info('📋 AI Interview Plan', $aiContext['interview_plan']);
+                }
+                if (!empty($aiContext['memory_facts'])) {
+                    Log::info('🧠 Memory Facts Extracted', [
+                        'count' => count($aiContext['memory_facts']),
+                        'facts' => collect($aiContext['memory_facts'])->map(fn($f) => "[{$f['topic']}]: {$f['fact']}")->toArray()
+                    ]);
+                }
+            } else {
+                Log::info('ℹ️ No AI context available for this session');
+            }
+
             $result = $analysisService->analyzeSession(
                 $transcript,
                 $this->session->getJobDescription(),
                 $this->session->getResume(),
                 $interviewType,
-                $difficultyLevel
+                $difficultyLevel,
+                $aiContext
             );
 
             $this->session->update([
@@ -203,5 +222,36 @@ class GenerateSessionAnalysis implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Gather AI context (interview plan + memory facts) for enhanced analysis.
+     */
+    private function gatherAIContext(): ?array
+    {
+        $context = [];
+
+        // Get interview plan from progress_state
+        $progressState = $this->session->progress_state ?? [];
+        if (!empty($progressState['interview_plan'])) {
+            $context['interview_plan'] = $progressState['interview_plan'];
+        }
+
+        // Get memory facts from interview_memory table
+        $memoryFacts = \DB::table('interview_memory')
+            ->where('interview_session_id', $this->session->id)
+            ->select('topic', 'content', 'source_message')
+            ->get()
+            ->toArray();
+
+        if (!empty($memoryFacts)) {
+            $context['memory_facts'] = array_map(fn($fact) => [
+                'topic' => $fact->topic,
+                'fact' => $fact->content,  // Map 'content' to 'fact' for the analysis
+                'context' => $fact->source_message
+            ], $memoryFacts);
+        }
+
+        return !empty($context) ? $context : null;
     }
 }
