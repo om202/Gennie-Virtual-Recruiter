@@ -22,19 +22,26 @@ class AgentToolController extends Controller
     /**
      * Tool: get_context
      * Deepgram calls this when it needs info.
-     * Expected Input: { "query": "What is the job about?" }
+     * Expected Input: { "query": "What is the job about?", "session_id": "optional-uuid" }
      */
     public function getContext(Request $request)
     {
         $query = $request->input('query');
-        Log::info("Agent asked: " . $query);
+        $sessionId = $request->input('session_id');
+        Log::info("Agent asked: " . $query . ($sessionId ? " (session: $sessionId)" : ""));
 
         if (!$query) {
             return response()->json(['error' => 'Query required'], 400);
         }
 
         try {
-            $context = $this->rag->search($query);
+            // Use session-aware search when session_id is provided
+            // This includes JD/resume context from the interview session
+            if ($sessionId) {
+                $context = $this->rag->searchWithSession($query, $sessionId);
+            } else {
+                $context = $this->rag->search($query);
+            }
             return response()->json(['context' => $context]);
         } catch (\Exception $e) {
             Log::error("RAG Error: " . $e->getMessage());

@@ -486,7 +486,10 @@ export function useDeepgramAgent(config?: AgentConfig): UseDeepgramAgentReturn {
                             const apiRes = await fetch('/api/agent/context', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ query: input?.query }),
+                                body: JSON.stringify({
+                                    query: input?.query,
+                                    session_id: configRef.current?.sessionId  // Pass session_id for context-aware RAG
+                                }),
                             })
                             const apiData = await apiRes.json()
 

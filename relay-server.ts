@@ -30,6 +30,7 @@ const LARAVEL_API_URL = process.env.LARAVEL_INTERNAL_URL || "http://127.0.0.1:80
 interface SessionContext {
     success: boolean;
     context?: string;
+    candidateName?: string;  // Candidate's name for personalized greeting
     metadata?: {
         job_title?: string;
         company_name?: string;
@@ -141,14 +142,24 @@ wss.on("connection", async (ws, req) => {
     type CategoryStatus = 'not_started' | 'completed' | 'partially_covered' | 'skipped';
     const categoryProgress: Map<string, CategoryStatus> = new Map();
 
+    // Flag to prevent double-configuration
+    let isConfigured = false;
+
     // Helper to fetch session context once we have the session ID
     const fetchSessionContext = async (sid: string) => {
         try {
             const response = await fetch(`${LARAVEL_API_URL}/api/sessions/${sid}/context`);
             sessionContext = await response.json() as SessionContext;
-            console.log("Session context loaded for session:", sid);
+            console.log("✅ Session context loaded for session:", sid);
+            console.log("   Job Title:", sessionContext?.metadata?.job_title);
+            console.log("   Company:", sessionContext?.metadata?.company_name);
+
+            // NOW that context is loaded, configure Deepgram if it's ready
+            if (deepgramReady && !isConfigured) {
+                configureDeepgramAgent();
+            }
         } catch (err) {
-            console.error("Failed to fetch session context:", err);
+            console.error("❌ Failed to fetch session context:", err);
         }
     };
 
@@ -176,6 +187,7 @@ wss.on("connection", async (ws, req) => {
     const buildInterviewConfig = (): InterviewConfig => ({
         jobTitle: sessionContext?.metadata?.job_title,
         companyName: sessionContext?.metadata?.company_name,
+        candidateName: sessionContext?.candidateName,  // For personalized greeting
         interviewType: (sessionContext?.interview?.interview_type as InterviewConfig['interviewType']) || 'screening',
         difficultyLevel: (sessionContext?.interview?.difficulty_level as InterviewConfig['difficultyLevel']) || 'mid',
         durationMinutes: sessionContext?.interview?.duration_minutes || 15,
@@ -195,6 +207,24 @@ wss.on("connection", async (ws, req) => {
     deepgram.on(AgentEvents.Open, () => {
         console.log("Connected to Deepgram (AgentEvents.Open)!");
         deepgramReady = true;
+
+        // If session context is already loaded (unlikely but possible), configure now
+        // Otherwise, wait for fetchSessionContext to complete
+        if (sessionContext && !isConfigured) {
+            configureDeepgramAgent();
+        } else {
+            console.log("⏳ Waiting for session context before configuring agent...");
+        }
+    });
+
+    // Helper function to configure Deepgram agent with full context
+    const configureDeepgramAgent = () => {
+        if (isConfigured || !deepgram || !deepgramReady) {
+            console.log("⚠️ Cannot configure: isConfigured=", isConfigured, "deepgramReady=", deepgramReady);
+            return;
+        }
+        isConfigured = true;
+        console.log("🚀 Configuring Deepgram agent with session context...");
 
         // Build config and use shared functions
         const interviewConfig = buildInterviewConfig();
@@ -328,7 +358,7 @@ wss.on("connection", async (ws, req) => {
             console.log('⏱️ Injecting time context:', timeUpdate);
             deepgram!.updatePrompt(timeUpdate);
         }, injectionIntervalMs);
-    });
+    };  // End of configureDeepgramAgent function
 
     // Also try string 'open' as fallback
     deepgram.on("open", () => {
@@ -389,7 +419,10 @@ wss.on("connection", async (ws, req) => {
                     const response = await fetch(`${LARAVEL_API_URL}/api/agent/context`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ query: input?.query }),
+                        body: JSON.stringify({
+                            query: input?.query,
+                            session_id: sessionId  // Pass session_id for context-aware RAG
+                        }),
                     });
                     const apiData = await response.json() as { context?: string };
 
@@ -645,9 +678,7 @@ wss.on("connection", async (ws, req) => {
                     console.log("📍 Session ID extracted from Twilio:", sessionId);
 
                     // Fetch session context now that we have the sessionId
-                    fetchSessionContext(sessionId!).then(() => {
-                        console.log("✅ Session context loaded successfully");
-                    }).catch((err) => {
+                    fetchSessionContext(sessionId!).catch((err) => {
                         console.error("❌ Failed to load session context:", err);
                     });
                 } else {

@@ -12,8 +12,12 @@ class RAGService
     /**
      * Advanced Hybrid Search (Vector + Keyword) using Reciprocal Rank Fusion (RRF).
      * This minimizes hallucinations by requiring both semantic and exact matches to rank high.
+     * 
+     * @param string $query The search query
+     * @param int $limit Maximum results to return
+     * @param string|null $userId Optional user_id for data isolation
      */
-    public function search(string $query, int $limit = 5): string
+    public function search(string $query, int $limit = 5, ?string $userId = null): string
     {
         // 1. Generate Embedding
         $response = OpenAI::embeddings()->create([
@@ -48,16 +52,21 @@ class RAGService
         // -------------------------------------
 
         // 2. Execute Hybrid Query
-        // We use a constant 'k' for RRF smooting (usually 60)
+        // We use a constant 'k' for RRF smoothing (usually 60)
         // Score = 1.0 / (k + rank_i)
 
         $k = 60;
+
+        // Build user filter condition for data isolation
+        $userFilter = $userId ? "AND user_id = ?" : "";
+        $userParams = $userId ? [$userId] : [];
 
         $results = \DB::select("
             WITH vector_search AS (
                 SELECT id, embedding <=> ?::vector as distance,
                 ROW_NUMBER() OVER (ORDER BY embedding <=> ?::vector) as rank
                 FROM knowledge_bases
+                WHERE 1=1 {$userFilter}
                 ORDER BY distance ASC
                 LIMIT ?
             ),
@@ -65,7 +74,7 @@ class RAGService
                 SELECT id, ts_rank(search_vector, websearch_to_tsquery('english', ?)) as rank_score,
                 ROW_NUMBER() OVER (ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', ?)) DESC) as rank
                 FROM knowledge_bases
-                WHERE search_vector @@ websearch_to_tsquery('english', ?)
+                WHERE search_vector @@ websearch_to_tsquery('english', ?) {$userFilter}
                 LIMIT ?
             )
             SELECT kb.content,
@@ -76,18 +85,21 @@ class RAGService
             WHERE v.id IS NOT NULL OR k.id IS NOT NULL
             ORDER BY rrf_score DESC
             LIMIT ?
-        ", [
-            $queryVector,
-            $queryVector,
-            $limit * 2, // Vector bindings
-            $query,
-            $query,
-            $query,
-            $limit * 2,     // Keyword bindings
-            $k,
-            $k,                                 // RRF constants
-            $limit                                  // Final limit
-        ]);
+        ", array_merge([
+                $queryVector,
+                $queryVector,
+            ], $userParams, [
+                $limit * 2, // Vector bindings
+            ], [
+                $query,
+                $query,
+                $query,
+            ], $userParams, [
+                $limit * 2,     // Keyword bindings
+                $k,
+                $k,                                 // RRF constants
+                $limit                                  // Final limit
+            ]));
 
         if (empty($results)) {
             return "No relevant information found in the knowledge base.";
@@ -127,37 +139,42 @@ class RAGService
     }
 
     /**
-     * Search with episodic memory (Time-Decay).
+     * Search with session context - ALWAYS includes JD and resume.
+     * This is critical for interview context - the AI needs this info regardless of query wording.
      */
     public function searchWithSession(string $query, ?string $sessionId, int $limit = 3): string
     {
         $context = "";
 
-        // 1. Session Context (JD/Resume) - Immediate Memory
+        // 1. Session Context (JD/Resume) - ALWAYS INCLUDE
+        // These are the primary interview context - don't gate behind keyword matching
         if ($sessionId) {
-            $session = InterviewSession::find($sessionId);
+            $session = InterviewSession::with(['interview', 'candidate'])->find($sessionId);
             if ($session) {
-                // ... (Existing logic for Keywords kept brief) ...
-                // Check if the query relates to job description
-                $jdKeywords = ['job', 'role', 'position', 'requirement', 'responsibility', 'qualification', 'skill', 'experience'];
-                $resumeKeywords = ['background', 'candidate', 'resume', 'work history', 'education', 'project'];
-                $queryLower = strtolower($query);
-
-                if ($session->hasJobDescription()) {
-                    foreach ($jdKeywords as $keyword) {
-                        if (str_contains($queryLower, $keyword)) {
-                            $context .= "From Job Description:\n" . substr($session->job_description, 0, 2000) . "\n\n";
-                            break;
-                        }
-                    }
+                // Always include Job Description if available
+                $jobDescription = $session->getJobDescription();
+                if ($jobDescription) {
+                    $context .= "## Job Description Context\n" . substr($jobDescription, 0, 3000) . "\n\n";
                 }
 
-                if ($session->hasResume()) {
-                    foreach ($resumeKeywords as $keyword) {
-                        if (str_contains($queryLower, $keyword)) {
-                            $context .= "From Candidate Resume:\n" . substr($session->resume, 0, 2000) . "\n\n";
-                            break;
+                // Always include Resume if available
+                $resume = $session->getResume();
+                if ($resume) {
+                    $context .= "## Candidate Resume\n" . substr($resume, 0, 3000) . "\n\n";
+                }
+
+                // Include job metadata
+                if ($session->interview) {
+                    $interview = $session->interview;
+                    if ($interview->job_title || $interview->company_name) {
+                        $context .= "## Interview Details\n";
+                        if ($interview->job_title) {
+                            $context .= "- **Position:** {$interview->job_title}\n";
                         }
+                        if ($interview->company_name) {
+                            $context .= "- **Company:** {$interview->company_name}\n";
+                        }
+                        $context .= "\n";
                     }
                 }
             }

@@ -35,6 +35,7 @@ export interface InterviewCategory {
 export interface InterviewConfig {
     jobTitle?: string;
     companyName?: string;
+    candidateName?: string;  // Candidate's name for personalized greeting
     interviewType?: InterviewType;
     difficultyLevel?: DifficultyLevel;
     durationMinutes?: number;
@@ -65,14 +66,18 @@ export function getInterviewCategories(type: InterviewTemplateType): InterviewCa
 export function generateGreeting(config?: InterviewConfig): string {
     const jobTitle = config?.jobTitle;
     const companyName = config?.companyName;
+    const candidateName = config?.candidateName;
     const interviewType = config?.interviewType || 'screening';
 
     const greetingType = INTERVIEW_TYPE_GREETINGS[interviewType] || INTERVIEW_TYPE_GREETINGS.screening;
 
+    // Personalized greeting with candidate name
+    const nameGreeting = candidateName ? `Hi ${candidateName}!` : 'Hi there!';
+
     if (jobTitle && companyName) {
-        return `Welcome to the interview for the ${jobTitle} position at ${companyName}. I'm Gennie, and ${greetingType} Shall we begin?`;
+        return `${nameGreeting} Welcome to the interview for the ${jobTitle} position at ${companyName}. I'm Gennie, and ${greetingType} Shall we begin?`;
     }
-    return `Hi there! I'm Gennie. ${greetingType} Shall we start?`;
+    return `${nameGreeting} I'm Gennie. ${greetingType} Shall we start?`;
 }
 
 /**

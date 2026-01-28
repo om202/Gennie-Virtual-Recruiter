@@ -204,7 +204,7 @@ class InterviewSessionController extends Controller
      */
     public function getContext(string $id)
     {
-        $session = InterviewSession::with('interview')->findOrFail($id);
+        $session = InterviewSession::with(['interview', 'candidate'])->findOrFail($id);
         $interview = $session->interview;
 
         // Merge interview metadata with session metadata
@@ -213,11 +213,17 @@ class InterviewSessionController extends Controller
             $session->metadata ?? []
         );
 
+        // Get candidate name for personalized greeting
+        $candidateName = $session->candidate?->name
+            ?? $session->candidate_name
+            ?? null;
+
         return response()->json([
             'success' => true,
             'context' => $session->getContextForAgent(),
             'hasJd' => $session->hasJobDescription(),
             'hasResume' => $session->hasResume(),
+            'candidateName' => $candidateName,  // For personalized greeting
             'metadata' => $metadata,
             'interview' => $interview ? [
                 'id' => $interview->id,
