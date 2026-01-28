@@ -4,7 +4,7 @@ import { useDeepgramAgent, type AgentConfig } from '@/hooks/useDeepgramAgent'
 import { VoiceVisualizer } from '@/components/VoiceVisualizer'
 import { TranscriptDisplay } from '@/components/TranscriptDisplay'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { BackButton } from '@/components/BackButton'
 import { Globe, Phone, Clock, User, Loader2, Eye, Copy, Check, Timer, CalendarClock, Hourglass, CheckCircle, XCircle, Mail, KeyRound } from 'lucide-react'
 import {
@@ -652,7 +652,7 @@ export default function PublicInterview({
                     </div>
                 )}
 
-                <main className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full space-y-8">
+                <main className="flex-1 flex flex-col items-center justify-center max-w-6xl mx-auto w-full space-y-8">
                     {/* Header Info */}
                     <div className="text-center space-y-4">
                         <Badge variant="outline" className={`px-3 py-1 ${getInterviewTypeColor(interview.interview_type)}`}>
@@ -794,12 +794,12 @@ export default function PublicInterview({
                         </div>
                     ) : (
                         /* Interview in Progress */
-                        <div className="w-full max-w-4xl flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+                        <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center lg:items-start">
                             {/* Voice Visualizer */}
                             <div className="w-full lg:w-2/5 text-center space-y-8">
                                 {/* Interview Timer */}
                                 {timeRemaining !== null && (
-                                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-lg ${timeRemaining <= 120
+                                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-lg ${timeRemaining <= 120
                                         ? 'bg-destructive/10 text-destructive animate-pulse'
                                         : timeRemaining <= 300
                                             ? 'bg-warning/10 text-warning'
@@ -827,10 +827,14 @@ export default function PublicInterview({
 
                             {/* Transcript */}
                             <div className="w-full lg:w-3/5">
-                                <TranscriptDisplay
-                                    transcript={transcript}
-                                    className="lg:h-[500px] h-64"
-                                />
+                                <Card className="h-full">
+                                    <CardContent className="p-6">
+                                        <TranscriptDisplay
+                                            transcript={transcript}
+                                            className="lg:h-[450px] h-64"
+                                        />
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
                     )}
