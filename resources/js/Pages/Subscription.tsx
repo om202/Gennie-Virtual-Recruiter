@@ -184,21 +184,76 @@ export default function Subscription({ usageStats, plans }: SubscriptionProps) {
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Minutes Used</span>
-                                    <span className="font-medium">
-                                        {usageStats.usage.minutes_used} / {usageStats.usage.minutes_included} min
-                                    </span>
+                                    {(() => {
+                                        const percentageUsed = usageStats.usage.percentage_used;
+                                        const isOverLimit = usageStats.usage.minutes_remaining <= 0;
+
+                                        let textColor = 'text-foreground';
+                                        if (isOverLimit || percentageUsed >= 90) {
+                                            textColor = 'text-destructive';
+                                        } else if (percentageUsed >= 70) {
+                                            textColor = 'text-amber-600 dark:text-amber-500';
+                                        } else if (percentageUsed >= 50) {
+                                            textColor = 'text-primary';
+                                        } else {
+                                            textColor = 'text-green-600 dark:text-green-500';
+                                        }
+
+                                        return (
+                                            <span className="font-medium">
+                                                <span className={textColor}>{usageStats.usage.minutes_used}</span>
+                                                <span className="text-foreground"> / {usageStats.usage.minutes_included} min</span>
+                                            </span>
+                                        );
+                                    })()}
                                 </div>
-                                <Progress
-                                    value={usageStats.usage.percentage_used}
-                                    className={usageStats.usage.percentage_used >= 80 ? 'bg-destructive/20' : ''}
-                                />
+                                {(() => {
+                                    const percentageUsed = usageStats.usage.percentage_used;
+                                    const isOverLimit = usageStats.usage.minutes_remaining <= 0;
+
+                                    let progressClass = '';
+                                    if (isOverLimit || percentageUsed >= 90) {
+                                        progressClass = '[&>div]:bg-destructive';
+                                    } else if (percentageUsed >= 70) {
+                                        progressClass = '[&>div]:bg-amber-500';
+                                    } else if (percentageUsed >= 50) {
+                                        progressClass = '[&>div]:bg-primary';
+                                    } else {
+                                        progressClass = '[&>div]:bg-green-500';
+                                    }
+
+                                    return (
+                                        <Progress
+                                            value={percentageUsed}
+                                            className={progressClass}
+                                        />
+                                    );
+                                })()}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 pt-2">
                                 <div className="text-center p-3 rounded-lg bg-muted/50">
-                                    <p className="text-2xl font-bold text-primary">
-                                        {usageStats.usage.minutes_remaining}
-                                    </p>
+                                    {(() => {
+                                        const percentageUsed = usageStats.usage.percentage_used;
+                                        const isOverLimit = usageStats.usage.minutes_remaining <= 0;
+
+                                        let textColor = 'text-primary';
+                                        if (isOverLimit || percentageUsed >= 90) {
+                                            textColor = 'text-destructive';
+                                        } else if (percentageUsed >= 70) {
+                                            textColor = 'text-amber-600 dark:text-amber-500';
+                                        } else if (percentageUsed >= 50) {
+                                            textColor = 'text-primary';
+                                        } else {
+                                            textColor = 'text-green-600 dark:text-green-500';
+                                        }
+
+                                        return (
+                                            <p className={`text-2xl font-bold ${textColor}`}>
+                                                {usageStats.usage.minutes_remaining}
+                                            </p>
+                                        );
+                                    })()}
                                     <p className="text-xs text-muted-foreground">Minutes Remaining</p>
                                 </div>
                                 <div className="text-center p-3 rounded-lg bg-muted/50">

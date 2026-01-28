@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { usePage } from '@inertiajs/react'
 import { cn } from '@/lib/utils'
 
-type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'docs';
+type NavigationTab = 'overview' | 'interviews' | 'job-descriptions' | 'logs' | 'candidates' | 'schedules' | 'subscription' | 'docs';
 
 interface PageProps {
     activeTab?: NavigationTab;

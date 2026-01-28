@@ -102,7 +102,7 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
 
                     {/* Navigation */}
                     <nav className="flex-1 pt-2 pb-4 space-y-2">
-                        {navItems.map((item) => {
+                        {navItems.filter(item => !item.hideOnMobile).map((item) => {
                             const Icon = item.icon;
                             const isActive = activeTab === item.tab;
                             return (
@@ -132,9 +132,41 @@ export default function Sidebar({ activeTab, user }: SidebarProps) {
                         })}
                     </nav>
 
+                    {/* Secondary Navigation */}
+                    <nav className="border-t space-y-0.5 pt-2 pb-1">
+                        {navItems.filter(item => item.hideOnMobile).map((item) => {
+                            const Icon = item.icon;
+                            const isActive = activeTab === item.tab;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={cn(
+                                        "group flex flex-col items-center justify-center py-2.5 gap-1 transition-colors",
+                                        isActive
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-foreground/70 hover:bg-muted/50 hover:text-foreground"
+                                    )}
+                                    title={(item as any).desktopName || item.name}
+                                >
+                                    <Icon
+                                        className={cn(
+                                            "flex-shrink-0 h-[20px] w-[20px]",
+                                            isActive ? "text-primary" : "text-foreground/70"
+                                        )}
+                                        strokeWidth={isActive ? 2 : 1.5}
+                                    />
+                                    <span className="text-[10px] font-medium text-center leading-tight">
+                                        {item.name}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
                     {/* User Profile */}
                     {user && (
-                        <div className="border-t p-4 flex justify-center">
+                        <div className="p-4 flex justify-center">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button

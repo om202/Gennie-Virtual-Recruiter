@@ -17,7 +17,8 @@ import {
     Phone,
     Globe,
     FileText,
-    AlertTriangle
+    AlertTriangle,
+    BookOpen
 } from 'lucide-react'
 
 interface DashboardProps {
@@ -70,14 +71,22 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
             <Head title="Dashboard" />
 
             <div className="max-w-7xl mx-auto flex-1 space-y-6 p-4 md:p-8 pt-6 md:pt-12">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
-                        <LayoutDashboard className="h-6 w-6 text-primary/80" />
-                        Welcome, {auth.user.name.split(' ')[0]}
-                    </h2>
-                    <p className="text-muted-foreground">
-                        Here's what's happening with your recruiting pipeline today.
-                    </p>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
+                            <LayoutDashboard className="h-6 w-6 text-primary/80" />
+                            Welcome, {auth.user.name.split(' ')[0]}
+                        </h2>
+                        <p className="text-muted-foreground">
+                            Here's what's happening with your recruiting pipeline today.
+                        </p>
+                    </div>
+                    <Link href="/docs">
+                        <Button variant="outline" size="sm" className="gap-2 w-full md:w-auto">
+                            <BookOpen className="h-4 w-4" />
+                            Read Gennie Docs
+                        </Button>
+                    </Link>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -132,12 +141,33 @@ export default function Dashboard({ auth, stats, recentActivity, subscription }:
                             </Link>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {subscription?.minutes_used || 0} / {subscription?.minutes_included || 30}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                {subscription?.plan_name || 'Free Trial'} Plan
-                            </p>
+                            {(() => {
+                                const percentageUsed = subscription?.percentage_used || 0;
+                                const isOverLimit = subscription?.is_over_limit || false;
+
+                                let textColor = 'text-foreground';
+                                if (isOverLimit || percentageUsed >= 90) {
+                                    textColor = 'text-destructive';
+                                } else if (percentageUsed >= 70) {
+                                    textColor = 'text-amber-600 dark:text-amber-500';
+                                } else if (percentageUsed >= 50) {
+                                    textColor = 'text-primary';
+                                } else {
+                                    textColor = 'text-green-600 dark:text-green-500';
+                                }
+
+                                return (
+                                    <>
+                                        <div className="text-2xl font-bold">
+                                            <span className={textColor}>{subscription?.minutes_used || 0}</span>
+                                            <span className="text-foreground"> / {subscription?.minutes_included || 30}</span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {subscription?.plan_name || 'Free Trial'} Plan
+                                        </p>
+                                    </>
+                                );
+                            })()}
                         </CardContent>
                     </Card>
                 </div>

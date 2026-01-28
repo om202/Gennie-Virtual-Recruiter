@@ -26,6 +26,7 @@ class SubscriptionController extends Controller
 
         return Inertia::render('Subscription', [
             'auth' => ['user' => $user],
+            'activeTab' => 'subscription',
             'usageStats' => $this->subscriptionService->getUsageStats($user),
             'plans' => $this->subscriptionService->getAvailablePlans(),
         ]);
